@@ -12,9 +12,11 @@ COPY core/ core/
 COPY app/assets/emergency/cards.json app/assets/emergency/cards.json
 COPY app/assets/reader/ app/assets/reader/
 ARG TARGETARCH
-# portable CPU baselines (llama.cpp follows target-cpu; arm64 builds for armv8-a on its own)
+# Portable CPU baselines. core/.cargo/config.toml builds for the *host* CPU (target-cpu=native) on arm64,
+# which put SVE in the image and crashed it on Apple silicon (exit 132): RUSTFLAGS overrides it.
+# arm64 -> armv8-a (llama.cpp's default without target-cpu; runs on a Pi 4 and every Mac), amd64 -> x86-64-v2.
 RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,target=/src/core/target,id=bothy-target-$TARGETARCH \
-    cd core && if [ "$TARGETARCH" = "amd64" ]; then export RUSTFLAGS="-C target-cpu=x86-64-v2"; fi \
+    cd core && if [ "$TARGETARCH" = "amd64" ]; then export RUSTFLAGS="-C target-cpu=x86-64-v2"; else export RUSTFLAGS=""; fi \
  && CARGO_PROFILE_RELEASE_DEBUG=0 CARGO_PROFILE_RELEASE_STRIP=true cargo build --release -p sp-server --bin bothy-hub \
  && cp target/release/bothy-hub /bothy-hub
 

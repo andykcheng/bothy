@@ -106,3 +106,7 @@ footer.bottom .wrap { display:flex; gap:20px; flex-wrap:wrap; justify-content:sp
 @media (prefers-color-scheme: dark) { .guide pre { background:#0E1316; } }
 .guide pre { white-space:pre-wrap; overflow-wrap:anywhere; }
 .guide table.credits td:nth-child(2) { white-space:nowrap; }
+.guide pre { position:relative; padding-right:78px; }
+.guide pre button.copy { position:absolute; top:8px; right:8px; font:600 13px Inter, system-ui, sans-serif; color:#E6EAE7; background:#2F6B4F;
+  border:0; border-radius:8px; padding:6px 11px; cursor:pointer; }
+.guide pre button.copy:hover { background:#3A8461; }
