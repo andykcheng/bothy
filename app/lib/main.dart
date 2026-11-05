@@ -26,6 +26,7 @@ import 'core.dart';
 import 'downloads.dart';
 import 'emergency.dart';
 import 'games.dart';
+import 'map_picker.dart';
 import 'notes.dart';
 import 'share.dart';
 import 'theme.dart';
@@ -463,6 +464,8 @@ class _ContentPageState extends State<ContentPage> {
     });
   }
 
+  static bool _isRegion(Component c) => c.id.startsWith('map:') && c.id != 'map:world';
+
   String _sub(Component c) => [
         formatBytes(c.size),
         if (widget.store.installed.containsKey(c.id)) 'on this phone' else if (dl.queue.any((q) => q.id == c.id)) 'downloading',
@@ -544,7 +547,7 @@ class _ContentPageState extends State<ContentPage> {
                       child: Stack(fit: StackFit.expand, children: [
                         c.cover == null
                             ? Container(color: t.colorScheme.primaryContainer)
-                            : Image.network(hub.resolve('/download/${c.cover}').toString(), fit: BoxFit.cover,
+                            : Image.network(hubUrl(hub, 'download/${c.cover}').toString(), fit: BoxFit.cover,
                                 errorBuilder: (_, _, _) => Container(color: t.colorScheme.primaryContainer)),
                         Positioned(
                           right: 6,
@@ -667,8 +670,25 @@ class _ContentPageState extends State<ContentPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Card(
                       child: Column(children: [
-                        for (final m in maps)
-                          _check(m, title: m.id == 'map-assets' ? 'Map renderer and style' : m.title.replaceFirst('Map · ', '')),
+                        // the renderer, the world overview, and the regions chosen or on the phone; the rest in the picker
+                        for (final m in maps.where((m) => !_isRegion(m) || want.contains(m.id) || s.installed.containsKey(m.id)))
+                          _check(m, title: m.id == 'map-assets' ? 'Map renderer and style' : m.mapName),
+                        if (maps.any(_isRegion))
+                          ListTile(
+                            leading: const Icon(Icons.travel_explore),
+                            title: const Text('Choose map regions'),
+                            subtitle: Text('${maps.where(_isRegion).length} countries and regions, cut along borders'),
+                            trailing: const Icon(Icons.chevron_right),
+                            enabled: !busy,
+                            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                              builder: (_) => MapPicker(
+                                regions: maps.where(_isRegion).toList(),
+                                want: want,
+                                installed: s.installed.containsKey,
+                                onToggle: toggle,
+                              ),
+                            )),
+                          ),
                       ]),
                     ),
                   ),

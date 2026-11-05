@@ -1,11 +1,12 @@
 {
- "_comment": "Downloadable map regions (DESIGN §16). bbox = min_lon, min_lat, max_lon, max_lat. Rectangles for now; country polygons later.",
+ "_comment": "Downloadable map regions (DESIGN §16), built by scripts/map_batch.py. Shapes: Natural Earth 10m admin-0 countries, the biggest split into admin-1 parts (scripts/map_regions.py); world is a bbox. max_zoom defaults to 15.",
  "source": "https://build.protomaps.com/{build}.pmtiles",
- "build": "20261030",
+ "build": "20261105",
  "regions": [
   {
    "id": "world",
    "title": "World overview",
+   "continent": "World",
    "bbox": [
     -180,
     -85.05,
@@ -15,15 +16,3446 @@
    "max_zoom": 6
   },
   {
+   "id": "ad",
+   "title": "Andorra",
+   "continent": "Europe",
+   "size_estimate": 14870775
+  },
+  {
+   "id": "ae",
+   "title": "United Arab Emirates",
+   "continent": "Asia",
+   "size_estimate": 90107736
+  },
+  {
+   "id": "af",
+   "title": "Afghanistan",
+   "continent": "Asia",
+   "size_estimate": 269461916
+  },
+  {
+   "id": "ag",
+   "title": "Antigua and Barbuda",
+   "continent": "North America",
+   "size_estimate": 4803293
+  },
+  {
+   "id": "ai",
+   "title": "Anguilla",
+   "continent": "North America",
+   "size_estimate": 2959884
+  },
+  {
+   "id": "al",
+   "title": "Albania",
+   "continent": "Europe",
+   "size_estimate": 107668055
+  },
+  {
+   "id": "am",
+   "title": "Armenia",
+   "continent": "Asia",
+   "size_estimate": 100631814
+  },
+  {
+   "id": "ao",
+   "title": "Angola",
+   "continent": "Africa",
+   "size_estimate": 247646667
+  },
+  {
+   "id": "aq",
+   "title": "Antarctica",
+   "continent": "Antarctica",
+   "size_estimate": 360437133
+  },
+  {
+   "id": "ar",
+   "title": "Argentina",
+   "continent": "South America",
+   "size_estimate": 1266032826
+  },
+  {
+   "id": "as",
+   "title": "American Samoa",
+   "continent": "Oceania",
+   "size_estimate": 2226503
+  },
+  {
+   "id": "at",
+   "title": "Austria",
+   "continent": "Europe",
+   "size_estimate": 1115744264
+  },
+  {
+   "id": "atc",
+   "title": "Ashmore and Cartier Islands",
+   "continent": "Oceania",
+   "size_estimate": 1481844
+  },
+  {
+   "id": "au",
+   "title": "Australia",
+   "continent": "Oceania",
+   "size_estimate": 2100911504
+  },
+  {
+   "id": "aw",
+   "title": "Aruba",
+   "continent": "North America",
+   "size_estimate": 6156655
+  },
+  {
+   "id": "ax",
+   "title": "Åland",
+   "continent": "Europe",
+   "size_estimate": 25121086
+  },
+  {
+   "id": "az",
+   "title": "Azerbaijan",
+   "continent": "Asia",
+   "size_estimate": 129377517
+  },
+  {
+   "id": "ba",
+   "title": "Bosnia and Herzegovina",
+   "continent": "Europe",
+   "size_estimate": 356057456
+  },
+  {
+   "id": "bb",
+   "title": "Barbados",
+   "continent": "North America",
+   "size_estimate": 8782000
+  },
+  {
+   "id": "bd",
+   "title": "Bangladesh",
+   "continent": "Asia",
+   "size_estimate": 406461069
+  },
+  {
+   "id": "be",
+   "title": "Belgium",
+   "continent": "Europe",
+   "size_estimate": 814676889
+  },
+  {
+   "id": "bf",
+   "title": "Burkina Faso",
+   "continent": "Africa",
+   "size_estimate": 169556937
+  },
+  {
+   "id": "bg",
+   "title": "Bulgaria",
+   "continent": "Europe",
+   "size_estimate": 383948028
+  },
+  {
+   "id": "bh",
+   "title": "Bahrain",
+   "continent": "Asia",
+   "size_estimate": 10348476
+  },
+  {
+   "id": "bi",
+   "title": "Burundi",
+   "continent": "Africa",
+   "size_estimate": 74029107
+  },
+  {
+   "id": "bj",
+   "title": "Benin",
+   "continent": "Africa",
+   "size_estimate": 78349974
+  },
+  {
+   "id": "bjn",
+   "title": "Bajo Nuevo Bank",
+   "continent": "North America",
+   "size_estimate": 2025304
+  },
+  {
+   "id": "bl",
+   "title": "Saint Barthélemy",
+   "continent": "North America",
+   "size_estimate": 2850404
+  },
+  {
+   "id": "bm",
+   "title": "Bermuda",
+   "continent": "North America",
+   "size_estimate": 3805957
+  },
+  {
+   "id": "bn",
+   "title": "Brunei",
+   "continent": "Asia",
+   "size_estimate": 11679120
+  },
+  {
+   "id": "bo",
+   "title": "Bolivia",
+   "continent": "South America",
+   "size_estimate": 429700375
+  },
+  {
+   "id": "br-ac",
+   "title": "Acre",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 61566964
+  },
+  {
+   "id": "br-al",
+   "title": "Alagoas",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 36112884
+  },
+  {
+   "id": "br-am",
+   "title": "Amazonas",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 219578485
+  },
+  {
+   "id": "br-ap",
+   "title": "Amapá",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 25070999
+  },
+  {
+   "id": "br-ba",
+   "title": "Bahia",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 293982442
+  },
+  {
+   "id": "br-ce",
+   "title": "Ceará",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 160720491
+  },
+  {
+   "id": "br-df",
+   "title": "Federal",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 49248123
+  },
+  {
+   "id": "br-es",
+   "title": "Espírito Santo",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 363742968
+  },
+  {
+   "id": "br-go",
+   "title": "Goiás",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 181851723
+  },
+  {
+   "id": "br-ma",
+   "title": "Maranhão",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 111636686
+  },
+  {
+   "id": "br-mg",
+   "title": "Minas Gerais",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 592824537
+  },
+  {
+   "id": "br-ms",
+   "title": "Mato Grosso do Sul",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 110674759
+  },
+  {
+   "id": "br-mt",
+   "title": "Mato Grosso",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 231833116
+  },
+  {
+   "id": "br-pa",
+   "title": "Pará",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 206344054
+  },
+  {
+   "id": "br-pb",
+   "title": "Paraíba",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 75730711
+  },
+  {
+   "id": "br-pe",
+   "title": "Pernambuco",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 103579148
+  },
+  {
+   "id": "br-pi",
+   "title": "Piauí",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 114375727
+  },
+  {
+   "id": "br-pr",
+   "title": "Paraná",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 325318155
+  },
+  {
+   "id": "br-rj",
+   "title": "Rio de Janeiro",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 119570490
+  },
+  {
+   "id": "br-rn",
+   "title": "Rio Grande do Norte",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 44285462
+  },
+  {
+   "id": "br-ro",
+   "title": "Rondônia",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 55377600
+  },
+  {
+   "id": "br-rr",
+   "title": "Roraima",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 40501209
+  },
+  {
+   "id": "br-rs",
+   "title": "Rio Grande do Sul",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 283298648
+  },
+  {
+   "id": "br-sc",
+   "title": "Santa Catarina",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 228841165
+  },
+  {
+   "id": "br-se",
+   "title": "Sergipe",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 30646993
+  },
+  {
+   "id": "br-sp",
+   "title": "São Paulo",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 500034011
+  },
+  {
+   "id": "br-to",
+   "title": "Tocantins",
+   "continent": "South America",
+   "country": "br",
+   "country_title": "Brazil",
+   "size_estimate": 69884239
+  },
+  {
+   "id": "bri",
+   "title": "Brazilian Island",
+   "continent": "South America",
+   "size_estimate": 2828278
+  },
+  {
+   "id": "brt",
+   "title": "Bir Tawil",
+   "continent": "Africa",
+   "size_estimate": 3878207
+  },
+  {
+   "id": "bs",
+   "title": "The Bahamas",
+   "continent": "North America",
+   "size_estimate": 26323801
+  },
+  {
+   "id": "bt",
+   "title": "Bhutan",
+   "continent": "Asia",
+   "size_estimate": 64554242
+  },
+  {
+   "id": "bw",
+   "title": "Botswana",
+   "continent": "Africa",
+   "size_estimate": 144244549
+  },
+  {
+   "id": "by",
+   "title": "Belarus",
+   "continent": "Europe",
+   "size_estimate": 848017003
+  },
+  {
+   "id": "bz",
+   "title": "Belize",
+   "continent": "North America",
+   "size_estimate": 54512076
+  },
+  {
+   "id": "ca-ab",
+   "title": "Alberta",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 912832176
+  },
+  {
+   "id": "ca-bc",
+   "title": "British Columbia",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 1868214655
+  },
+  {
+   "id": "ca-mb",
+   "title": "Manitoba",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 623991310
+  },
+  {
+   "id": "ca-nb",
+   "title": "New Brunswick",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 161025705
+  },
+  {
+   "id": "ca-nl",
+   "title": "Newfoundland and Labrador",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 659931189
+  },
+  {
+   "id": "ca-ns",
+   "title": "Nova Scotia",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 180201876
+  },
+  {
+   "id": "ca-nt",
+   "title": "Northwest Territories",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 1582769084
+  },
+  {
+   "id": "ca-nu",
+   "title": "Nunavut",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 4734167696
+  },
+  {
+   "id": "ca-on",
+   "title": "Ontario",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 2017555341
+  },
+  {
+   "id": "ca-pe",
+   "title": "Prince Edward Island",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 27980099
+  },
+  {
+   "id": "ca-qc",
+   "title": "Quebec",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 2551518439
+  },
+  {
+   "id": "ca-sk",
+   "title": "Saskatchewan",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 438525036
+  },
+  {
+   "id": "ca-yt",
+   "title": "Yukon",
+   "continent": "North America",
+   "country": "ca",
+   "country_title": "Canada",
+   "size_estimate": 287228303
+  },
+  {
+   "id": "cd",
+   "title": "Democratic Republic of the Congo",
+   "continent": "Africa",
+   "size_estimate": 854216373
+  },
+  {
+   "id": "cf",
+   "title": "Central African Republic",
+   "continent": "Africa",
+   "size_estimate": 355542700
+  },
+  {
+   "id": "cg",
+   "title": "Republic of the Congo",
+   "continent": "Africa",
+   "size_estimate": 103194757
+  },
+  {
+   "id": "ch",
+   "title": "Switzerland",
+   "continent": "Europe",
+   "size_estimate": 653151151
+  },
+  {
+   "id": "ci",
+   "title": "Ivory Coast",
+   "continent": "Africa",
+   "size_estimate": 177378791
+  },
+  {
+   "id": "ck",
+   "title": "Cook Islands",
+   "continent": "Oceania",
+   "size_estimate": 2077395
+  },
+  {
+   "id": "cl",
+   "title": "Chile",
+   "continent": "South America",
+   "size_estimate": 664305765
+  },
+  {
+   "id": "clp",
+   "title": "Clipperton Island",
+   "continent": "Oceans",
+   "size_estimate": 1290229
+  },
+  {
+   "id": "cm",
+   "title": "Cameroon",
+   "continent": "Africa",
+   "size_estimate": 525272150
+  },
+  {
+   "id": "cn-ah",
+   "title": "Anhui",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 176344835
+  },
+  {
+   "id": "cn-bj",
+   "title": "Beijing",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 82679384
+  },
+  {
+   "id": "cn-cq",
+   "title": "Chongqing",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 108354322
+  },
+  {
+   "id": "cn-fj",
+   "title": "Fujian",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 139374760
+  },
+  {
+   "id": "cn-gd",
+   "title": "Guangdong",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 313133703
+  },
+  {
+   "id": "cn-gs",
+   "title": "Gansu",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 236233125
+  },
+  {
+   "id": "cn-gx",
+   "title": "Guangxi",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 189810441
+  },
+  {
+   "id": "cn-gz",
+   "title": "Guizhou",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 123812527
+  },
+  {
+   "id": "cn-ha",
+   "title": "Henan",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 202158540
+  },
+  {
+   "id": "cn-hb",
+   "title": "Hubei",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 187847904
+  },
+  {
+   "id": "cn-he",
+   "title": "Hebei",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 257802252
+  },
+  {
+   "id": "cn-hi",
+   "title": "Hainan",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 33279935
+  },
+  {
+   "id": "cn-hl",
+   "title": "Heilongjiang",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 235164377
+  },
+  {
+   "id": "cn-hn",
+   "title": "Hunan",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 178588311
+  },
+  {
+   "id": "cn-jl",
+   "title": "Jilin",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 147383988
+  },
+  {
+   "id": "cn-js",
+   "title": "Jiangsu",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 209454042
+  },
+  {
+   "id": "cn-jx",
+   "title": "Jiangxi",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 185171377
+  },
+  {
+   "id": "cn-ln",
+   "title": "Liaoning",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 131871653
+  },
+  {
+   "id": "cn-nm",
+   "title": "Inner Mongolia",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 308883341
+  },
+  {
+   "id": "cn-nx",
+   "title": "Ningxia",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 42033141
+  },
+  {
+   "id": "cn-qh",
+   "title": "Qinghai",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 137189001
+  },
+  {
+   "id": "cn-sc",
+   "title": "Sichuan",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 363058327
+  },
+  {
+   "id": "cn-sd",
+   "title": "Shandong",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 235267650
+  },
+  {
+   "id": "cn-sh",
+   "title": "Shanghai",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 51247347
+  },
+  {
+   "id": "cn-sn",
+   "title": "Shaanxi",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 306276689
+  },
+  {
+   "id": "cn-sx",
+   "title": "Shanxi",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 142735892
+  },
+  {
+   "id": "cn-tj",
+   "title": "Tianjin",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 44356119
+  },
+  {
+   "id": "cn-x01",
+   "title": "Paracel Islands",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 3094968
+  },
+  {
+   "id": "cn-xj",
+   "title": "Xinjiang",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 287277811
+  },
+  {
+   "id": "cn-xz",
+   "title": "Tibet",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 264398103
+  },
+  {
+   "id": "cn-yn",
+   "title": "Yunnan",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 277390332
+  },
+  {
+   "id": "cn-zj",
+   "title": "Zhejiang",
+   "continent": "Asia",
+   "country": "cn",
+   "country_title": "People's Republic of China",
+   "size_estimate": 237813892
+  },
+  {
+   "id": "cnm",
+   "title": "United Nations Buffer Zone in Cyprus",
+   "continent": "Asia",
+   "size_estimate": 18915228
+  },
+  {
+   "id": "co",
+   "title": "Colombia",
+   "continent": "South America",
+   "size_estimate": 598697681
+  },
+  {
+   "id": "cr",
+   "title": "Costa Rica",
+   "continent": "North America",
+   "size_estimate": 83528406
+  },
+  {
+   "id": "csi",
+   "title": "Coral Sea Islands",
+   "continent": "Oceania",
+   "size_estimate": 1238444
+  },
+  {
+   "id": "cu",
+   "title": "Cuba",
+   "continent": "North America",
+   "size_estimate": 132843997
+  },
+  {
+   "id": "cv",
+   "title": "Cape Verde",
+   "continent": "Africa",
+   "size_estimate": 17881229
+  },
+  {
+   "id": "cw",
+   "title": "Curaçao",
+   "continent": "North America",
+   "size_estimate": 7955883
+  },
+  {
+   "id": "cy",
+   "title": "Cyprus",
+   "continent": "Asia",
+   "size_estimate": 45177859
+  },
+  {
+   "id": "cyn",
+   "title": "Turkish Republic of Northern Cyprus",
+   "continent": "Asia",
+   "size_estimate": 27742578
+  },
+  {
+   "id": "cz",
+   "title": "Czech Republic",
+   "continent": "Europe",
+   "size_estimate": 1143055432
+  },
+  {
+   "id": "de-bb",
+   "title": "Brandenburg",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 319894662
+  },
+  {
+   "id": "de-be",
+   "title": "Berlin",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 80794478
+  },
+  {
+   "id": "de-bw",
+   "title": "Baden-Württemberg",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 741120191
+  },
+  {
+   "id": "de-by",
+   "title": "Bavaria",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 1059560042
+  },
+  {
+   "id": "de-hb",
+   "title": "Free Hanseatic Bremen",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 35480631
+  },
+  {
+   "id": "de-he",
+   "title": "Hesse",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 429942514
+  },
+  {
+   "id": "de-hh",
+   "title": "Hamburg",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 57702185
+  },
+  {
+   "id": "de-mv",
+   "title": "Mecklenburg-Western Pomerania",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 226152238
+  },
+  {
+   "id": "de-ni",
+   "title": "Lower Saxony",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 704460882
+  },
+  {
+   "id": "de-nw",
+   "title": "North Rhine-Westphalia",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 952657684
+  },
+  {
+   "id": "de-rp",
+   "title": "Rhineland-Palatinate",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 391865922
+  },
+  {
+   "id": "de-sh",
+   "title": "Schleswig-Holstein",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 230947226
+  },
+  {
+   "id": "de-sl",
+   "title": "Saarland",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 80659513
+  },
+  {
+   "id": "de-sn",
+   "title": "Saxony",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 333090687
+  },
+  {
+   "id": "de-st",
+   "title": "Saxony-Anhalt",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 255302979
+  },
+  {
+   "id": "de-th",
+   "title": "Thuringia",
+   "continent": "Europe",
+   "country": "de",
+   "country_title": "Germany",
+   "size_estimate": 247726856
+  },
+  {
+   "id": "dj",
+   "title": "Djibouti",
+   "continent": "Africa",
+   "size_estimate": 14618976
+  },
+  {
+   "id": "dk",
+   "title": "Denmark",
+   "continent": "Europe",
+   "size_estimate": 600704185
+  },
+  {
+   "id": "dm",
+   "title": "Dominica",
+   "continent": "North America",
+   "size_estimate": 5342241
+  },
+  {
+   "id": "do",
+   "title": "Dominican Republic",
+   "continent": "North America",
+   "size_estimate": 55056139
+  },
+  {
+   "id": "dz",
+   "title": "Algeria",
+   "continent": "Africa",
+   "size_estimate": 484503970
+  },
+  {
+   "id": "ec",
+   "title": "Ecuador",
+   "continent": "South America",
+   "size_estimate": 216751054
+  },
+  {
+   "id": "ee",
+   "title": "Estonia",
+   "continent": "Europe",
+   "size_estimate": 249483614
+  },
+  {
+   "id": "eg",
+   "title": "Egypt",
+   "continent": "Africa",
+   "size_estimate": 270929945
+  },
+  {
+   "id": "eh",
+   "title": "Western Sahara",
+   "continent": "Africa",
+   "size_estimate": 12413058
+  },
+  {
+   "id": "er",
+   "title": "Eritrea",
+   "continent": "Africa",
+   "size_estimate": 49127359
+  },
+  {
+   "id": "es",
+   "title": "Spain",
+   "continent": "Europe",
+   "size_estimate": 2283622219
+  },
+  {
+   "id": "esb",
+   "title": "Dhekelia Cantonment",
+   "continent": "Asia",
+   "size_estimate": 7253975
+  },
+  {
+   "id": "et",
+   "title": "Ethiopia",
+   "continent": "Africa",
+   "size_estimate": 321173893
+  },
+  {
+   "id": "fi",
+   "title": "Finland",
+   "continent": "Europe",
+   "size_estimate": 1791046280
+  },
+  {
+   "id": "fj",
+   "title": "Fiji",
+   "continent": "Oceania",
+   "size_estimate": 26228266
+  },
+  {
+   "id": "fk",
+   "title": "Falkland Islands",
+   "continent": "South America",
+   "size_estimate": 17225289
+  },
+  {
+   "id": "fm",
+   "title": "Federated States of Micronesia",
+   "continent": "Oceania",
+   "size_estimate": 4166692
+  },
+  {
+   "id": "fo",
+   "title": "Faroe Islands",
+   "continent": "Europe",
+   "size_estimate": 14993823
+  },
+  {
+   "id": "fr-ara",
+   "title": "Auvergne-Rhône-Alpes",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 852357071
+  },
+  {
+   "id": "fr-bfc",
+   "title": "Bourgogne-Franche-Comté",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 511804763
+  },
+  {
+   "id": "fr-bre",
+   "title": "Bretagne",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 349746227
+  },
+  {
+   "id": "fr-cor",
+   "title": "Corse",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 49794799
+  },
+  {
+   "id": "fr-cvl",
+   "title": "Centre-Val de Loire",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 356336258
+  },
+  {
+   "id": "fr-ges",
+   "title": "Grand Est",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 557222067
+  },
+  {
+   "id": "fr-gua",
+   "title": "Guadeloupe",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 20936985
+  },
+  {
+   "id": "fr-guf",
+   "title": "Guyane française",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 35093280
+  },
+  {
+   "id": "fr-hdf",
+   "title": "Hauts-de-France",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 413125744
+  },
+  {
+   "id": "fr-idf",
+   "title": "Île-de-France",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 272434026
+  },
+  {
+   "id": "fr-lre",
+   "title": "Réunion",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 25297031
+  },
+  {
+   "id": "fr-may",
+   "title": "Mayotte",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 10605180
+  },
+  {
+   "id": "fr-mtq",
+   "title": "Martinique",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 15955477
+  },
+  {
+   "id": "fr-naq",
+   "title": "Nouvelle-Aquitaine",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 775138287
+  },
+  {
+   "id": "fr-nor",
+   "title": "Normandie",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 318492550
+  },
+  {
+   "id": "fr-occ",
+   "title": "Occitanie",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 756069347
+  },
+  {
+   "id": "fr-pac",
+   "title": "Provence-Alpes-Côte-d'Azur",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 369557015
+  },
+  {
+   "id": "fr-pdl",
+   "title": "Pays de la Loire",
+   "continent": "Europe",
+   "country": "fr",
+   "country_title": "France",
+   "size_estimate": 410083833
+  },
+  {
+   "id": "ga",
+   "title": "Gabon",
+   "continent": "Africa",
+   "size_estimate": 89578157
+  },
+  {
+   "id": "gd",
+   "title": "Grenada",
+   "continent": "North America",
+   "size_estimate": 4773342
+  },
+  {
+   "id": "ge",
+   "title": "Georgia",
+   "continent": "Asia",
+   "size_estimate": 211565761
+  },
+  {
+   "id": "gg",
+   "title": "Guernsey",
+   "continent": "Europe",
+   "size_estimate": 6616958
+  },
+  {
+   "id": "gh",
+   "title": "Ghana",
+   "continent": "Africa",
+   "size_estimate": 173312677
+  },
+  {
+   "id": "gi",
+   "title": "Gibraltar",
+   "continent": "Europe",
+   "size_estimate": 4538214
+  },
+  {
+   "id": "gl",
+   "title": "Greenland",
+   "continent": "North America",
+   "size_estimate": 352805665
+  },
+  {
+   "id": "gm",
+   "title": "The Gambia",
+   "continent": "Africa",
+   "size_estimate": 29272489
+  },
+  {
+   "id": "gn",
+   "title": "Guinea",
+   "continent": "Africa",
+   "size_estimate": 194458680
+  },
+  {
+   "id": "gq",
+   "title": "Equatorial Guinea",
+   "continent": "Africa",
+   "size_estimate": 20863709
+  },
+  {
+   "id": "gr",
+   "title": "Greece",
+   "continent": "Europe",
+   "size_estimate": 511790092
+  },
+  {
+   "id": "gs",
+   "title": "South Georgia and the South Sandwich Islands",
+   "continent": "Oceans",
+   "size_estimate": 6600235
+  },
+  {
+   "id": "gt",
+   "title": "Guatemala",
+   "continent": "North America",
+   "size_estimate": 168865858
+  },
+  {
+   "id": "gu",
+   "title": "Guam",
+   "continent": "Oceania",
+   "size_estimate": 4224292
+  },
+  {
+   "id": "gw",
+   "title": "Guinea-Bissau",
+   "continent": "Africa",
+   "size_estimate": 31241534
+  },
+  {
+   "id": "gy",
+   "title": "Guyana",
+   "continent": "South America",
+   "size_estimate": 38424001
+  },
+  {
+   "id": "hk",
+   "title": "Hong Kong",
+   "continent": "Asia",
+   "size_estimate": 38507354
+  },
+  {
+   "id": "hm",
+   "title": "Heard Island and McDonald Islands",
+   "continent": "Oceans",
+   "size_estimate": 1291827
+  },
+  {
+   "id": "hn",
+   "title": "Honduras",
+   "continent": "North America",
+   "size_estimate": 119189709
+  },
+  {
+   "id": "hr",
+   "title": "Croatia",
+   "continent": "Europe",
+   "size_estimate": 427430221
+  },
+  {
+   "id": "ht",
+   "title": "Haiti",
+   "continent": "North America",
+   "size_estimate": 63294029
+  },
+  {
+   "id": "hu",
+   "title": "Hungary",
+   "continent": "Europe",
+   "size_estimate": 551479568
+  },
+  {
+   "id": "id",
+   "title": "Indonesia",
+   "continent": "Asia",
+   "size_estimate": 1927916095
+  },
+  {
+   "id": "ie",
+   "title": "Ireland",
+   "continent": "Europe",
+   "size_estimate": 460697834
+  },
+  {
+   "id": "il",
+   "title": "Israel",
+   "continent": "Asia",
+   "size_estimate": 128987216
+  },
+  {
+   "id": "im",
+   "title": "Isle of Man",
+   "continent": "Europe",
+   "size_estimate": 12267433
+  },
+  {
+   "id": "in",
+   "title": "India",
+   "continent": "Asia",
+   "size_estimate": 3208954172
+  },
+  {
+   "id": "io",
+   "title": "British Indian Ocean Territory",
+   "continent": "Oceans",
+   "size_estimate": 2044802
+  },
+  {
+   "id": "ioa",
+   "title": "Australian Indian Ocean Territories",
+   "continent": "Asia",
+   "size_estimate": 2106819
+  },
+  {
+   "id": "iq",
+   "title": "Iraq",
+   "continent": "Asia",
+   "size_estimate": 237021494
+  },
+  {
+   "id": "ir",
+   "title": "Iran",
+   "continent": "Asia",
+   "size_estimate": 704795001
+  },
+  {
+   "id": "is",
+   "title": "Iceland",
+   "continent": "Europe",
+   "size_estimate": 268923660
+  },
+  {
+   "id": "it",
+   "title": "Italy",
+   "continent": "Europe",
+   "size_estimate": 2729749506
+  },
+  {
+   "id": "je",
+   "title": "Jersey",
+   "continent": "Europe",
+   "size_estimate": 8113272
+  },
+  {
+   "id": "jm",
+   "title": "Jamaica",
+   "continent": "North America",
+   "size_estimate": 41743805
+  },
+  {
+   "id": "jo",
+   "title": "Jordan",
+   "continent": "Asia",
+   "size_estimate": 60321231
+  },
+  {
+   "id": "jp",
+   "title": "Japan",
+   "continent": "Asia",
+   "size_estimate": 2604767192
+  },
+  {
+   "id": "kab",
+   "title": "Baikonur",
+   "continent": "Asia",
+   "size_estimate": 4815963
+  },
+  {
+   "id": "kas",
+   "title": "Siachen Glacier",
+   "continent": "Asia",
+   "size_estimate": 5466426
+  },
+  {
+   "id": "ke",
+   "title": "Kenya",
+   "continent": "Africa",
+   "size_estimate": 421298358
+  },
+  {
+   "id": "kg",
+   "title": "Kyrgyzstan",
+   "continent": "Asia",
+   "size_estimate": 195485864
+  },
+  {
+   "id": "kh",
+   "title": "Cambodia",
+   "continent": "Asia",
+   "size_estimate": 98394217
+  },
+  {
+   "id": "ki",
+   "title": "Kiribati",
+   "continent": "Oceania",
+   "size_estimate": 4821604
+  },
+  {
+   "id": "km",
+   "title": "Comoros",
+   "continent": "Africa",
+   "size_estimate": 6240267
+  },
+  {
+   "id": "kn",
+   "title": "Saint Kitts and Nevis",
+   "continent": "North America",
+   "size_estimate": 3980123
+  },
+  {
+   "id": "kos",
+   "title": "Kosovo",
+   "continent": "Europe",
+   "size_estimate": 70349019
+  },
+  {
+   "id": "kp",
+   "title": "North Korea",
+   "continent": "Asia",
+   "size_estimate": 210735941
+  },
+  {
+   "id": "kr",
+   "title": "South Korea",
+   "continent": "Asia",
+   "size_estimate": 499211407
+  },
+  {
+   "id": "kw",
+   "title": "Kuwait",
+   "continent": "Asia",
+   "size_estimate": 24767718
+  },
+  {
+   "id": "ky",
+   "title": "Cayman Islands",
+   "continent": "North America",
+   "size_estimate": 4290991
+  },
+  {
+   "id": "kz",
+   "title": "Kazakhstan",
+   "continent": "Asia",
+   "size_estimate": 745457507
+  },
+  {
+   "id": "la",
+   "title": "Laos",
+   "continent": "Asia",
+   "size_estimate": 147975086
+  },
+  {
+   "id": "lb",
+   "title": "Lebanon",
+   "continent": "Asia",
+   "size_estimate": 69091547
+  },
+  {
+   "id": "lc",
+   "title": "Saint Lucia",
+   "continent": "North America",
+   "size_estimate": 6317741
+  },
+  {
+   "id": "li",
+   "title": "Liechtenstein",
+   "continent": "Europe",
+   "size_estimate": 19611419
+  },
+  {
+   "id": "lk",
+   "title": "Sri Lanka",
+   "continent": "Asia",
+   "size_estimate": 176935744
+  },
+  {
+   "id": "lr",
+   "title": "Liberia",
+   "continent": "Africa",
+   "size_estimate": 60750233
+  },
+  {
+   "id": "ls",
+   "title": "Lesotho",
+   "continent": "Africa",
+   "size_estimate": 153783749
+  },
+  {
+   "id": "lt",
+   "title": "Lithuania",
+   "continent": "Europe",
+   "size_estimate": 464295369
+  },
+  {
+   "id": "lu",
+   "title": "Luxembourg",
+   "continent": "Europe",
+   "size_estimate": 91317674
+  },
+  {
+   "id": "lv",
+   "title": "Latvia",
+   "continent": "Europe",
+   "size_estimate": 309685991
+  },
+  {
+   "id": "ly",
+   "title": "Libya",
+   "continent": "Africa",
+   "size_estimate": 159262839
+  },
+  {
+   "id": "ma",
+   "title": "Morocco",
+   "continent": "Africa",
+   "size_estimate": 413385937
+  },
+  {
+   "id": "mc",
+   "title": "Monaco",
+   "continent": "Europe",
+   "size_estimate": 9879123
+  },
+  {
+   "id": "md",
+   "title": "Moldova",
+   "continent": "Europe",
+   "size_estimate": 184142941
+  },
+  {
+   "id": "me",
+   "title": "Montenegro",
+   "continent": "Europe",
+   "size_estimate": 84861530
+  },
+  {
+   "id": "mf",
+   "title": "Saint Martin",
+   "continent": "North America",
+   "size_estimate": 4046288
+  },
+  {
+   "id": "mg",
+   "title": "Madagascar",
+   "continent": "Africa",
+   "size_estimate": 593810068
+  },
+  {
+   "id": "mh",
+   "title": "Marshall Islands",
+   "continent": "Oceania",
+   "size_estimate": 2650460
+  },
+  {
+   "id": "mk",
+   "title": "North Macedonia",
+   "continent": "Europe",
+   "size_estimate": 81615335
+  },
+  {
+   "id": "ml",
+   "title": "Mali",
+   "continent": "Africa",
+   "size_estimate": 400670615
+  },
+  {
+   "id": "mm",
+   "title": "Myanmar",
+   "continent": "Asia",
+   "size_estimate": 540830760
+  },
+  {
+   "id": "mn",
+   "title": "Mongolia",
+   "continent": "Asia",
+   "size_estimate": 231224251
+  },
+  {
+   "id": "mo",
+   "title": "Macau",
+   "continent": "Asia",
+   "size_estimate": 9566361
+  },
+  {
+   "id": "mp",
+   "title": "Northern Mariana Islands",
+   "continent": "Oceania",
+   "size_estimate": 3106350
+  },
+  {
+   "id": "mr",
+   "title": "Mauritania",
+   "continent": "Africa",
+   "size_estimate": 88649837
+  },
+  {
+   "id": "ms",
+   "title": "Montserrat",
+   "continent": "North America",
+   "size_estimate": 2585713
+  },
+  {
+   "id": "mt",
+   "title": "Malta",
+   "continent": "Europe",
+   "size_estimate": 10654089
+  },
+  {
+   "id": "mu",
+   "title": "Mauritius",
+   "continent": "Oceans",
+   "size_estimate": 15662653
+  },
+  {
+   "id": "mv",
+   "title": "Maldives",
+   "continent": "Oceans",
+   "size_estimate": 6799485
+  },
+  {
+   "id": "mw",
+   "title": "Malawi",
+   "continent": "Africa",
+   "size_estimate": 174494017
+  },
+  {
+   "id": "mx",
+   "title": "Mexico",
+   "continent": "North America",
+   "size_estimate": 1218166049
+  },
+  {
+   "id": "my",
+   "title": "Malaysia",
+   "continent": "Asia",
+   "size_estimate": 320584320
+  },
+  {
+   "id": "mz",
+   "title": "Mozambique",
+   "continent": "Africa",
+   "size_estimate": 338735750
+  },
+  {
+   "id": "na",
+   "title": "Namibia",
+   "continent": "Africa",
+   "size_estimate": 160321096
+  },
+  {
+   "id": "nc",
+   "title": "New Caledonia",
+   "continent": "Oceania",
+   "size_estimate": 22810736
+  },
+  {
+   "id": "ne",
+   "title": "Niger",
+   "continent": "Africa",
+   "size_estimate": 187202426
+  },
+  {
+   "id": "nf",
+   "title": "Norfolk Island",
+   "continent": "Oceania",
+   "size_estimate": 1374495
+  },
+  {
+   "id": "ng",
+   "title": "Nigeria",
+   "continent": "Africa",
+   "size_estimate": 878827769
+  },
+  {
+   "id": "ni",
+   "title": "Nicaragua",
+   "continent": "North America",
+   "size_estimate": 133740049
+  },
+  {
+   "id": "nl",
+   "title": "Netherlands",
+   "continent": "Europe",
+   "size_estimate": 1201335556
+  },
+  {
+   "id": "no",
+   "title": "Norway",
+   "continent": "Europe",
+   "size_estimate": 2900338131
+  },
+  {
+   "id": "np",
+   "title": "Nepal",
+   "continent": "Asia",
+   "size_estimate": 559256376
+  },
+  {
+   "id": "nr",
+   "title": "Nauru",
+   "continent": "Oceania",
+   "size_estimate": 1251813
+  },
+  {
+   "id": "nu",
+   "title": "Niue",
+   "continent": "Oceania",
+   "size_estimate": 1300912
+  },
+  {
+   "id": "nz",
+   "title": "New Zealand",
+   "continent": "Oceania",
+   "size_estimate": 634191468
+  },
+  {
+   "id": "om",
+   "title": "Oman",
+   "continent": "Asia",
+   "size_estimate": 77385946
+  },
+  {
+   "id": "pa",
+   "title": "Panama",
+   "continent": "North America",
+   "size_estimate": 76933975
+  },
+  {
+   "id": "pe",
+   "title": "Peru",
+   "continent": "South America",
+   "size_estimate": 540132436
+  },
+  {
+   "id": "pf",
+   "title": "French Polynesia",
+   "continent": "Oceania",
+   "size_estimate": 18029916
+  },
+  {
+   "id": "pg",
+   "title": "Papua New Guinea",
+   "continent": "Oceania",
+   "size_estimate": 149651102
+  },
+  {
+   "id": "pga",
+   "title": "Wake Island",
+   "continent": "Asia",
+   "size_estimate": 2102439
+  },
+  {
+   "id": "ph",
+   "title": "Philippines",
+   "continent": "Asia",
+   "size_estimate": 693276202
+  },
+  {
+   "id": "pk",
+   "title": "Pakistan",
+   "continent": "Asia",
+   "size_estimate": 448919288
+  },
+  {
+   "id": "pl",
+   "title": "Poland",
+   "continent": "Europe",
+   "size_estimate": 2960943953
+  },
+  {
+   "id": "pm",
+   "title": "Saint Pierre and Miquelon",
+   "continent": "North America",
+   "size_estimate": 5063713
+  },
+  {
+   "id": "pn",
+   "title": "Pitcairn Islands",
+   "continent": "Oceania",
+   "size_estimate": 931751
+  },
+  {
+   "id": "pr",
+   "title": "Puerto Rico",
+   "continent": "North America",
+   "size_estimate": 71908177
+  },
+  {
+   "id": "ps",
+   "title": "Palestine",
+   "continent": "Asia",
+   "size_estimate": 53869520
+  },
+  {
+   "id": "pt",
+   "title": "Portugal",
+   "continent": "Europe",
+   "size_estimate": 582237262
+  },
+  {
+   "id": "pw",
+   "title": "Palau",
+   "continent": "Oceania",
+   "size_estimate": 3733508
+  },
+  {
+   "id": "py",
+   "title": "Paraguay",
+   "continent": "South America",
+   "size_estimate": 216485124
+  },
+  {
+   "id": "qa",
+   "title": "Qatar",
+   "continent": "Asia",
+   "size_estimate": 29371785
+  },
+  {
+   "id": "ro",
+   "title": "Romania",
+   "continent": "Europe",
+   "size_estimate": 757896922
+  },
+  {
+   "id": "rs",
+   "title": "Serbia",
+   "continent": "Europe",
+   "size_estimate": 405735800
+  },
+  {
+   "id": "ru-40",
+   "title": "Sevastopol",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 13931566
+  },
+  {
+   "id": "ru-43",
+   "title": "Autonomous Republic of Crimea",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 74304039
+  },
+  {
+   "id": "ru-ad",
+   "title": "Republic of Adygea",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 45616005
+  },
+  {
+   "id": "ru-al",
+   "title": "Altai Republic",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 168315591
+  },
+  {
+   "id": "ru-alt",
+   "title": "Altai Republic",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 346987473
+  },
+  {
+   "id": "ru-amu",
+   "title": "Amur",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 109317486
+  },
+  {
+   "id": "ru-ark",
+   "title": "Arkhangelsk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 427525379
+  },
+  {
+   "id": "ru-ast",
+   "title": "Astrakhan",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 58854071
+  },
+  {
+   "id": "ru-ba",
+   "title": "Bashkortostan",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 311131043
+  },
+  {
+   "id": "ru-bel",
+   "title": "Belgorod",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 104772356
+  },
+  {
+   "id": "ru-bry",
+   "title": "Bryansk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 88708000
+  },
+  {
+   "id": "ru-bu",
+   "title": "Republic of Buryatia",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 133338194
+  },
+  {
+   "id": "ru-ce",
+   "title": "Chechen Republic",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 39119590
+  },
+  {
+   "id": "ru-che",
+   "title": "Chelyabinsk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 201992215
+  },
+  {
+   "id": "ru-chu",
+   "title": "Chukotka Autonomous Okrug",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 287428301
+  },
+  {
+   "id": "ru-cu",
+   "title": "Chuvash Republic",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 69928147
+  },
+  {
+   "id": "ru-da",
+   "title": "Republic of Dagestan",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 90247893
+  },
+  {
+   "id": "ru-in",
+   "title": "Republic of Ingushetia",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 17874605
+  },
+  {
+   "id": "ru-irk",
+   "title": "Irkutsk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 287561788
+  },
+  {
+   "id": "ru-iva",
+   "title": "Ivanovo",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 81788168
+  },
+  {
+   "id": "ru-kam",
+   "title": "Kamchatka Krai",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 153149494
+  },
+  {
+   "id": "ru-kb",
+   "title": "Kabardino-Balkaria",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 46635332
+  },
+  {
+   "id": "ru-kc",
+   "title": "Karachay-Cherkess Republic",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 58532030
+  },
+  {
+   "id": "ru-kda",
+   "title": "Krasnodar Krai",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 256889658
+  },
+  {
+   "id": "ru-kem",
+   "title": "Kemerovo",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 112957781
+  },
+  {
+   "id": "ru-kgd",
+   "title": "Kaliningrad",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 80141450
+  },
+  {
+   "id": "ru-kgn",
+   "title": "Kurgan",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 112569881
+  },
+  {
+   "id": "ru-kha",
+   "title": "Khabarovsk Krai",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 343508287
+  },
+  {
+   "id": "ru-khm",
+   "title": "Khanty-Mansi Autonomous Okrug",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 366973050
+  },
+  {
+   "id": "ru-kir",
+   "title": "Kirov",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 357168965
+  },
+  {
+   "id": "ru-kk",
+   "title": "Republic of Khakassia",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 45153932
+  },
+  {
+   "id": "ru-kl",
+   "title": "Republic of Kalmykia",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 46871035
+  },
+  {
+   "id": "ru-klu",
+   "title": "Kaluga",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 111167016
+  },
+  {
+   "id": "ru-ko",
+   "title": "Komi Republic",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 320442582
+  },
+  {
+   "id": "ru-kos",
+   "title": "Kostroma",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 103555386
+  },
+  {
+   "id": "ru-kr",
+   "title": "Karelia",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 491715484
+  },
+  {
+   "id": "ru-krs",
+   "title": "Kursk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 131845407
+  },
+  {
+   "id": "ru-kya",
+   "title": "Krasnoyarsk Krai",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 688224596
+  },
+  {
+   "id": "ru-len",
+   "title": "Leningrad",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 328479370
+  },
+  {
+   "id": "ru-lip",
+   "title": "Lipetsk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 96909822
+  },
+  {
+   "id": "ru-mag",
+   "title": "Magadan",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 105030548
+  },
+  {
+   "id": "ru-me",
+   "title": "Mari El Republic",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 86239416
+  },
+  {
+   "id": "ru-mo",
+   "title": "Republic of Mordovia",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 82834004
+  },
+  {
+   "id": "ru-mos",
+   "title": "Moscow",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 96872144
+  },
+  {
+   "id": "ru-mow",
+   "title": "Moscow",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 351453150
+  },
+  {
+   "id": "ru-mur",
+   "title": "Murmansk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 212823675
+  },
+  {
+   "id": "ru-nen",
+   "title": "Nenets Autonomous Okrug",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 121183672
+  },
+  {
+   "id": "ru-ngr",
+   "title": "Novgorod",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 115224943
+  },
+  {
+   "id": "ru-niz",
+   "title": "Nizhny Novgorod",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 201870073
+  },
+  {
+   "id": "ru-nvs",
+   "title": "Novosibirsk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 206612736
+  },
+  {
+   "id": "ru-oms",
+   "title": "Omsk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 169445481
+  },
+  {
+   "id": "ru-ore",
+   "title": "Orenburg",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 146138778
+  },
+  {
+   "id": "ru-orl",
+   "title": "Oryol",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 70779371
+  },
+  {
+   "id": "ru-per",
+   "title": "Perm Krai",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 297220456
+  },
+  {
+   "id": "ru-pnz",
+   "title": "Penza",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 91824276
+  },
+  {
+   "id": "ru-pri",
+   "title": "Primorsky Krai",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 116522836
+  },
+  {
+   "id": "ru-psk",
+   "title": "Pskov",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 204113857
+  },
+  {
+   "id": "ru-ros",
+   "title": "Rostov",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 217456765
+  },
+  {
+   "id": "ru-rya",
+   "title": "Ryazan",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 106765907
+  },
+  {
+   "id": "ru-sa",
+   "title": "Sakha Republic",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 904148780
+  },
+  {
+   "id": "ru-sak",
+   "title": "Sakhalin",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 125562541
+  },
+  {
+   "id": "ru-sam",
+   "title": "Samara",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 129780404
+  },
+  {
+   "id": "ru-sar",
+   "title": "Saratov",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 133180567
+  },
+  {
+   "id": "ru-se",
+   "title": "Republic of North Ossetia-Alania",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 28434814
+  },
+  {
+   "id": "ru-smo",
+   "title": "Smolensk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 145424245
+  },
+  {
+   "id": "ru-spe",
+   "title": "Saint Petersburg",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 75866016
+  },
+  {
+   "id": "ru-sta",
+   "title": "Stavropol Krai",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 100308031
+  },
+  {
+   "id": "ru-sve",
+   "title": "Sverdlovsk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 299481941
+  },
+  {
+   "id": "ru-ta",
+   "title": "Republic of Tatarstan",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 240921277
+  },
+  {
+   "id": "ru-tam",
+   "title": "Tambov",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 94350858
+  },
+  {
+   "id": "ru-tom",
+   "title": "Tomsk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 139111837
+  },
+  {
+   "id": "ru-tul",
+   "title": "Tula",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 94668015
+  },
+  {
+   "id": "ru-tve",
+   "title": "Tver",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 238441062
+  },
+  {
+   "id": "ru-ty",
+   "title": "Tuva Republic",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 50489129
+  },
+  {
+   "id": "ru-tyu",
+   "title": "Tyumen",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 151808636
+  },
+  {
+   "id": "ru-ud",
+   "title": "Udmurt Republic",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 151363860
+  },
+  {
+   "id": "ru-uly",
+   "title": "Ulyanovsk",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 92407035
+  },
+  {
+   "id": "ru-vgg",
+   "title": "Volgograd",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 171285576
+  },
+  {
+   "id": "ru-vla",
+   "title": "Vladimir",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 147270989
+  },
+  {
+   "id": "ru-vlg",
+   "title": "Vologda",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 225547327
+  },
+  {
+   "id": "ru-vor",
+   "title": "Voronezh",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 160169216
+  },
+  {
+   "id": "ru-yan",
+   "title": "Yamalo-Nenets Autonomous Okrug",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 267264022
+  },
+  {
+   "id": "ru-yar",
+   "title": "Yaroslavl",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 120809261
+  },
+  {
+   "id": "ru-yev",
+   "title": "Jewish",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 32352814
+  },
+  {
+   "id": "ru-zab",
+   "title": "Zabaykalsky Krai",
+   "continent": "Europe",
+   "country": "ru",
+   "country_title": "Russia",
+   "size_estimate": 136128353
+  },
+  {
+   "id": "rw",
+   "title": "Rwanda",
+   "continent": "Africa",
+   "size_estimate": 102030329
+  },
+  {
+   "id": "sa",
+   "title": "Saudi Arabia",
+   "continent": "Asia",
+   "size_estimate": 444912106
+  },
+  {
+   "id": "sb",
+   "title": "Solomon Islands",
+   "continent": "Oceania",
+   "size_estimate": 32141453
+  },
+  {
+   "id": "sc",
+   "title": "Seychelles",
+   "continent": "Oceans",
+   "size_estimate": 4534037
+  },
+  {
+   "id": "scr",
+   "title": "Scarborough Shoal",
+   "continent": "Asia",
+   "size_estimate": 1974426
+  },
+  {
+   "id": "sd",
+   "title": "Sudan",
+   "continent": "Africa",
+   "size_estimate": 401488165
+  },
+  {
+   "id": "se",
+   "title": "Sweden",
+   "continent": "Europe",
+   "size_estimate": 2415911438
+  },
+  {
+   "id": "ser",
+   "title": "Serranilla Bank",
+   "continent": "North America",
+   "size_estimate": 1997286
+  },
+  {
+   "id": "sg",
+   "title": "Singapore",
+   "continent": "Asia",
+   "size_estimate": 25361717
+  },
+  {
+   "id": "sh",
+   "title": "Saint Helena",
+   "continent": "Oceans",
+   "size_estimate": 2571148
+  },
+  {
+   "id": "si",
+   "title": "Slovenia",
+   "continent": "Europe",
+   "size_estimate": 468447753
+  },
+  {
+   "id": "sk",
+   "title": "Slovakia",
+   "continent": "Europe",
+   "size_estimate": 490520027
+  },
+  {
+   "id": "sl",
+   "title": "Sierra Leone",
+   "continent": "Africa",
+   "size_estimate": 71982337
+  },
+  {
+   "id": "sm",
+   "title": "San Marino",
+   "continent": "Europe",
+   "size_estimate": 11358578
+  },
+  {
+   "id": "sn",
+   "title": "Senegal",
+   "continent": "Africa",
+   "size_estimate": 176266056
+  },
+  {
+   "id": "so",
+   "title": "Somalia",
+   "continent": "Africa",
+   "size_estimate": 387121083
+  },
+  {
+   "id": "sol",
+   "title": "Somaliland",
+   "continent": "Africa",
+   "size_estimate": 72060302
+  },
+  {
+   "id": "spi",
+   "title": "Southern Patagonian Ice Field",
+   "continent": "South America",
+   "size_estimate": 3163075
+  },
+  {
+   "id": "sr",
+   "title": "Suriname",
+   "continent": "South America",
+   "size_estimate": 52275515
+  },
+  {
+   "id": "ss",
+   "title": "South Sudan",
+   "continent": "Africa",
+   "size_estimate": 200530595
+  },
+  {
+   "id": "st",
+   "title": "São Tomé and Príncipe",
+   "continent": "Africa",
+   "size_estimate": 5296862
+  },
+  {
+   "id": "sv",
+   "title": "El Salvador",
+   "continent": "North America",
+   "size_estimate": 53237432
+  },
+  {
+   "id": "sx",
+   "title": "Sint Maarten",
+   "continent": "North America",
+   "size_estimate": 3508655
+  },
+  {
+   "id": "sy",
+   "title": "Syria",
+   "continent": "Asia",
+   "size_estimate": 179864037
+  },
+  {
+   "id": "sz",
+   "title": "Eswatini",
+   "continent": "Africa",
+   "size_estimate": 41908225
+  },
+  {
+   "id": "tc",
+   "title": "Turks and Caicos Islands",
+   "continent": "North America",
+   "size_estimate": 4078637
+  },
+  {
+   "id": "td",
+   "title": "Chad",
+   "continent": "Africa",
+   "size_estimate": 263461702
+  },
+  {
+   "id": "tf",
+   "title": "French Southern and Antarctic Lands",
+   "continent": "Oceans",
+   "size_estimate": 15271670
+  },
+  {
+   "id": "tg",
+   "title": "Togo",
+   "continent": "Africa",
+   "size_estimate": 75047228
+  },
+  {
+   "id": "th",
+   "title": "Thailand",
+   "continent": "Asia",
+   "size_estimate": 612168031
+  },
+  {
+   "id": "tj",
+   "title": "Tajikistan",
+   "continent": "Asia",
+   "size_estimate": 133225145
+  },
+  {
+   "id": "tl",
+   "title": "East Timor",
+   "continent": "Asia",
+   "size_estimate": 26858874
+  },
+  {
+   "id": "tm",
+   "title": "Turkmenistan",
+   "continent": "Asia",
+   "size_estimate": 84336919
+  },
+  {
+   "id": "tn",
+   "title": "Tunisia",
+   "continent": "Africa",
+   "size_estimate": 138994109
+  },
+  {
+   "id": "to",
+   "title": "Tonga",
+   "continent": "Oceania",
+   "size_estimate": 5704274
+  },
+  {
+   "id": "tr",
+   "title": "Turkey",
+   "continent": "Asia",
+   "size_estimate": 1306201258
+  },
+  {
+   "id": "tt",
+   "title": "Trinidad and Tobago",
+   "continent": "North America",
+   "size_estimate": 18009154
+  },
+  {
+   "id": "tv",
+   "title": "Tuvalu",
+   "continent": "Oceania",
+   "size_estimate": 1289889
+  },
+  {
+   "id": "tw",
+   "title": "Taiwan",
+   "continent": "Asia",
+   "size_estimate": 253207184
+  },
+  {
+   "id": "tz",
+   "title": "Tanzania",
+   "continent": "Africa",
+   "size_estimate": 729733869
+  },
+  {
+   "id": "ua",
+   "title": "Ukraine",
+   "continent": "Europe",
+   "size_estimate": 1954886858
+  },
+  {
+   "id": "ug",
+   "title": "Uganda",
+   "continent": "Africa",
+   "size_estimate": 417340146
+  },
+  {
    "id": "uk",
    "title": "United Kingdom",
-   "bbox": [
-    -8.65,
-    49.86,
-    1.77,
-    60.86
-   ],
-   "max_zoom": 15
+   "continent": "Europe",
+   "size_estimate": 2617406312
+  },
+  {
+   "id": "um",
+   "title": "United States Minor Outlying Islands",
+   "continent": "North America",
+   "size_estimate": 3366855
+  },
+  {
+   "id": "us-ak",
+   "title": "Alaska",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 713250172
+  },
+  {
+   "id": "us-al",
+   "title": "Alabama",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 295244655
+  },
+  {
+   "id": "us-ar",
+   "title": "Arkansas",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 196211613
+  },
+  {
+   "id": "us-az",
+   "title": "Arizona",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 468939607
+  },
+  {
+   "id": "us-ca",
+   "title": "California",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 1259181538
+  },
+  {
+   "id": "us-co",
+   "title": "Colorado",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 526368889
+  },
+  {
+   "id": "us-ct",
+   "title": "Connecticut",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 194231484
+  },
+  {
+   "id": "us-dc",
+   "title": "Washington",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 30287663
+  },
+  {
+   "id": "us-de",
+   "title": "Delaware",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 43923398
+  },
+  {
+   "id": "us-fl",
+   "title": "Florida",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 1108750556
+  },
+  {
+   "id": "us-ga",
+   "title": "Georgia",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 459588973
+  },
+  {
+   "id": "us-hi",
+   "title": "Hawaii",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 32849188
+  },
+  {
+   "id": "us-ia",
+   "title": "Iowa",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 253203733
+  },
+  {
+   "id": "us-id",
+   "title": "Idaho",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 264368748
+  },
+  {
+   "id": "us-il",
+   "title": "Illinois",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 495502518
+  },
+  {
+   "id": "us-in",
+   "title": "Indiana",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 309345405
+  },
+  {
+   "id": "us-ks",
+   "title": "Kansas",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 260535433
+  },
+  {
+   "id": "us-ky",
+   "title": "Kentucky",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 246293913
+  },
+  {
+   "id": "us-la",
+   "title": "Louisiana",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 226615426
+  },
+  {
+   "id": "us-ma",
+   "title": "Massachusetts",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 304185995
+  },
+  {
+   "id": "us-md",
+   "title": "Maryland",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 270683359
+  },
+  {
+   "id": "us-me",
+   "title": "Maine",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 199219615
+  },
+  {
+   "id": "us-mi",
+   "title": "Michigan",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 495712488
+  },
+  {
+   "id": "us-mn",
+   "title": "Minnesota",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 500012178
+  },
+  {
+   "id": "us-mo",
+   "title": "Missouri",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 370157380
+  },
+  {
+   "id": "us-ms",
+   "title": "Mississippi",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 160297732
+  },
+  {
+   "id": "us-mt",
+   "title": "Montana",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 302183317
+  },
+  {
+   "id": "us-nc",
+   "title": "North Carolina",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 525473302
+  },
+  {
+   "id": "us-nd",
+   "title": "North Dakota",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 215612040
+  },
+  {
+   "id": "us-ne",
+   "title": "Nebraska",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 203988410
+  },
+  {
+   "id": "us-nh",
+   "title": "New Hampshire",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 119580567
+  },
+  {
+   "id": "us-nj",
+   "title": "New Jersey",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 224295803
+  },
+  {
+   "id": "us-nm",
+   "title": "New Mexico",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 266704465
+  },
+  {
+   "id": "us-nv",
+   "title": "Nevada",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 230680004
+  },
+  {
+   "id": "us-ny",
+   "title": "New York",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 603377994
+  },
+  {
+   "id": "us-oh",
+   "title": "Ohio",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 503463128
+  },
+  {
+   "id": "us-ok",
+   "title": "Oklahoma",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 244211306
+  },
+  {
+   "id": "us-or",
+   "title": "Oregon",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 431051122
+  },
+  {
+   "id": "us-pa",
+   "title": "Pennsylvania",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 514198399
+  },
+  {
+   "id": "us-ri",
+   "title": "Rhode Island",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 70726911
+  },
+  {
+   "id": "us-sc",
+   "title": "South Carolina",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 256868760
+  },
+  {
+   "id": "us-sd",
+   "title": "South Dakota",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 145900385
+  },
+  {
+   "id": "us-tn",
+   "title": "Tennessee",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 282278189
+  },
+  {
+   "id": "us-tx",
+   "title": "Texas",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 995559747
+  },
+  {
+   "id": "us-ut",
+   "title": "Utah",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 287290072
+  },
+  {
+   "id": "us-va",
+   "title": "Virginia",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 516844612
+  },
+  {
+   "id": "us-vt",
+   "title": "Vermont",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 91979151
+  },
+  {
+   "id": "us-wa",
+   "title": "Washington",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 537143643
+  },
+  {
+   "id": "us-wi",
+   "title": "Wisconsin",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 470430831
+  },
+  {
+   "id": "us-wv",
+   "title": "West Virginia",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 250789808
+  },
+  {
+   "id": "us-wy",
+   "title": "Wyoming",
+   "continent": "North America",
+   "country": "us",
+   "country_title": "United States of America",
+   "size_estimate": 246277439
+  },
+  {
+   "id": "usg",
+   "title": "Guantanamo Bay Naval Base",
+   "continent": "North America",
+   "size_estimate": 3176646
+  },
+  {
+   "id": "uy",
+   "title": "Uruguay",
+   "continent": "South America",
+   "size_estimate": 119222681
+  },
+  {
+   "id": "uz",
+   "title": "Uzbekistan",
+   "continent": "Asia",
+   "size_estimate": 284000619
+  },
+  {
+   "id": "va",
+   "title": "Vatican City",
+   "continent": "Europe",
+   "size_estimate": 9399272
+  },
+  {
+   "id": "vc",
+   "title": "Saint Vincent and the Grenadines",
+   "continent": "North America",
+   "size_estimate": 4688310
+  },
+  {
+   "id": "ve",
+   "title": "Venezuela",
+   "continent": "South America",
+   "size_estimate": 317995918
+  },
+  {
+   "id": "vg",
+   "title": "British Virgin Islands",
+   "continent": "North America",
+   "size_estimate": 3374258
+  },
+  {
+   "id": "vi",
+   "title": "United States Virgin Islands",
+   "continent": "North America",
+   "size_estimate": 5644253
+  },
+  {
+   "id": "vn",
+   "title": "Vietnam",
+   "continent": "Asia",
+   "size_estimate": 505245787
+  },
+  {
+   "id": "vu",
+   "title": "Vanuatu",
+   "continent": "Oceania",
+   "size_estimate": 12270138
+  },
+  {
+   "id": "wf",
+   "title": "Wallis and Futuna",
+   "continent": "Oceania",
+   "size_estimate": 1597952
+  },
+  {
+   "id": "ws",
+   "title": "Samoa",
+   "continent": "Oceania",
+   "size_estimate": 4944981
+  },
+  {
+   "id": "wsb",
+   "title": "Akrotiri Sovereign Base Area",
+   "continent": "Asia",
+   "size_estimate": 6509317
+  },
+  {
+   "id": "ye",
+   "title": "Yemen",
+   "continent": "Asia",
+   "size_estimate": 136385462
+  },
+  {
+   "id": "za",
+   "title": "South Africa",
+   "continent": "Africa",
+   "size_estimate": 759764550
+  },
+  {
+   "id": "zm",
+   "title": "Zambia",
+   "continent": "Africa",
+   "size_estimate": 373305181
+  },
+  {
+   "id": "zw",
+   "title": "Zimbabwe",
+   "continent": "Africa",
+   "size_estimate": 234680526
   }
  ]
 }

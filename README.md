@@ -30,7 +30,7 @@ Step-by-step guide for Windows, Mac, Linux, Raspberry Pi and NAS: [pocketbothy.c
 docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data -e BOTHY_PRESET=standard andykcheng/bothy
 ```
 
-The image (amd64 and arm64, so a Raspberry Pi works) holds only the `bothy-hub` program. On first start it downloads the library into the `bothy-data` volume: `small` 2.6 GB, `standard` 7.6 GB or `everything` 13.2 GB, resumable and checked file by file. `docker exec bothy bothy-hub check` confirms it's ready. See `hub/Dockerfile`.
+The image (amd64 and arm64, so a Raspberry Pi works) holds only the `bothy-hub` program. On first start it downloads the library into the `bothy-data` volume: `small` 2.6 GB, `standard` 4.4 GB or `everything` 10 GB, resumable and checked file by file. Street maps are added country by country (`bothy-hub maps add uk`). `docker exec bothy bothy-hub check` confirms it's ready. See `hub/Dockerfile`.
 
 `bothy-hub` also runs without Docker. Build it with `cargo build --release -p sp-server --bin bothy-hub` in `core/`, then run `bothy-hub get` and `bothy-hub start`. `--from http://<hub>:8080` copies from any running hub instead of the download server.
 

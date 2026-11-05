@@ -12,7 +12,7 @@
 <body>
 <header class="top"><div class="wrap">
   <a class="brand" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#2F6B4F"/><path d="M6 16 16 7l10 9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 14.5V25h14V14.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/><rect x="14" y="18" width="4" height="7" rx="1" fill="#fff"/></svg>Bothy</a>
-  <nav><a class="opt" href="#install">Install</a><a class="opt" href="#ready">Be ready</a><a class="opt" href="#help">Help</a><a href="/">Home</a></nav>
+  <nav><a class="opt" href="#install">Install</a><a class="opt" href="#maps">Maps</a><a class="opt" href="#ready">Be ready</a><a class="opt" href="#help">Help</a><a href="/">Home</a></nav>
 </div></header>
 
 <main class="wrap"><div class="prose guide">
@@ -39,9 +39,10 @@
 <table class="credits">
   <tr><th>Choice</th><th>Size</th><th>What's in it</th></tr>
   <tr><td><b>small</b></td><td>2.6 GB</td><td>All 440,000 articles, guides and answers, search by meaning, first aid, 23 games, a world map. No pictures.</td></tr>
-  <tr><td><b>standard</b> (recommended)</td><td>7.6 GB</td><td>Everything in small, plus pictures for Wikipedia, the survival guides and Appropedia, AI answers, and the detailed UK map.</td></tr>
-  <tr><td><b>everything</b></td><td>13.2 GB</td><td>Everything in standard, plus all the wikiHow and iFixit photos, and compact indexes for phones that copy from the hub.</td></tr>
+  <tr><td><b>standard</b> (recommended)</td><td>4.4 GB</td><td>Everything in small, plus pictures for Wikipedia, the survival guides and Appropedia, and AI answers.</td></tr>
+  <tr><td><b>everything</b></td><td>10 GB</td><td>Everything in standard, plus all the wikiHow and iFixit photos, and compact indexes for phones that copy from the hub.</td></tr>
 </table>
+<p>Then add street maps for the places you need (<a href="#maps">below</a>): from a few MB for a small country to a few GB for a big one.</p>
 <p class="muted">AI answers need about 3 GB of free memory and a reasonably fast processor. They work on a mini PC or laptop; on a Raspberry Pi they're slow, so you may want to leave them out (see <a href="#options">options</a>). Everything else runs well on a Pi.</p>
 
 <h2 id="install">Step 1: Install Docker</h2>
@@ -122,6 +123,17 @@ sudo usermod -aG docker $USER</code></pre></li>
   <li><b>Tell people.</b> Put the address (or a QR code) where people will find it: the fridge, the noticeboard, the family group chat. In an emergency nobody will remember a number.</li>
 </ol>
 
+<h2 id="maps">Maps</h2>
+<p>Every hub has the world overview. Street-level maps, with place search, come country by country, cut along the borders. The biggest countries (the United States, Canada, Russia, China, Brazil, Germany and France) come in states or regions. There are about 500 to choose from, 150 GB for the whole world, so pick where you live and where you travel.</p>
+<p>See what there is, or search:</p>
+<pre><code>docker exec -it bothy bothy-hub maps
+docker exec -it bothy bothy-hub maps germany</code></pre>
+<p>Add maps by id, country or name, then restart the hub to show them:</p>
+<pre><code>docker exec -it bothy bothy-hub maps add uk ireland
+docker restart bothy</code></pre>
+<p><code>maps add us</code> adds every US state; <code>maps add california</code> just one. To take a map off and free the space: <code>docker exec -it bothy bothy-hub maps remove ireland</code>.</p>
+<p>To choose maps when you first start the hub, add <code>-e BOTHY_ADD=map:uk,map:ireland</code> to the <code>docker run</code> command. Phones can then copy the maps from the hub in the app's Content tab.</p>
+
 <h2 id="update">Keeping it up to date</h2>
 <p>Content changes now and then. To fetch whatever's new or changed (only the differences are downloaded):</p>
 <pre><code>docker exec -it bothy bothy-hub get</code></pre>
@@ -136,8 +148,8 @@ docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v
 <table class="credits">
   <tr><th>Option</th><th>What it does</th></tr>
   <tr><td><code>-e BOTHY_PRESET=small</code></td><td>small, standard or everything (used on the first start)</td></tr>
-  <tr><td><code>-e BOTHY_SKIP=llm</code></td><td>leave things out, separated by commas: <code>llm</code> (AI answers), <code>map:uk</code>, <code>col:ifixit:images</code>…</td></tr>
-  <tr><td><code>-e BOTHY_ADD=map:uk</code></td><td>add things to a smaller choice</td></tr>
+  <tr><td><code>-e BOTHY_SKIP=llm</code></td><td>leave things out, separated by commas: <code>llm</code> (AI answers), <code>col:ifixit:images</code>…</td></tr>
+  <tr><td><code>-e BOTHY_ADD=map:uk</code></td><td>add things: maps (<code>map:uk</code>, <code>map:us</code>, <code>map:bavaria</code>) or pictures to a smaller choice</td></tr>
   <tr><td><code>-p 8090:8080</code></td><td>use another port if 8080 is taken (then open <code>:8090</code>)</td></tr>
   <tr><td><code>-p 8444:8444 -e BOTHY_HTTPS_PORT=8444</code></td><td>use another secure port (instead of <code>-p 8443:8443</code>) if 8443 is taken; keep the three numbers the same</td></tr>
   <tr><td><code>-v /path/on/disk:/data</code></td><td>keep the library in a folder you choose, e.g. on a bigger disk, instead of the <code>bothy-data</code> volume</td></tr>

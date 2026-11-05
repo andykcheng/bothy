@@ -86,9 +86,21 @@ enum Cmd {
         /// Source archive URL, e.g. https://build.protomaps.com/20261030.pmtiles
         #[arg(long)]
         url: String,
-        /// min_lon,min_lat,max_lon,max_lat
+        /// min_lon,min_lat,max_lon,max_lat (taken from --polygon when that is given)
         #[arg(long, value_delimiter = ',', allow_hyphen_values = true)]
         bbox: Vec<f64>,
+        /// GeoJSON file with the region's (Multi)Polygon: only tiles touching it are kept
+        #[arg(long)]
+        polygon: Option<PathBuf>,
+        /// Print the size the extract would have, without fetching tiles or writing a file
+        #[arg(long)]
+        estimate: bool,
+        /// Keep the build's directories in this file and reuse them (saves refetching per region)
+        #[arg(long)]
+        dir_cache: Option<PathBuf>,
+        /// Extra metadata keys for the "survivalpedia" object, as a JSON object (e.g. continent)
+        #[arg(long)]
+        meta: Option<String>,
         #[arg(long, default_value_t = 0)]
         min_zoom: u8,
         #[arg(long, default_value_t = 15)]
@@ -220,20 +232,35 @@ fn main() -> Result<()> {
                 std::fs::copy(&m, out.join("models").join(m.file_name().unwrap()))?;
             }
         }
-        Cmd::MapExtract { url, bbox, min_zoom, max_zoom, threads, region, title, out } => {
-            anyhow::ensure!(bbox.len() == 4, "--bbox needs min_lon,min_lat,max_lon,max_lat");
-            let meta = serde_json::json!({
-                "survivalpedia": {"region": region, "title": title.unwrap_or_else(|| region.clone()), "bbox": bbox, "source_url": url},
+        Cmd::MapExtract { url, bbox, polygon, estimate, dir_cache, meta: extra, min_zoom, max_zoom, threads, region, title, out } => {
+            let polygons = match &polygon {
+                Some(f) => Some(sp_maps::region::from_geojson(&serde_json::from_slice(&std::fs::read(f)?)?)?),
+                None => None,
+            };
+            let bbox: Vec<f64> = match (&polygons, bbox.len()) {
+                (_, 4) => bbox,
+                (Some(p), 0) => sp_maps::region::bbox(p).to_vec(),
+                _ => anyhow::bail!("--bbox needs min_lon,min_lat,max_lon,max_lat (or give --polygon)"),
+            };
+            let mut sp = serde_json::json!({
+                "region": region, "title": title.unwrap_or_else(|| region.clone()), "bbox": bbox, "source_url": url,
             });
+            if let Some(e) = extra {
+                let e: serde_json::Value = serde_json::from_str(&e).context("--meta is not JSON")?;
+                for (k, v) in e.as_object().context("--meta must be a JSON object")? {
+                    sp[k] = v.clone();
+                }
+            }
+            let meta = serde_json::json!({ "survivalpedia": sp });
             let o = sp_maps::extract::Opts {
-                url, bbox: [bbox[0], bbox[1], bbox[2], bbox[3]], min_zoom, max_zoom, threads, meta,
+                url, bbox: [bbox[0], bbox[1], bbox[2], bbox[3]], min_zoom, max_zoom, polygons, estimate, dir_cache, threads, meta,
             };
             let s = sp_maps::extract::extract(&o, &out)?;
             println!(
                 "{}",
                 serde_json::json!({
                     "tiles": s.tiles, "distinct": s.unique, "downloaded_bytes": s.downloaded,
-                    "requests": s.requests, "out_bytes": s.out_bytes,
+                    "requests": s.requests, "out_bytes": s.out_bytes, "estimate": estimate,
                 })
             );
         }

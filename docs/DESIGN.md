@@ -362,9 +362,11 @@ Phones update by re-copying the whole pack (~5–10 min over USB 3); no delta up
     - `start` serves it with chat, HTTPS on 8443 and downloads for phones. With nothing downloaded, it runs `get` first.
   - **Presets:**
     - small (2.6 GB): all text, 256-dim vectors, the model, games and the world map;
-    - standard (7.6 GB): adds images under 1 GB, the AI model and the UK map;
-    - everything (13.2 GB): adds the rest, including the 128-dim indexes for phones copying from the hub.
-    - `--add` and `--skip` take ids or id prefixes. Each option also has a `BOTHY_*` environment variable.
+    - standard (4.4 GB): adds images under 1 GB and the AI model;
+    - everything (10 GB): adds the rest, including the 128-dim indexes for phones copying from the hub.
+    - No preset has regional maps (2026-11-05): they're chosen one by one, and a preset run keeps the maps already chosen (Docker passes `BOTHY_PRESET` on every run).
+    - `--add` and `--skip` take ids or id prefixes, and maps by id, country or name (`map:us` = every US state, `map:california`). Each option also has a `BOTHY_*` environment variable.
+    - `maps [SEARCH]` lists regions by continent (✓ = installed); `maps add|remove NAME…` runs `get` on the current choice plus or minus those maps.
   - **Docker is the main way to install it.** `hub/Dockerfile` builds a 121 MB image that holds only the program; content goes into the `/data` volume on first start.
     - CPU baselines: armv8-a (Raspberry Pi) and x86-64-v2.
     - `.github/workflows/hub-image.yml` builds amd64 and arm64 on native runners and joins them into one Docker Hub tag. It needs the secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`.
@@ -421,8 +423,13 @@ Goal: a map in your pocket with no network, as an optional download next to the 
 
 **Built (2026-10-30):**
 - **No planet download.** `sp map-extract` (crate `sp-maps`) cuts a region straight out of the remote daily Protomaps build with HTTP range requests. It fetches only the leaf directories and tile bytes inside the region, and writes a new PMTiles file with duplicate tiles stored once.
-- **Region catalog:** `maps/regions.json` (id, title, bbox, max zoom, pinned build); `scripts/map_extract.sh <id>`. People choose regions from this list. For now regions are rectangles; country polygons come next (e.g. from Natural Earth admin-0, public domain), so a country download doesn't include its neighbours.
-- **Serving:** `sp-server --maps DIR` serves every `*.pmtiles` in DIR as one tile layer. Each tile comes from the smallest region that has it, so the world overview fills in outside detailed regions.
+- **Regions (2026-11-05): countries, cut along borders.** About 500 regions, 148 GB for the world (build 20261105).
+  - **Shapes:** Natural Earth 10m admin-0 (public domain). Countries over ~4 GB are split into admin-1 parts: US, Canada, Russia, China, Brazil and Germany by state; France by region (18). Largest part: Nunavut 4.7 GB (huge, mostly empty); the UK is 2.6 GB.
+  - **Tile choice** (`sp-maps::region`): per zoom and tile row, a tile is kept if a border edge passes through it or the row's centre line is inside (even-odd); then one tile of margin all round, so the coarse borders never clip a coast or border town. `sp map-extract --polygon FILE.geojson`; `--estimate` sizes it without fetching tiles; `--dir-cache` keeps the build's 353 MB of leaf directories locally so ~500 regions don't refetch them.
+  - **Ids:** ISO 3166-1 alpha-2 (`fr`), `uk` for the United Kingdom, ADM0_A3 where there's no code; parts are `<country>-<code>` (`us-ca`, `fr-ara`). Region metadata (`survivalpedia` in the PMTiles metadata) carries `continent`, and for parts `country` and `country_title`; the catalog passes them on with `name`.
+  - **Pipeline:** `scripts/map_regions.py` (polygons + `maps/regions.json`, with size estimates), then `scripts/map_batch.py [ID…]` (extract + place index per region, resumable, 4 at a time; ~3 h for the world). Output: `~/sp-scratch/maps/regions/<id>.pmtiles` + `<id>.places/`.
+  - **Choosing:** the app's Content tab has a picker (search, or continent → country → parts); hubs use `bothy-hub maps`. The catalog remembers map hashes in `<maps>/.hashes.json` (by size + mtime), so a hub with many maps starts quickly.
+- **Serving:** `sp-server --maps DIR` serves every `*.pmtiles` in DIR as one tile layer. Each tile comes from the smallest region that has it, so the world overview fills in outside detailed regions. Regions whose bounds (plus a tile) miss the tile are skipped. Neighbouring regions overlap by their margin; overlapping tiles are identical (whole tiles from the same build), so either serves.
 - **Web assets:** pinned and checksum-verified by `scripts/fetch_map_assets.sh`:
   - maplibre-gl 6.16.0 (ES modules)
   - @protomaps/basemaps 5.7.2 (style layers)

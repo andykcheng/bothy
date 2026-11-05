@@ -76,9 +76,19 @@ impl Maps {
 pub async fn tile(State(app): State<AppState>, UrlPath((z, x, y)): UrlPath<(u8, u32, String)>) -> Response {
     let Some(maps) = &app.maps else { return StatusCode::NOT_FOUND.into_response() };
     let Ok(y) = y.trim_end_matches(".mvt").parse::<u32>() else { return StatusCode::BAD_REQUEST.into_response() };
+    // the tile's lon/lat box, grown by one tile (extracts keep a one-tile margin round their shape)
+    let n = (1u64 << z.min(30)) as f64;
+    let lon = |x: f64| x / n * 360.0 - 180.0;
+    let lat = |y: f64| (std::f64::consts::PI * (1.0 - 2.0 * y / n)).sinh().atan().to_degrees();
+    let (w, e) = (lon(x as f64 - 1.0), lon(x as f64 + 2.0));
+    let (north, south) = (lat(y as f64 - 1.0), lat(y as f64 + 2.0));
     for r in &maps.regions {
         let h = &r.archive.header;
         if z < h.min_zoom || z > h.max_zoom {
+            continue;
+        }
+        let b = h.bounds;
+        if e < b[0] || w > b[2] || north < b[1] || south > b[3] {
             continue;
         }
         match r.archive.tile(z, x, y) {

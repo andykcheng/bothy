@@ -229,7 +229,7 @@ class Downloads extends ChangeNotifier {
             } else {
               all = false;
               final part = '${store.root.path}/${f.path}.part';
-              jobs.add(FetchJob(hub!.resolve('/download/${f.path}').toString(), part, f.size, c.title));
+              jobs.add(FetchJob(hubUrl(hub!, 'download/${f.path}').toString(), part, f.size, c.title));
               jobFiles.add(f);
               jobComps.add(c);
               remaining[c.id] = (remaining[c.id] ?? 0) + 1;

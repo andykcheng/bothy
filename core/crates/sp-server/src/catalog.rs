@@ -158,8 +158,26 @@ impl Catalog {
                     .collect::<Result<Vec<_>>>()?;
                 comps.push(component("map-assets", "Map renderer, style and fonts (needed by maps)", "maps", files, json!({})));
             }
+            // hashing ~150 GB of maps on every start is too slow: remember hashes by size + mtime
+            let cache_path = mdir.join(".hashes.json");
+            let old: BTreeMap<String, Value> =
+                std::fs::read(&cache_path).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default();
+            let mut new: BTreeMap<String, Value> = BTreeMap::new();
+            let mut cached = |rel: &str, p: &Path| -> Result<Value> {
+                let md = std::fs::metadata(p)?;
+                let mtime = md.modified().ok().and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map_or(0, |d| d.as_nanos() as u64);
+                let key = json!([md.len(), mtime]);
+                let h = match old.get(rel) {
+                    Some(v) if v["k"] == key => v["h"].as_str().map(str::to_string),
+                    _ => None,
+                };
+                let f = file("maps", rel, p, h)?;
+                new.insert(rel.to_string(), json!({"k": key, "h": f["blake3"]}));
+                Ok(f)
+            };
+            let mut regions = Vec::new();
             for (rel, p) in walk(mdir)? {
-                if rel.contains('/') || !rel.ends_with(".pmtiles") {
+                if rel.contains('/') || !rel.ends_with(".pmtiles") || rel.contains(".tmp.") {
                     continue;
                 }
                 let a = sp_maps::pmt::Archive::open(&p)?;
@@ -167,21 +185,28 @@ impl Catalog {
                 let stem = rel.trim_end_matches(".pmtiles");
                 let id = m["survivalpedia"]["region"].as_str().unwrap_or(stem).to_string();
                 let title = m["survivalpedia"]["title"].as_str().unwrap_or(stem).to_string();
-                let mut files = vec![file("maps", &rel, &p, None)?];
+                let mut files = vec![cached(&rel, &p)?];
                 let places = mdir.join(format!("{stem}.places"));
                 if places.is_dir() {
                     for (prel, pp) in walk(&places)? {
-                        files.push(file("maps", &format!("{stem}.places/{prel}"), &pp, None)?);
+                        files.push(cached(&format!("{stem}.places/{prel}"), &pp)?);
                     }
                 }
                 let h = &a.header;
-                comps.push(component(
-                    &format!("map:{id}"),
-                    &format!("Map · {title}"),
-                    "maps",
-                    files,
-                    json!({"requires": ["map-assets"], "bounds": h.bounds, "max_zoom": h.max_zoom}),
-                ));
+                let sp = &m["survivalpedia"];
+                let mut extra = json!({"requires": ["map-assets"], "bounds": h.bounds, "max_zoom": h.max_zoom, "name": title});
+                for k in ["continent", "country", "country_title", "build"] {
+                    if let Some(v) = sp[k].as_str() {
+                        extra[k] = json!(v);
+                    }
+                }
+                regions.push((sp["continent"].as_str().unwrap_or("").to_string(), title.clone(), component(&format!("map:{id}"), &format!("Map · {title}"), "maps", files, extra)));
+            }
+            // the world first, then by continent and name
+            regions.sort_by(|a, b| ((a.0 != "World"), &a.0, &a.1).cmp(&((b.0 != "World"), &b.0, &b.1)));
+            comps.extend(regions.into_iter().map(|r| r.2));
+            if new != old {
+                let _ = std::fs::write(&cache_path, serde_json::to_vec(&new)?); // read-only dirs just hash again
             }
         }
         for g in games.map(|g| g.list.as_slice()).unwrap_or_default() {

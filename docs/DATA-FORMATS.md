@@ -350,7 +350,9 @@ A hub started with `--downloads` (or a phone that is sharing) serves `GET /api/c
    "files": [{"path": "collections/guides/docs.idx", "size": 3056, "blake3": "…"}, …]},
   {"id": "col:guides:images", "requires": ["col:guides"], …},
   {"id": "col:guides:vec:guides-en.core.d256", "requires": ["col:guides", "model"], …},
-  {"id": "model", …}, {"id": "map-assets", …}, {"id": "map:uk", "requires": ["map-assets"], "bounds": […], "max_zoom": 15, …},
+  {"id": "model", …}, {"id": "map-assets", …}, {"id": "map:uk", "requires": ["map-assets"], "bounds": […], "max_zoom": 15,
+   "name": "United Kingdom", "continent": "Europe", "build": "20261105", …},
+  {"id": "map:us-ca", "name": "California", "country": "us", "country_title": "United States of America", …},
   {"id": "game:chess", "description": "…", "players": "1–2", "license": "…", "cover": "games/chess/cover.png", …},
   {"id": "llm", "model": "…", …}
  ],

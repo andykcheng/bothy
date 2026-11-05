@@ -30,9 +30,15 @@ class Component {
         cover = j['cover'] as String?,
         size = (j['size'] as num).toInt(),
         requires = [for (final r in (j['requires'] as List? ?? [])) r as String],
+        name = j['name'] as String?,
+        continent = j['continent'] as String?,
+        country = j['country'] as String?,
+        countryTitle = j['country_title'] as String?,
         files = [for (final f in j['files'] as List) CatalogFile(f as Map<String, dynamic>)];
   final String id, title, group, description;
   final String? cover;
+  /// Map regions: short name, continent, and for parts of a big country its id and name
+  final String? name, continent, country, countryTitle;
   final int size;
   final List<String> requires;
   final List<CatalogFile> files;
@@ -40,7 +46,14 @@ class Component {
   Map<String, dynamic> toJson() => {
         'id': id, 'title': title, 'group': group, 'description': description, 'cover': cover, 'size': size,
         'requires': requires, 'files': [for (final f in files) f.toJson()],
+        if (name != null) 'name': name,
+        if (continent != null) 'continent': continent,
+        if (country != null) 'country': country,
+        if (countryTitle != null) 'country_title': countryTitle,
       };
+
+  /// A map region's name for lists: "California", or "United Kingdom".
+  String get mapName => name ?? title.replaceFirst('Map · ', '');
 }
 
 /// A collection on the hub (Wikipedia Essentials, wikiHow, survival guides, books…); its components share
@@ -161,8 +174,8 @@ class ContentStore {
   }
 
   static Future<Catalog> fetchCatalog(Uri hub) async {
-    final r = await http.get(hub.resolve('/api/catalog')).timeout(const Duration(seconds: 15));
-    if (r.statusCode != 200) throw HttpException('HTTP ${r.statusCode} from ${hub.resolve('/api/catalog')}');
+    final r = await http.get(hubUrl(hub, 'api/catalog')).timeout(const Duration(seconds: 15));
+    if (r.statusCode != 200) throw HttpException('HTTP ${r.statusCode} from ${hubUrl(hub, 'api/catalog')}');
     final j = jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
     return Catalog(
       [for (final g in j['groups'] as List? ?? []) Group(g as Map<String, dynamic>)],
@@ -172,6 +185,10 @@ class ContentStore {
     );
   }
 }
+
+/// [path] (no leading slash) under the hub address, keeping any base path: a hub at http://host:8080 and a
+/// static download server at https://data.pocketbothy.com/v1 both work.
+Uri hubUrl(Uri hub, String path) => (hub.path.endsWith('/') ? hub : hub.replace(path: '${hub.path}/')).resolve(path);
 
 String formatBytes(int b) {
   if (b >= 1e9) return '${(b / 1e9).toStringAsFixed(2)} GB';

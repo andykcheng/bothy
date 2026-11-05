@@ -18,6 +18,12 @@ pub struct Opts {
     pub bbox: [f64; 4],
     pub min_zoom: u8,
     pub max_zoom: u8,
+    /// Cut along these shapes instead of the whole bbox (bbox should then be their bounds)
+    pub polygons: Option<Vec<crate::region::Polygon>>,
+    /// Only work out the size: read directories, fetch no tiles, write nothing
+    pub estimate: bool,
+    /// Local copy of the build's leaf directories (downloaded once, reused by every region)
+    pub dir_cache: Option<std::path::PathBuf>,
     /// Parallel HTTP requests
     pub threads: usize,
     /// Extra metadata merged into the archive's metadata JSON (region name, source build, …)
@@ -77,6 +83,22 @@ fn merge_spans(spans: &[(u64, u64)]) -> Vec<(u64, u64, Vec<usize>)> {
     out
 }
 
+/// The whole leaf-directory section of the build, from `path` (downloaded there first if needed).
+fn leaf_section(remote: &Remote, h: &Header, path: &Path) -> Result<Vec<u8>> {
+    if std::fs::metadata(path).map(|m| m.len()).ok() != Some(h.leaf_length) {
+        eprintln!("downloading the build's directories ({:.0} MB) to {}", h.leaf_length as f64 / 1e6, path.display());
+        let chunks: Vec<(u64, u64)> = (0..h.leaf_length)
+            .step_by(MAX_RANGE as usize)
+            .map(|o| (h.leaf_offset + o, MAX_RANGE.min(h.leaf_length - o)))
+            .collect();
+        let parts: Vec<Vec<u8>> = chunks.par_iter().map(|&(o, l)| remote.get(o, l)).collect::<Result<_>>()?;
+        let tmp = path.with_extension("part");
+        std::fs::write(&tmp, parts.concat())?;
+        std::fs::rename(&tmp, path)?;
+    }
+    Ok(std::fs::read(path)?)
+}
+
 /// Fetches spans (absolute offsets) in merged ranges, in parallel. Returns bytes per span.
 fn fetch_spans(remote: &Remote, spans: &[(u64, u64)]) -> Result<Vec<Vec<u8>>> {
     let ranges = merge_spans(spans);
@@ -120,14 +142,31 @@ pub fn extract(o: &Opts, out: &Path) -> Result<Stats> {
     let max_zoom = o.max_zoom.min(h.max_zoom);
     let root_bytes = &head[h.root_offset as usize..(h.root_offset + h.root_length) as usize];
     let root = pmt::parse_directory(&pmt::decompress(root_bytes, h.internal_compression)?)?;
+    let leaves = match &o.dir_cache {
+        Some(p) => Some(pool.install(|| leaf_section(&remote, &h, p))?),
+        None => None,
+    };
 
     // wanted tile ids, sorted
     let mut wanted: Vec<u64> = Vec::new();
     for z in o.min_zoom..=max_zoom {
-        let (x0, y0, x1, y1) = pmt::tile_range(o.bbox, z);
-        for x in x0..=x1 {
-            for y in y0..=y1 {
-                wanted.push(pmt::tile_id(z, x, y)?);
+        match &o.polygons {
+            Some(p) => {
+                for (y, spans) in crate::region::tile_rows(p, z) {
+                    for (x0, x1) in spans {
+                        for x in x0..=x1 {
+                            wanted.push(pmt::tile_id(z, x, y)?);
+                        }
+                    }
+                }
+            }
+            None => {
+                let (x0, y0, x1, y1) = pmt::tile_range(o.bbox, z);
+                for x in x0..=x1 {
+                    for y in y0..=y1 {
+                        wanted.push(pmt::tile_id(z, x, y)?);
+                    }
+                }
             }
         }
     }
@@ -161,7 +200,16 @@ pub fn extract(o: &Opts, out: &Path) -> Result<Stats> {
         }
         leaf_spans.sort_unstable();
         leaf_spans.dedup();
-        let bytes = pool.install(|| fetch_spans(&remote, &leaf_spans))?;
+        let bytes = match &leaves {
+            Some(l) => leaf_spans
+                .iter()
+                .map(|&(o, n)| {
+                    let a = (o - h.leaf_offset) as usize;
+                    l.get(a..a + n as usize).map(|b| b.to_vec()).context("leaf outside the cached directories")
+                })
+                .collect::<Result<Vec<_>>>()?,
+            None => pool.install(|| fetch_spans(&remote, &leaf_spans))?,
+        };
         level = bytes
             .par_iter()
             .map(|b| pmt::parse_directory(&pmt::decompress(b, h.internal_compression)?))
@@ -176,6 +224,15 @@ pub fn extract(o: &Opts, out: &Path) -> Result<Stats> {
     spans.dedup();
     let total: u64 = spans.iter().map(|s| s.1).sum();
     eprintln!("tiles: {} present, {} distinct, {:.1} MB to fetch", found.len(), spans.len(), total as f64 / 1e6);
+    if o.estimate {
+        return Ok(Stats {
+            tiles: found.len(),
+            unique: spans.len(),
+            downloaded: remote.bytes.load(Ordering::Relaxed),
+            requests: remote.requests.load(Ordering::Relaxed),
+            out_bytes: total,
+        });
+    }
     let data = pool.install(|| fetch_spans(&remote, &spans))?;
     let by_offset: HashMap<u64, usize> = spans.iter().enumerate().map(|(i, s)| (s.0 - h.data_offset, i)).collect();
     eprintln!("fetched in {:.0}s", t0.elapsed().as_secs_f32());

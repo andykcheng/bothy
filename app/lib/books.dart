@@ -26,8 +26,9 @@ import 'downloads.dart';
 import 'theme.dart';
 
 /// The hub address before the user picks one: set at build time (`--dart-define=SP_DEFAULT_HUB=http://…`, from the
-/// CI variable of the same name), empty otherwise; Content then offers to find a hub nearby.
-const defaultHub = String.fromEnvironment('SP_DEFAULT_HUB');
+/// CI variable of the same name), else the public download server (online; a hub nearby works offline).
+const _builtHub = String.fromEnvironment('SP_DEFAULT_HUB');
+const defaultHub = _builtHub == '' ? 'https://data.pocketbothy.com/v1' : _builtHub;
 
 Future<Uri> savedHub() async => Uri.parse((await SharedPreferences.getInstance()).getString('hub') ?? defaultHub);
 
@@ -87,9 +88,9 @@ class Shelf {
   final Map<int, ShelfBook> byId;
 
   static Future<Shelf> fetch(Uri hub) async {
-    final r = await http.get(hub.resolve('/api/books')).timeout(const Duration(seconds: 60));
+    final r = await http.get(hubUrl(hub, 'api/books')).timeout(const Duration(seconds: 60));
     if (r.statusCode == 404) throw const HttpException('This hub has no books.');
-    if (r.statusCode != 200) throw HttpException('HTTP ${r.statusCode} from ${hub.resolve('/api/books')}');
+    if (r.statusCode != 200) throw HttpException('HTTP ${r.statusCode} from ${hubUrl(hub, 'api/books')}');
     final bytes = r.bodyBytes;
     return Isolate.run(() {
       final j = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
@@ -109,7 +110,7 @@ class Shelf {
   /// The hub's search over titles, authors, subjects and descriptions (best first).
   Future<List<ShelfBook>> searchHub(Uri hub, String q, {int limit = 100}) async {
     final r = await http
-        .get(hub.resolve('/api/books/search').replace(queryParameters: {'q': q, 'limit': '$limit'}))
+        .get(hubUrl(hub, 'api/books/search').replace(queryParameters: {'q': q, 'limit': '$limit'}))
         .timeout(const Duration(seconds: 10));
     if (r.statusCode != 200) throw HttpException('HTTP ${r.statusCode}');
     final j = jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
@@ -118,7 +119,7 @@ class Shelf {
 
   /// Gutenberg's description and subjects of a book, from the hub.
   static Future<(String, List<String>)> details(Uri hub, int id) async {
-    final r = await http.get(hub.resolve('/api/books/$id')).timeout(const Duration(seconds: 10));
+    final r = await http.get(hubUrl(hub, 'api/books/$id')).timeout(const Duration(seconds: 10));
     if (r.statusCode != 200) return ('', <String>[]);
     final j = jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
     return (j['summary'] as String? ?? '', [for (final x in j['subjects'] as List? ?? []) x as String]);
@@ -1035,7 +1036,7 @@ class BookRow extends StatelessWidget {
                   child: Icon(Icons.menu_book, color: t.colorScheme.primary, size: 20),
                 )
               : Image.network(
-                  hub.resolve('/download/${book.coverPath}').toString(),
+                  hubUrl(hub, 'download/${book.coverPath}').toString(),
                   fit: BoxFit.cover,
                   cacheWidth: 120,
                   errorBuilder: (_, _, _) => Container(color: t.colorScheme.primaryContainer),

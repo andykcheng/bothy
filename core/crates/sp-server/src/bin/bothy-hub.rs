@@ -43,17 +43,30 @@ enum Cmd {
     },
     /// Start the hub
     Start(StartArgs),
+    /// List the map regions, or add and remove them: maps; maps france; maps add fr us-ca; maps remove fr
+    Maps {
+        /// list [SEARCH], add NAME…, or remove NAME… (a name is an id like fr or us-ca, a country, or a place name)
+        #[arg(default_value = "list")]
+        action: String,
+        names: Vec<String>,
+        /// Download server
+        #[arg(long, env = "BOTHY_FROM", default_value = DEFAULT_FROM)]
+        from: String,
+        /// Don't ask before downloading
+        #[arg(long, short)]
+        yes: bool,
+    },
 }
 
 #[derive(clap::Args, Clone, Default)]
 struct GetArgs {
-    /// small (~3 GB), standard (~8 GB) or everything (~13 GB); asked when not given and there's a terminal
+    /// small (~3 GB), standard (~4.5 GB) or everything (~10 GB); asked when not given and there's a terminal. Maps come separately (bothy-hub maps)
     #[arg(long, env = "BOTHY_PRESET")]
     preset: Option<String>,
-    /// Extra components, by id or id prefix (e.g. map:uk, col:ifixit:images)
+    /// Extra components, by id or id prefix (e.g. col:ifixit:images), or maps by id, country or name (map:fr, map:us, map:california)
     #[arg(long, value_delimiter = ',', env = "BOTHY_ADD")]
     add: Vec<String>,
-    /// Components to leave out, by id or id prefix (e.g. llm, map:uk)
+    /// Components to leave out, by id or id prefix (e.g. llm, col:ifixit:images), or maps as in --add
     #[arg(long, value_delimiter = ',', env = "BOTHY_SKIP")]
     skip: Vec<String>,
     /// Download server (anything serving /api/catalog and /download/…, e.g. another hub)
@@ -157,9 +170,9 @@ fn size(c: &Value) -> u64 {
     c["size"].as_u64().unwrap_or(0)
 }
 
-/// Component ids for a preset. Images bigger than 1 GB (wikiHow, iFixit) and the detailed map regions
-/// only come with `everything`; compact (128-dim) indexes too, since a hub has room for full ones and
-/// they only matter to phones copying from the hub.
+/// Component ids for a preset. Images bigger than 1 GB (wikiHow, iFixit) only come with `everything`;
+/// compact (128-dim) indexes too, since a hub has room for full ones and they only matter to phones
+/// copying from the hub. Maps: only the world overview; detailed regions are chosen one by one (`maps add`).
 fn preset(cat: &Value, name: &str) -> Result<BTreeSet<String>> {
     let level = match name {
         "small" | "s" | "1" => 1,
@@ -175,7 +188,7 @@ fn preset(cat: &Value, name: &str) -> Result<BTreeSet<String>> {
         } else if id.ends_with(":images") {
             level == 3 || (level == 2 && size(c) < 1_000_000_000)
         } else if id.starts_with("map:") {
-            level == 3 || id == "map:world" || (level == 2 && size(c) < 4_000_000_000)
+            id == "map:world"
         } else if id == "llm" {
             level >= 2
         } else {
@@ -186,6 +199,21 @@ fn preset(cat: &Value, name: &str) -> Result<BTreeSet<String>> {
         }
     }
     Ok(ids)
+}
+
+/// Map components matching a name: an id (fr, map:fr, us-ca), a country id or name (us, france: all its
+/// parts), or a region name (california). Case doesn't matter.
+fn map_ids(cat: &Value, name: &str) -> Vec<String> {
+    let n = name.trim().to_lowercase();
+    let n = n.strip_prefix("map:").unwrap_or(&n);
+    let maps = cat["components"].as_array().into_iter().flatten().filter(|c| c["id"].as_str().is_some_and(|i| i.starts_with("map:")));
+    let low = |c: &Value, k: &str| c[k].as_str().unwrap_or_default().to_lowercase();
+    maps.filter(|c| {
+        let id = c["id"].as_str().unwrap_or_default();
+        id[4..] == *n || low(c, "country") == n || low(c, "name") == n || low(c, "country_title") == n
+    })
+    .filter_map(|c| c["id"].as_str().map(String::from))
+    .collect()
 }
 
 fn matches(id: &str, pats: &[String]) -> bool {
@@ -201,7 +229,13 @@ fn resolve(cat: &Value, mut ids: BTreeSet<String>, a: &GetArgs) -> BTreeSet<Stri
             ids.insert(id.to_string());
         }
     }
-    ids.retain(|id| !matches(id, &a.skip));
+    // maps by country or name too: map:us (every state), map:france, map:california
+    let by_name = |pats: &[String]| -> BTreeSet<String> {
+        pats.iter().filter(|p| p.trim().starts_with("map:")).flat_map(|p| map_ids(cat, p)).collect()
+    };
+    ids.extend(by_name(&a.add));
+    let skip_maps = by_name(&a.skip);
+    ids.retain(|id| !matches(id, &a.skip) && !skip_maps.contains(id));
     loop {
         let mut more = Vec::new();
         for id in &ids {
@@ -250,8 +284,8 @@ fn describe_choice(cat: &Value, ids: &BTreeSet<String>) -> Vec<String> {
             "search by meaning".to_string()
         } else if id.starts_with("col:") {
             "articles".to_string()
-        } else if let Some(m) = id.strip_prefix("map:") {
-            m.to_string()
+        } else if id.starts_with("map:") {
+            c["name"].as_str().or(id.strip_prefix("map:")).unwrap_or_default().to_string()
         } else {
             String::new()
         };
@@ -262,7 +296,15 @@ fn describe_choice(cat: &Value, ids: &BTreeSet<String>) -> Vec<String> {
     for (g, (bytes, parts)) in by_group {
         let title = match g.as_str() {
             "models" => "Search-by-meaning model".to_string(),
-            "maps" => format!("Maps ({})", parts.iter().filter(|p| *p != "pictures").cloned().collect::<Vec<_>>().join(", ")),
+            "maps" => {
+                let mut p: Vec<String> = parts.iter().filter(|p| *p != "pictures").cloned().collect();
+                if p.len() > 8 {
+                    let more = p.len() - 6;
+                    p.truncate(6);
+                    p.push(format!("and {more} more"));
+                }
+                format!("Maps ({})", p.join(", "))
+            }
             "games" => "Games".to_string(),
             "ai" => "AI answers (needs about 3 GB of free memory)".to_string(),
             _ => format!("{} ({})", groups.get(&g).cloned().unwrap_or(g.clone()), parts.join(", ")),
@@ -408,7 +450,7 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
             println!();
             println!("What should this hub hold? Free space here: {}", gb(free));
             println!("  1) Small       {:>8}  all articles and guides, search by meaning, first aid, games, world map", gb(sizes[0]));
-            println!("  2) Standard    {:>8}  + pictures for Wikipedia and the survival guides, AI answers, UK map", gb(sizes[1]));
+            println!("  2) Standard    {:>8}  + pictures for Wikipedia and the survival guides, AI answers", gb(sizes[1]));
             println!("  3) Everything  {:>8}  + all pictures (wikiHow, iFixit), compact indexes for phones", gb(sizes[2]));
             ask("Choose 1, 2 or 3 [2]: ")
         }
@@ -421,7 +463,10 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
         // keep what's installed, plus anything new in groups already chosen (e.g. a new index)
         installed.keys().cloned().collect::<BTreeSet<_>>()
     } else {
-        preset(&cat, &name)?
+        // a preset (also given on every run by BOTHY_PRESET in Docker) keeps the map regions chosen before
+        let mut ids = preset(&cat, &name)?;
+        ids.extend(installed.keys().filter(|k| k.starts_with("map:")).cloned());
+        ids
     };
     let ids = resolve(&cat, ids, a);
     let comps: Vec<&Value> = cat["components"].as_array().into_iter().flatten().filter(|c| c["id"].as_str().is_some_and(|i| ids.contains(i))).collect();
@@ -520,6 +565,9 @@ fn remove_unchosen(dir: &Path, installed: &mut BTreeMap<String, Value>, ids: &BT
             let rel = f["path"].as_str().unwrap_or_default();
             if safe_rel(rel) && !keep.contains(rel) && std::fs::remove_file(dir.join(rel)).is_ok() {
                 freed += f["size"].as_u64().unwrap_or(0);
+                // and folders left empty (a map's .places/)
+                let mut d = dir.join(rel);
+                while d.pop() && d != dir && std::fs::remove_dir(&d).is_ok() {}
             }
         }
         installed.remove(k);
@@ -527,6 +575,88 @@ fn remove_unchosen(dir: &Path, installed: &mut BTreeMap<String, Value>, ids: &BT
     save_installed(dir, installed)?;
     println!("Removed {} that you no longer chose ({} freed).", gone.join(", "), gb(freed));
     Ok(())
+}
+
+// ---------- maps ----------
+
+fn maps(dir: &Path, action: &str, names: &[String], from: &str, yes: bool) -> Result<()> {
+    let installed = load_installed(dir);
+    let mut names: Vec<String> = names.iter().map(|n| n.trim_start_matches("map:").to_string()).collect();
+    let action = match action {
+        "list" | "ls" | "search" | "add" | "remove" | "rm" | "delete" => action,
+        word => {
+            names.insert(0, word.to_string()); // `bothy-hub maps france` searches
+            "list"
+        }
+    };
+    match action {
+        "list" | "ls" | "search" => {
+            let cat = fetch_catalog(&agent(), from)?;
+            let q = names.join(" ").to_lowercase();
+            let mut by: BTreeMap<String, Vec<&Value>> = BTreeMap::new();
+            for c in cat["components"].as_array().into_iter().flatten() {
+                let id = c["id"].as_str().unwrap_or_default();
+                let Some(short) = id.strip_prefix("map:") else { continue };
+                let name = c["name"].as_str().unwrap_or(short);
+                let country = c["country_title"].as_str().unwrap_or_default();
+                if !q.is_empty() && ![short, name, country].iter().any(|s| s.to_lowercase().contains(&q)) {
+                    continue;
+                }
+                by.entry(c["continent"].as_str().unwrap_or("Other").to_string()).or_default().push(c);
+            }
+            if by.is_empty() {
+                println!("No map region matches {q:?}. Try a country name, e.g.: bothy-hub maps germany");
+                return Ok(());
+            }
+            for (cont, mut cs) in by {
+                println!("\n{cont}");
+                cs.sort_by_key(|c| (c["country_title"].as_str().unwrap_or_default().to_string(), c["name"].as_str().unwrap_or_default().to_string()));
+                for c in cs {
+                    let id = c["id"].as_str().unwrap_or_default();
+                    let mark = if installed.contains_key(id) { "✓" } else { " " };
+                    let name = c["name"].as_str().unwrap_or(&id[4..]);
+                    let name = match c["country_title"].as_str() {
+                        Some(ct) => format!("{ct} · {name}"),
+                        None => name.to_string(),
+                    };
+                    println!("  {mark} {:<10} {:>8}  {name}", &id[4..], gb(size(c)));
+                }
+            }
+            println!("\n✓ = on this hub. Add one with: bothy-hub maps add <id or country>   (e.g. maps add fr, maps add us-ca, maps add germany)");
+            Ok(())
+        }
+        "add" | "remove" | "rm" | "delete" => {
+            if names.is_empty() {
+                bail!("say which maps, e.g.: bothy-hub maps {action} fr");
+            }
+            let cat = fetch_catalog(&agent(), from)?;
+            let mut ids = Vec::new();
+            for n in &names {
+                let found = map_ids(&cat, n);
+                if found.is_empty() {
+                    bail!("no map region called {n:?}; see the list with: bothy-hub maps {n}");
+                }
+                ids.extend(found);
+            }
+            if installed.is_empty() && pending(dir).is_none() {
+                bail!("this hub has nothing downloaded yet: start it once first (or run bothy-hub get), then add maps");
+            }
+            let mut a = GetArgs { from: from.to_string(), yes, ..Default::default() };
+            if action == "add" {
+                a.add = ids;
+            } else {
+                let missing: Vec<&String> = ids.iter().filter(|i| !installed.contains_key(*i)).collect();
+                if missing.len() == ids.len() {
+                    println!("None of those maps is on this hub.");
+                    return Ok(());
+                }
+                a.skip = ids;
+            }
+            // keep the current choice (not BOTHY_PRESET), plus or minus these maps
+            get(dir, &a, false)
+        }
+        _ => unreachable!(),
+    }
 }
 
 // ---------- check ----------
@@ -690,6 +820,7 @@ fn main() {
     let res = match &cli.cmd {
         Some(Cmd::Get(a)) => get(&dir, a, false),
         Some(Cmd::Check { full }) => check(&dir, *full).map(|_| ()),
+        Some(Cmd::Maps { action, names, from, yes }) => maps(&dir, action, names, from, *yes),
         Some(Cmd::Start(a)) => tokio::runtime::Runtime::new().map_err(Into::into).and_then(|rt| rt.block_on(start(&dir, a))),
         None => {
             let Some(Cmd::Start(a)) = Cli::parse_from(["bothy-hub", "start"]).cmd else { unreachable!() };
@@ -717,7 +848,9 @@ mod tests {
             {"id": "col:w:vec:x.core.d256", "size": 3, "requires": ["col:w", "model"]},
             {"id": "col:w:vec:x.core.d128", "size": 2, "requires": ["col:w", "model"]},
             {"id": "model", "size": 1}, {"id": "map-assets", "size": 1},
-            {"id": "map:world", "size": 1, "requires": ["map-assets"]}, {"id": "map:uk", "size": 3, "requires": ["map-assets"]},
+            {"id": "map:world", "size": 1, "requires": ["map-assets"]}, {"id": "map:uk", "size": 3, "requires": ["map-assets"], "name": "United Kingdom"},
+            {"id": "map:us-ca", "size": 3, "requires": ["map-assets"], "name": "California", "country": "us", "country_title": "United States of America"},
+            {"id": "map:us-tx", "size": 3, "requires": ["map-assets"], "name": "Texas", "country": "us", "country_title": "United States of America"},
             {"id": "llm", "size": 1}, {"id": "game:chess", "size": 1}
         ]})
     }
@@ -729,9 +862,27 @@ mod tests {
         assert!(s.contains("col:w") && s.contains("col:w:vec:x.core.d256") && s.contains("model") && s.contains("map:world"));
         assert!(!s.contains("col:g:images") && !s.contains("llm") && !s.contains("map:uk") && !s.contains("col:w:vec:x.core.d128"));
         let m = resolve(&c, preset(&c, "standard").unwrap(), &GetArgs::default());
-        assert!(m.contains("col:g:images") && m.contains("llm") && m.contains("map:uk") && !m.contains("col:w:images"));
+        assert!(m.contains("col:g:images") && m.contains("llm") && !m.contains("map:uk") && !m.contains("col:w:images"));
         let e = resolve(&c, preset(&c, "everything").unwrap(), &GetArgs::default());
-        assert_eq!(e.len(), 12);
+        assert_eq!(e.len(), 11, "everything but the regional maps");
+    }
+
+    #[test]
+    fn map_names() {
+        let c = cat();
+        assert_eq!(map_ids(&c, "uk"), ["map:uk"]);
+        assert_eq!(map_ids(&c, "map:UK"), ["map:uk"]);
+        assert_eq!(map_ids(&c, "united kingdom"), ["map:uk"]);
+        assert_eq!(map_ids(&c, "us"), ["map:us-ca", "map:us-tx"]);
+        assert_eq!(map_ids(&c, "United States of America").len(), 2);
+        assert_eq!(map_ids(&c, "california"), ["map:us-ca"]);
+        assert!(map_ids(&c, "atlantis").is_empty());
+        let a = GetArgs { add: vec!["map:us".into()], ..Default::default() };
+        let s = resolve(&c, preset(&c, "small").unwrap(), &a);
+        assert!(s.contains("map:us-ca") && s.contains("map:us-tx") && s.contains("map-assets"));
+        let a = GetArgs { add: vec!["map:us".into()], skip: vec!["map:texas".into()], ..Default::default() };
+        let s = resolve(&c, preset(&c, "small").unwrap(), &a);
+        assert!(s.contains("map:us-ca") && !s.contains("map:us-tx"));
     }
 
     #[test]
