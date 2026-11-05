@@ -126,6 +126,11 @@ fn save_installed(dir: &Path, m: &BTreeMap<String, Value>) -> Result<()> {
     Ok(())
 }
 
+/// The components chosen by a `get` that hasn't finished yet (pending.json), if any.
+fn pending(dir: &Path) -> Option<BTreeSet<String>> {
+    std::fs::read(dir.join("pending.json")).ok().and_then(|b| serde_json::from_slice(&b).ok())
+}
+
 // ---------- catalog and selection ----------
 
 fn agent() -> ureq::Agent {
@@ -396,6 +401,7 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
 
     let name = match &a.preset {
         Some(p) => p.clone(),
+        None if pending(dir).is_some() => "__pending".into(),
         None if !installed.is_empty() => "__update".into(),
         None if interactive() && !a.yes => {
             let sizes: Vec<u64> = ["small", "standard", "everything"].iter().map(|p| total(&cat, &resolve(&cat, preset(&cat, p).unwrap(), a))).collect();
@@ -408,7 +414,10 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
         }
         None => "standard".into(),
     };
-    let ids = if name == "__update" {
+    let ids = if name == "__pending" {
+        // an earlier download didn't finish: carry on with what was chosen then
+        pending(dir).unwrap_or_default()
+    } else if name == "__update" {
         // keep what's installed, plus anything new in groups already chosen (e.g. a new index)
         installed.keys().cloned().collect::<BTreeSet<_>>()
     } else {
@@ -440,6 +449,7 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
             return Ok(());
         }
     }
+    std::fs::write(dir.join("pending.json"), serde_json::to_vec(&ids)?)?;
     println!("Downloading into {} (you can stop with Ctrl+C and run this again to resume)", dir.display());
     let mut prog = Progress { total: need, done: 0, t0: Instant::now(), last: Instant::now() };
     for c in &todo {
@@ -459,6 +469,7 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
     prog.show(0, true);
     println!("\nDone. Every file was checked against its fingerprint.");
     remove_unchosen(dir, &mut installed, &ids)?;
+    let _ = std::fs::remove_file(dir.join("pending.json"));
     if !first_run {
         println!("If the hub is running, restart it to use the new content (with Docker: docker restart bothy).");
     }
@@ -614,7 +625,10 @@ fn lan_addresses() -> Vec<String> {
 }
 
 async fn start(dir: &Path, a: &StartArgs) -> Result<()> {
-    if load_installed(dir).is_empty() {
+    if pending(dir).is_some() {
+        println!("The last download didn't finish, so let's finish it first.\n");
+        get(dir, &a.get, true)?;
+    } else if load_installed(dir).is_empty() {
         println!("Welcome to Bothy. Nothing is downloaded yet, so let's fetch the library first.\n");
         get(dir, &a.get, true)?;
     }

@@ -24,7 +24,7 @@ It is free and always will be: no accounts, no ads, no tracking.
 
 ### Run a hub with Docker (the easy way)
 
-*The image and the download server go live soon; the setup guide will be at [pocketbothy.com/hub](https://www.pocketbothy.com/hub).*
+Step-by-step guide for Windows, Mac, Linux, Raspberry Pi and NAS: [pocketbothy.com/hub](https://www.pocketbothy.com/hub).
 
 ```sh
 docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data -e BOTHY_PRESET=standard andykcheng/bothy
