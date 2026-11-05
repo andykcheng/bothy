@@ -91,6 +91,8 @@ sudo usermod -aG docker $USER</code></pre></li>
 <p>Copy this into PowerShell or Terminal and press Enter. It's the same on every system:</p>
 <pre><code>docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data -e BOTHY_PRESET=standard andykcheng/bothy</code></pre>
 <p>Change <code>standard</code> to <code>small</code> or <code>everything</code> if you prefer. Docker picks the right version for your computer (Intel/AMD or ARM) by itself.</p>
+<div class="card note"><b>If the command fails, or you want to change something in it:</b> remove the container first, then run the corrected command. Docker keeps a container called <code>bothy</code> even when it fails to start, and a second <code>docker run</code> with the same name stops with <i>"The container name "/bothy" is already in use"</i>. Removing it is safe: the library stays in the <code>bothy-data</code> volume.
+<pre><code>docker rm -f bothy</code></pre></div>
 <p>On the first start the hub downloads its library into the <code>bothy-data</code> volume. Watch it with:</p>
 <pre><code>docker logs -f bothy</code></pre>
 <p>You'll see the progress, and at the end <b>"Bothy hub is running"</b> with a list of what it holds. Press Ctrl+C to stop watching; the hub keeps running. If the download is interrupted, it carries on from where it stopped next time the hub starts.</p>
@@ -130,13 +132,14 @@ docker rm -f bothy
 docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data andykcheng/bothy</code></pre>
 
 <h2 id="options">Options</h2>
-<p>Add any of these to the <code>docker run</code> command, before the image name:</p>
+<p>Add any of these to the <code>docker run</code> command, before the image name. To change the options of a hub that already exists, run <code>docker rm -f bothy</code> first, then the new <code>docker run</code> command (the downloaded library is kept).</p>
 <table class="credits">
   <tr><th>Option</th><th>What it does</th></tr>
   <tr><td><code>-e BOTHY_PRESET=small</code></td><td>small, standard or everything (used on the first start)</td></tr>
   <tr><td><code>-e BOTHY_SKIP=llm</code></td><td>leave things out, separated by commas: <code>llm</code> (AI answers), <code>map:uk</code>, <code>col:ifixit:images</code>…</td></tr>
   <tr><td><code>-e BOTHY_ADD=map:uk</code></td><td>add things to a smaller choice</td></tr>
   <tr><td><code>-p 8090:8080</code></td><td>use another port if 8080 is taken (then open <code>:8090</code>)</td></tr>
+  <tr><td><code>-p 8444:8444 -e BOTHY_HTTPS_PORT=8444</code></td><td>use another secure port (instead of <code>-p 8443:8443</code>) if 8443 is taken; keep the three numbers the same</td></tr>
   <tr><td><code>-v /path/on/disk:/data</code></td><td>keep the library in a folder you choose, e.g. on a bigger disk, instead of the <code>bothy-data</code> volume</td></tr>
 </table>
 <p>With Docker Compose, save this as <code>compose.yaml</code> and run <code>docker compose up -d</code>:</p>
@@ -154,8 +157,13 @@ volumes:
 <h2 id="help">If something goes wrong</h2>
 <details class="faq-q"><summary>Phones can't open the hub</summary>
 <p>Check the phone is on the <b>same</b> Wi-Fi as the hub, not a guest network (guest networks usually stop devices seeing each other) and not mobile data. Check the address with the steps above. On Windows, open "Allow an app through Windows Firewall" and make sure Docker Desktop is allowed on private networks. On Linux with a firewall: <code>sudo ufw allow 8080,8443/tcp</code>.</p></details>
-<details class="faq-q"><summary>"Port is already allocated"</summary>
-<p>Something else uses port 8080. Remove the half-made container with <code>docker rm -f bothy</code> and start again with <code>-p 8090:8080</code>.</p></details>
+<details class="faq-q"><summary>"Port is already allocated" or "address already in use"</summary>
+<p>Something else on the computer already uses port 8080 (or 8443). Docker has still created the <code>bothy</code> container, so remove it first, then start again on other ports:</p>
+<pre><code>docker rm -f bothy
+docker run -d --name bothy --restart unless-stopped -p 8090:8080 -p 8444:8444 -e BOTHY_HTTPS_PORT=8444 -v bothy-data:/data -e BOTHY_PRESET=standard andykcheng/bothy</code></pre>
+<p>Then open the hub at <code>:8090</code> instead of <code>:8080</code>. For the main port, only the number on the left of <code>-p</code> changes. The secure port (used for chat voice messages and locations) must be the same number on both sides and in <code>BOTHY_HTTPS_PORT</code>, because the chat sends people straight to it.</p></details>
+<details class="faq-q"><summary>"The container name "/bothy" is already in use"</summary>
+<p>A container from an earlier attempt is still there. Remove it with <code>docker rm -f bothy</code>, then run your <code>docker run</code> command again. The downloaded library is kept.</p></details>
 <details class="faq-q"><summary>"Not enough free space"</summary>
 <p>The hub checks before downloading. Free some space, choose a smaller preset, or keep the library on another disk with <code>-v /path/on/disk:/data</code>. On Docker Desktop you can also move its disk image in Settings → Resources.</p></details>
 <details class="faq-q"><summary>The download stopped</summary>
