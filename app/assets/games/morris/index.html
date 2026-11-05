@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Nine Men's Morris</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #2a1d12; color: #f5ead6; font: 16px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 520px; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; }
+  button { font: inherit; color: inherit; background: #ffffff1a; border: 0; border-radius: 10px; padding: 9px 14px; }
+  #status { font-weight: 600; min-height: 48px; margin: 4px 12px; text-align: center; }
+  svg { width: min(96vw, 500px); height: auto; background: #c99a5e; border-radius: 12px; }
+  .pt { cursor: pointer; }
+  #hand { display: flex; gap: 20px; margin-top: 10px; font-size: 15px; }
+  #menu { position: fixed; inset: 0; background: #2a1d12f2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 20px; }
+  .opts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; } .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header><button id="menuBtn">☰</button><b>Nine Men's Morris</b><button id="undo">↶</button></header>
+<div id="status"></div>
+<svg id="svg" viewBox="-40 -40 680 680"></svg>
+<div id="hand"></div>
+<div id="menu">
+  <h1 style="margin:0">Nine Men's Morris</h1>
+  <div style="max-width:350px;color:#dcb">Take turns placing your nine pieces, then slide them along the lines. Three in a row (a mill) lets you take one of your opponent’s pieces. With three pieces left you can fly anywhere. Leave your opponent with two pieces, or no moves, to win.</div>
+  <div class="opts" id="mode"><button data-v="1">vs Computer: Easy</button><button data-v="3">Medium</button><button data-v="4">Hard</button><button data-v="2p">2 players</button></div>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+// 24 points: three squares (outer, middle, inner), 8 points each, clockwise from top-left
+const POS = []; for (const [k, s] of [[0, 0], [1, 100], [2, 200]]) { const a = s, b = 600 - s, m = 300; POS.push([a, a], [m, a], [b, a], [b, m], [b, b], [m, b], [a, b], [a, m]); }
+const ADJ = Array.from({ length: 24 }, () => []);
+const link = (a, b) => { ADJ[a].push(b); ADJ[b].push(a); };
+for (let r = 0; r < 3; r++) for (let i = 0; i < 8; i++) link(r * 8 + i, r * 8 + (i + 1) % 8);
+for (const i of [1, 3, 5, 7]) { link(i, 8 + i); link(8 + i, 16 + i); }
+const MILLS = [];
+for (let r = 0; r < 3; r++) for (const i of [0, 2, 4, 6]) MILLS.push([r * 8 + i, r * 8 + i + 1, r * 8 + (i + 2) % 8]);
+for (const i of [1, 3, 5, 7]) MILLS.push([i, 8 + i, 16 + i]);
+let G, mode, sel = -1, hist = [], over = '';
+function start(m) { mode = m; G = { b: Array(24).fill(0), t: 1, hand: [0, 9, 9], removing: false, last: -1 }; hist = []; sel = -1; over = ''; $('menu').classList.add('hidden'); draw(); }
+const count = (g, p) => g.b.filter(x => x === p).length;
+const inMill = (b, i) => MILLS.some(m => m.includes(i) && b[m[0]] && b[m[0]] === b[m[1]] && b[m[1]] === b[m[2]]);
+const flying = (g, p) => !g.hand[p] && count(g, p) === 3;
+function moves(g) {  // list of {f, to} (f = -1 for placing)
+  const p = g.t, ms = [];
+  if (g.hand[p]) { for (let i = 0; i < 24; i++) if (!g.b[i]) ms.push({ f: -1, to: i }); return ms; }
+  for (let i = 0; i < 24; i++) if (g.b[i] === p) { const tg = flying(g, p) ? [...Array(24).keys()] : ADJ[i]; for (const j of tg) if (!g.b[j]) ms.push({ f: i, to: j }); }
+  return ms;
+}
+function removable(g) { const o = 3 - g.t, all = []; for (let i = 0; i < 24; i++) if (g.b[i] === o) all.push(i); const free = all.filter(i => !inMill(g.b, i)); return free.length ? free : all; }
+function apply(g, m) {  // returns new state; sets removing if a mill was made
+  const n = { b: g.b.slice(), t: g.t, hand: g.hand.slice(), removing: false, last: m.to };
+  if (m.f < 0) n.hand[g.t]--; else n.b[m.f] = 0;
+  n.b[m.to] = g.t;
+  if (inMill(n.b, m.to)) n.removing = true; else n.t = 3 - g.t;
+  return n;
+}
+function remove(g, i) { const n = { b: g.b.slice(), t: 3 - g.t, hand: g.hand.slice(), removing: false, last: g.last }; n.b[i] = 0; return n; }
+function lost(g) { const p = g.t; if (!g.hand[p] && count(g, p) < 3) return true; if (!g.hand[p] && !moves(g).length) return true; return false; }
+function evalG(g) {  // for player 2
+  const pieces = p => count(g, p) + g.hand[p];
+  let s = (pieces(2) - pieces(1)) * 100;
+  for (const m of MILLS) { const v = m.map(i => g.b[i]); const a = v.filter(x => x === 2).length, o = v.filter(x => x === 1).length; if (a === 2 && !o) s += 12; if (o === 2 && !a) s -= 12; }
+  const mob = t => moves({ ...g, t }).length; s += (mob(2) - mob(1)) * 2;
+  return s;
+}
+function successors(g) {
+  const out = [];
+  for (const m of moves(g)) { const n = apply(g, m); if (n.removing) for (const r of removable(n)) out.push({ m, r, n: remove(n, r) }); else out.push({ m, n }); }
+  return out;
+}
+function search(g, d, a, beta) {
+  if (lost(g)) return g.t === 2 ? -100000 - d : 100000 + d;
+  if (!d) return evalG(g);
+  const succ = successors(g); let best = g.t === 2 ? -Infinity : Infinity;
+  for (const s of succ) { const v = search(s.n, d - 1, a, beta); if (g.t === 2) { best = Math.max(best, v); a = Math.max(a, v); } else { best = Math.min(best, v); beta = Math.min(beta, v); } if (a >= beta) break; }
+  return best;
+}
+function cpu() {
+  const succ = successors(G); let best = -Infinity, pk = [];
+  for (const s of succ) { const v = search(s.n, +mode - 1, -Infinity, Infinity) + (mode === '1' ? Math.random() * 150 : Math.random()); if (v > best) { best = v; pk = [s]; } else if (v === best) pk.push(s); }
+  const s = pk[Math.floor(Math.random() * pk.length)];
+  hist.push(G); G = apply(G, s.m); draw();
+  if (G.removing) setTimeout(() => { G = remove(G, s.r); after(); }, 600); else after();
+}
+function after() { if (lost(G)) over = G.t === 1 ? 2 : 1; draw(); if (!over && mode !== '2p' && G.t === 2) { $('status').textContent = 'Thinking…'; setTimeout(cpu, 400); } }
+function tap(i) {
+  if (over || (mode !== '2p' && G.t === 2)) return;
+  if (G.removing) { if (removable(G).includes(i)) { G = remove(G, i); sel = -1; after(); } return; }
+  const ms = moves(G);
+  if (G.hand[G.t]) { const m = ms.find(m => m.to === i); if (m) { hist.push(G); G = apply(G, m); sel = -1; G.removing ? draw() : after(); } return; }
+  if (sel >= 0) { const m = ms.find(m => m.f === sel && m.to === i); if (m) { hist.push(G); G = apply(G, m); sel = -1; G.removing ? draw() : after(); return; } }
+  sel = ms.some(m => m.f === i) ? i : -1; draw();
+}
+function draw() {
+  let s = '';
+  for (let r = 0; r < 3; r++) { const a = r * 100, b = 600 - a; s += `<rect x="${a}" y="${a}" width="${b - a}" height="${b - a}" fill="none" stroke="#3b2612" stroke-width="6"/>`; }
+  s += `<path d="M300 0V200M300 400V600M0 300H200M400 300H600" stroke="#3b2612" stroke-width="6"/>`;
+  const tg = sel >= 0 ? moves(G).filter(m => m.f === sel).map(m => m.to) : (G.hand[G.t] && !G.removing && (mode === '2p' || G.t === 1) ? moves(G).map(m => m.to) : []);
+  const rem = G.removing && (mode === '2p' || G.t === 1) ? removable(G) : [];
+  POS.forEach(([x, y], i) => {
+    const v = G.b[i];
+    s += `<circle class="pt" cx="${x}" cy="${y}" r="34" fill="transparent" data-i="${i}"/>`;
+    if (v) s += `<circle cx="${x}" cy="${y}" r="26" fill="${v === 1 ? '#f4f1ea' : '#222'}" stroke="${i === sel ? '#ffcf3a' : rem.includes(i) ? '#e33' : i === G.last ? '#7fd1ff' : '#0006'}" stroke-width="${i === sel || rem.includes(i) || i === G.last ? 6 : 2}" pointer-events="none"/>`;
+    else s += `<circle cx="${x}" cy="${y}" r="${tg.includes(i) ? 12 : 8}" fill="${tg.includes(i) ? '#ffcf3a' : '#3b2612'}" pointer-events="none"/>`;
+  });
+  $('svg').innerHTML = s;
+  const nm = p => mode === '2p' ? (p === 1 ? 'White' : 'Black') : (p === 1 ? 'You' : 'Computer');
+  const me = G.t;
+  $('status').textContent = over ? `${nm(over)} win${nm(over) === 'You' ? '! 🎉' : 's!'}` : G.removing ? `${nm(me)} made a mill! ${mode !== '2p' && me === 2 ? '' : 'Tap an opponent’s piece to take it.'}` :
+    `${nm(me)}${mode === '2p' ? '’s turn' : me === 1 ? ' to move' : ' is thinking…'} — ${G.hand[me] ? 'place a piece' : flying(G, me) ? 'fly a piece anywhere' : 'slide a piece along a line'}`;
+  $('hand').innerHTML = `<span>⚪ in hand ${G.hand[1]} · on board ${count(G, 1)}</span><span>⚫ in hand ${G.hand[2]} · on board ${count(G, 2)}</span>`;
+}
+$('svg').onclick = e => { const c = e.target.closest('[data-i]'); if (c) tap(+c.dataset.i); };
+$('mode').onclick = e => { const b = e.target.closest('button'); if (b) start(b.dataset.v); };
+$('menuBtn').onclick = () => $('menu').classList.remove('hidden');
+$('undo').onclick = () => { if (!hist.length || (mode !== '2p' && G.t === 2 && !over)) return; let h; do { h = hist.pop(); } while (h && mode !== '2p' && h.t !== 1 && hist.length); if (!h) return; G = h; over = ''; sel = -1; draw(); };
+</script>
+</body>
+</html>

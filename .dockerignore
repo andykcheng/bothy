@@ -1,0 +1,5 @@
+*
+!core/
+!app/assets/emergency/cards.json
+!app/assets/reader/
+core/target/

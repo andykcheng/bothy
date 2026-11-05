@@ -1,0 +1,13 @@
+{
+  "id": "yacht",
+  "title": "Yacht Dice",
+  "description": "Roll five dice, hold the best and fill your score sheet. 1–6 players, people or computer.",
+  "players": "1–6",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "Play"
+  ]
+}

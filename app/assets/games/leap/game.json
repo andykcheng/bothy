@@ -1,0 +1,13 @@
+{
+  "id": "leap",
+  "title": "Leap",
+  "description": "One-button runner: tap to jump the spikes. Ten levels plus endless mode.",
+  "players": "1",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "Level 1"
+  ]
+}

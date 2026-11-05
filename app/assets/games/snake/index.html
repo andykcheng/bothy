@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Snake</title>
+<style>
+  :root { color-scheme: dark; --bg: #11161c; --fg: #e8eef4; --dim: #7d8a96; --accent: #5fd16b; --food: #ff6b5b; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 16px system-ui, sans-serif;
+    touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden; }
+  #wrap { display: flex; flex-direction: column; align-items: center; height: 100%; padding: 8px; gap: 8px; }
+  header { display: flex; width: 100%; max-width: 520px; justify-content: space-between; align-items: center; }
+  header b { font-size: 20px; }
+  canvas { background: #0b0f13; border-radius: 8px; max-width: 100%; }
+  #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #0009; }
+  #overlay div { background: #1b232c; padding: 24px; border-radius: 12px; text-align: center; max-width: 320px; }
+  button { background: var(--accent); color: #062b0b; border: 0; border-radius: 8px; padding: 12px 22px; font-size: 17px; font-weight: 600; }
+  button.alt { background: #2a3540; color: var(--fg); }
+  .hidden { display: none !important; }
+  small { color: var(--dim); }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header><span>Score <b id="score">0</b></span><button class="alt" id="pause">II</button><span>Best <b id="best">0</b></span></header>
+  <canvas id="c"></canvas>
+  <small>Swipe anywhere to turn</small>
+</div>
+<div id="overlay"><div>
+  <h2 id="title">Snake</h2>
+  <p id="msg">Eat the red dots. Don't hit the walls or yourself.</p>
+  <p><button id="go">Play</button></p>
+  <p><label><input type="checkbox" id="wrapMode"> Walls wrap around</label></p>
+</div></div>
+<script>
+'use strict';
+const N = 20;                                   // grid cells per side
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const $ = id => document.getElementById(id);
+let cell, snake, dir, queue, food, score, alive, paused, timer, wrap;
+const bestKey = () => 'snake.best' + (wrap ? '.wrap' : '');
+
+function size() {
+  const w = Math.min(innerWidth - 16, innerHeight - 110, 520);
+  cell = Math.floor(w / N);
+  const dpr = devicePixelRatio || 1;
+  cv.style.width = cv.style.height = cell * N + 'px';
+  cv.width = cv.height = cell * N * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  draw();
+}
+
+function placeFood() {
+  const free = [];
+  for (let x = 0; x < N; x++) for (let y = 0; y < N; y++)
+    if (!snake.some(s => s.x === x && s.y === y)) free.push({ x, y });
+  food = free[Math.floor(Math.random() * free.length)];
+}
+
+function start() {
+  wrap = $('wrapMode').checked;
+  localStorage.setItem('snake.wrap', wrap ? '1' : '');
+  snake = [{ x: 8, y: 10 }, { x: 7, y: 10 }, { x: 6, y: 10 }];
+  dir = { x: 1, y: 0 }; queue = []; score = 0; alive = true; paused = false;
+  placeFood(); $('overlay').classList.add('hidden'); $('best').textContent = localStorage.getItem(bestKey()) || 0;
+  $('score').textContent = 0; schedule();
+}
+
+// speeds up as the snake grows: 140 ms per step down to 60
+const interval = () => Math.max(60, 140 - score * 3);
+function schedule() { clearTimeout(timer); if (alive && !paused) timer = setTimeout(step, interval()); }
+
+function step() {
+  const next = queue.shift();
+  if (next) dir = next;
+  const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+  if (wrap) { head.x = (head.x + N) % N; head.y = (head.y + N) % N; }
+  const eating = head.x === food.x && head.y === food.y;
+  const body = eating ? snake : snake.slice(0, -1);   // the tail moves away unless we grow
+  if (head.x < 0 || head.y < 0 || head.x >= N || head.y >= N || body.some(s => s.x === head.x && s.y === head.y)) {
+    return over();
+  }
+  snake.unshift(head);
+  if (eating) {
+    score++; $('score').textContent = score;
+    if (snake.length === N * N) return over(true);
+    placeFood();
+    if (navigator.vibrate) navigator.vibrate(15);
+  } else snake.pop();
+  draw(); schedule();
+}
+
+function over(won) {
+  alive = false; clearTimeout(timer); draw();
+  const best = Math.max(score, +(localStorage.getItem(bestKey()) || 0));
+  localStorage.setItem(bestKey(), best); $('best').textContent = best;
+  $('title').textContent = won ? 'You filled the board!' : 'Game over';
+  $('msg').textContent = `Score ${score}` + (score && score === best ? ' — new best!' : `. Best ${best}.`);
+  $('go').textContent = 'Play again';
+  $('overlay').classList.remove('hidden');
+  if (navigator.vibrate) navigator.vibrate(120);
+}
+
+function turn(x, y) {
+  if (!alive || paused) return;
+  const last = queue.length ? queue[queue.length - 1] : dir;
+  if ((x && last.x) || (y && last.y) || queue.length > 2) return;   // no reversing, short buffer
+  queue.push({ x, y });
+}
+
+function draw() {
+  if (!snake) return;
+  const s = cell;
+  ctx.fillStyle = '#0b0f13'; ctx.fillRect(0, 0, s * N, s * N);
+  ctx.fillStyle = '#121920';
+  for (let x = 0; x < N; x++) for (let y = (x % 2); y < N; y += 2) ctx.fillRect(x * s, y * s, s, s);
+  ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--food');
+  ctx.beginPath(); ctx.arc(food.x * s + s / 2, food.y * s + s / 2, s * 0.38, 0, 7); ctx.fill();
+  snake.forEach((p, i) => {
+    const t = i / snake.length;
+    ctx.fillStyle = `hsl(${125 - t * 40}, 60%, ${55 - t * 20}%)`;
+    const pad = i === 0 ? 1 : 2;
+    ctx.fillRect(p.x * s + pad, p.y * s + pad, s - pad * 2, s - pad * 2);
+  });
+  // eyes
+  const h = snake[0], ex = dir.y ? [0.3, 0.7] : [0.5 + dir.x * 0.2, 0.5 + dir.x * 0.2], ey = dir.x ? [0.3, 0.7] : [0.5 + dir.y * 0.2, 0.5 + dir.y * 0.2];
+  ctx.fillStyle = '#062b0b';
+  for (let i = 0; i < 2; i++) { ctx.beginPath(); ctx.arc((h.x + ex[i]) * s, (h.y + ey[i]) * s, s * 0.09, 0, 7); ctx.fill(); }
+  if (paused) { ctx.fillStyle = '#000a'; ctx.fillRect(0, 0, s * N, s * N); ctx.fillStyle = '#fff'; ctx.font = '600 28px system-ui';
+    ctx.textAlign = 'center'; ctx.fillText('Paused — tap', s * N / 2, s * N / 2); }
+}
+
+function setPaused(p) {
+  if (!alive) return;
+  paused = p; $('pause').textContent = p ? '▶' : 'II'; draw(); schedule();
+}
+
+// swipes anywhere on the page
+let t0 = null;
+addEventListener('pointerdown', e => { t0 = { x: e.clientX, y: e.clientY }; });
+addEventListener('pointermove', e => {
+  if (!t0) return;
+  const dx = e.clientX - t0.x, dy = e.clientY - t0.y;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+  if (Math.abs(dx) > Math.abs(dy)) turn(Math.sign(dx), 0); else turn(0, Math.sign(dy));
+  t0 = { x: e.clientX, y: e.clientY };
+});
+addEventListener('pointerup', () => { t0 = null; });
+cv.addEventListener('click', () => { if (paused) setPaused(false); });
+addEventListener('keydown', e => {
+  const k = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0], w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0] }[e.key];
+  if (k) { turn(...k); e.preventDefault(); }
+  if (e.key === ' ' || e.key === 'p') setPaused(!paused);
+});
+$('pause').onclick = e => { e.stopPropagation(); setPaused(!paused); };
+$('go').onclick = start;
+// stop the clock (and the battery drain) whenever the game isn't visible
+document.addEventListener('visibilitychange', () => { if (document.hidden) setPaused(true); });
+addEventListener('sp-pause', () => setPaused(true));   // sent by the app when it goes to the background
+$('wrapMode').checked = !!localStorage.getItem('snake.wrap');
+addEventListener('resize', size);
+snake = [{ x: 8, y: 10 }, { x: 7, y: 10 }, { x: 6, y: 10 }]; dir = { x: 1, y: 0 }; food = { x: 14, y: 10 };
+size();
+</script>
+</body>
+</html>

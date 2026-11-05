@@ -1,0 +1,10 @@
+target/
+*.zim
+/data/
+.dart_tool/
+build/
+__pycache__/
+.venv/
+.env
+.env.*
+!.env.example

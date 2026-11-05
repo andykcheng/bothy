@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Reader</title>
+<!-- Ebook reader for the app's Books tab (lib/books.dart serves this page, the book and its saved state on
+     127.0.0.1). epub.js 0.3.93 + JSZip, see LICENSES.txt. Pages: swipe or tap the left/right third; tap the
+     middle for the toolbars. -->
+<style>
+  @font-face { font-family: "Inter"; src: url("Inter-Regular.ttf"); }
+  :root { --bg:#FBFAF7; --fg:#1E2421; --muted:#5F6B64; --bar:#FFFFFF; --line:#E2DED5; --accent:#2F6B4F; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg); overflow:hidden;
+    font-family: Inter, Roboto, sans-serif; }
+  #viewer { position:absolute; top:28px; bottom:30px; left:var(--margin, 5vw); right:var(--margin, 5vw); }
+  #status { position:absolute; left:0; right:0; bottom:6px; text-align:center; font-size:12px; color:var(--muted);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 16px; pointer-events:none; }
+  #chapter { position:absolute; left:0; right:0; top:6px; text-align:center; font-size:12px; color:var(--muted);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 16px; pointer-events:none; }
+  .bar { position:absolute; left:0; right:0; background:var(--bar); border-color:var(--line); z-index:5;
+    display:flex; align-items:center; gap:4px; padding:6px 8px; box-shadow:0 1px 8px rgba(0,0,0,.12);
+    transition: transform .18s ease; }
+  #top { top:0; border-bottom:1px solid var(--line); }
+  #bottom { bottom:0; border-top:1px solid var(--line); flex-direction:column; align-items:stretch; padding:10px 16px 14px; }
+  #top.hidden { transform: translateY(-110%); }
+  #bottom.hidden { transform: translateY(110%); }
+  #top .title { flex:1; font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 6px; }
+  button { font:inherit; color:var(--fg); background:none; border:0; padding:8px 10px; border-radius:10px; font-size:16px; min-width:40px; }
+  button:active { background:rgba(127,127,127,.15); }
+  input[type=range] { width:100%; accent-color:var(--accent); }
+  #pos { font-size:12px; color:var(--muted); text-align:center; margin-top:4px; }
+  .panel { position:absolute; inset:0; z-index:10; background:var(--bar); overflow:auto; padding:8px 0 24px; }
+  .panel.hidden, #loading.hidden { display:none; }
+  .panel h2 { font-size:17px; margin:8px 16px 8px; display:flex; align-items:center; }
+  .panel h2 span { flex:1; }
+  .panel .row { padding:12px 18px; border-bottom:1px solid var(--line); font-size:15px; }
+  .panel .row.sub { padding-left:34px; font-size:14px; }
+  .panel .row small { display:block; color:var(--muted); margin-top:4px; font-size:13px; line-height:1.4; }
+  .seg { display:flex; gap:6px; flex-wrap:wrap; padding:6px 16px 14px; }
+  .seg button { border:1px solid var(--line); flex:1; font-size:15px; }
+  .seg button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .label { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); padding:10px 16px 2px; }
+  #q { width:calc(100% - 32px); margin:4px 16px 8px; padding:12px 16px; border-radius:999px; border:1px solid var(--line);
+    background:var(--bg); color:var(--fg); font:inherit; font-size:16px; }
+  #loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); z-index:20; background:var(--bg); }
+  mark { background:#f5d76e; color:#000; }
+</style>
+<script src="jszip.min.js"></script>
+<script src="epub.min.js"></script>
+</head>
+<body>
+<div id="chapter"></div>
+<div id="viewer"></div>
+<div id="status"></div>
+<div id="top" class="bar hidden">
+  <button id="back" aria-label="Back">←</button>
+  <div class="title" id="title"></div>
+  <button id="tocBtn" aria-label="Contents">☰</button>
+  <button id="findBtn" aria-label="Search in book">⌕</button>
+  <button id="setBtn" aria-label="Text settings">Aa</button>
+  <button id="moreBtn" aria-label="More">⋮</button>
+</div>
+<div id="bottom" class="bar hidden">
+  <input type="range" id="slider" min="0" max="1000" value="0">
+  <div id="pos"></div>
+</div>
+<div id="panel" class="panel hidden"></div>
+<div id="loading">Opening the book…</div>
+<script>
+"use strict";
+const P = new URLSearchParams(location.search);
+const ID = P.get("book");
+const native = (msg) => { try { Reader.postMessage(msg); } catch (e) {} };
+// web=1: a browser reading from a hub or a sharing phone (sp-server /read/); settings and places stay
+// in this browser. Otherwise the app's reader server keeps them.
+const WEB = P.get("web") === "1";
+const get = WEB
+  ? (p) => { try { return Promise.resolve(JSON.parse(localStorage.getItem("sp-read:" + p) || "null")); } catch (e) { return Promise.resolve(null); } }
+  : (p) => fetch(p).then(r => r.ok ? r.json() : null).catch(() => null);
+const put = WEB
+  ? (p, v) => { try { localStorage.setItem("sp-read:" + p, JSON.stringify(v)); } catch (e) {} return Promise.resolve(); }
+  : (p, v) => fetch(p, { method: "PUT", body: JSON.stringify(v) }).catch(() => {});
+const $ = (id) => document.getElementById(id);
+
+const THEMES = {
+  light: { bg: "#FBFAF7", fg: "#1E2421", muted: "#5F6B64", bar: "#FFFFFF", line: "#E2DED5", link: "#2F6B4F" },
+  sepia: { bg: "#F4ECD8", fg: "#3B2F20", muted: "#7A6A55", bar: "#FBF5E6", line: "#E3D6B8", link: "#7A4E1D" },
+  dark:  { bg: "#151A1E", fg: "#D9DED9", muted: "#97A39C", bar: "#1E252A", line: "#2C353B", link: "#7CC4A0" },
+};
+const FONTS = {
+  original: null,
+  serif: 'Georgia, "Noto Serif", "Droid Serif", serif',
+  sans: 'Inter, Roboto, "Noto Sans", sans-serif',
+};
+let S = { size: 100, font: "serif", line: 1.5, margin: 5, theme: "light" };
+let book, rendition, located = false, lastCfi = null, saveTimer = 0, toc = [];
+
+function readerCss() {
+  const t = THEMES[S.theme], f = FONTS[S.font];
+  const base = location.href.replace(/[^/]*$/, "");
+  return `@font-face { font-family: "Inter"; src: url("${base}Inter-Regular.ttf"); }
+html { font-size: ${S.size}% !important; }
+html, body { background: ${t.bg} !important; color: ${t.fg} !important; }
+body { margin: 0 !important; padding: 0 !important; }
+p, li, dd, blockquote, div, span, td { color: ${t.fg} !important; ${S.font === "original" ? "" : `font-family: ${f} !important;`} }
+h1, h2, h3, h4, h5, h6 { color: ${t.fg} !important; ${S.font === "original" ? "" : `font-family: ${f} !important;`} line-height: 1.25 !important; }
+p, li, dd, blockquote { line-height: ${S.line} !important; -webkit-hyphens: auto; hyphens: auto; }
+a { color: ${t.link} !important; }
+img, svg { max-width: 100% !important; height: auto !important; }
+${S.theme === "dark" ? "img { filter: brightness(.85); }" : ""}
+pre { white-space: pre-wrap !important; }`;
+}
+
+function applyChrome() {
+  const t = THEMES[S.theme], r = document.documentElement.style;
+  r.setProperty("--bg", t.bg); r.setProperty("--fg", t.fg); r.setProperty("--muted", t.muted);
+  r.setProperty("--bar", t.bar); r.setProperty("--line", t.line); r.setProperty("--margin", S.margin + "vw");
+  native("theme:" + S.theme);
+}
+
+function applySettings(save) {
+  applyChrome();
+  if (rendition) {
+    for (const c of rendition.getContents()) {
+      const s = c.document.getElementById("sp-style");
+      if (s) s.textContent = readerCss();
+    }
+    const cfi = lastCfi;
+    rendition.resize();
+    if (cfi) rendition.display(cfi);
+  }
+  if (save) put("settings", S);
+}
+
+// --- page turning: swipe, tap zones, keys ---
+let tx = 0, ty = 0, tt = 0;
+function onStart(e) { const p = e.changedTouches[0]; tx = p.screenX; ty = p.screenY; tt = Date.now(); }
+function onEnd(e) {
+  const p = e.changedTouches[0], dx = p.screenX - tx, dy = p.screenY - ty;
+  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { dx < 0 ? next() : prev(); return; }
+  if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && Date.now() - tt < 400) tap(p.screenX);
+}
+function tap(x) {
+  const w = window.screen.width || window.innerWidth;
+  if (!$("top").classList.contains("hidden")) { bars(false); return; }
+  if (x < w * 0.3) prev(); else if (x > w * 0.7) next(); else bars(true);
+}
+function next() { bars(false); rendition && rendition.next(); }
+function prev() { bars(false); rendition && rendition.prev(); }
+function bars(show) { $("top").classList.toggle("hidden", !show); $("bottom").classList.toggle("hidden", !show); }
+function onKey(e) {
+  if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") next();
+  if (e.key === "ArrowLeft" || e.key === "PageUp") prev();
+}
+document.addEventListener("keyup", onKey);
+document.addEventListener("touchstart", onStart, { passive: true });
+document.addEventListener("touchend", (e) => { if (!e.target.closest(".bar, .panel")) onEnd(e); });
+
+// --- panels ---
+function panel(html) { const p = $("panel"); p.innerHTML = html; p.classList.remove("hidden"); bars(false); p.scrollTop = 0; return p; }
+function closePanel() { $("panel").classList.add("hidden"); }
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const head = (t) => `<h2><span>${esc(t)}</span><button onclick="closePanel()">✕</button></h2>`;
+
+function showToc() {
+  const rows = [];
+  const walk = (items, sub) => { for (const i of items) { rows.push(`<div class="row${sub ? " sub" : ""}" data-href="${esc(i.href)}">${esc(i.label.trim())}</div>`); if (i.subitems && i.subitems.length) walk(i.subitems, true); } };
+  walk(toc, false);
+  const p = panel(head("Contents") + (rows.join("") || '<div class="row">No table of contents</div>'));
+  p.querySelectorAll("[data-href]").forEach((r) => r.onclick = () => { closePanel(); rendition.display(r.dataset.href); });
+}
+
+function seg(key, opts) {
+  return `<div class="seg">${opts.map(([v, l]) => `<button class="${S[key] === v ? "on" : ""}" data-k="${key}" data-v="${v}">${l}</button>`).join("")}</div>`;
+}
+function showSettings() {
+  const p = panel(head("Text") +
+    '<div class="label">Size</div><div class="seg"><button data-size="-10">A−</button><button disabled id="sz">' + S.size + '%</button><button data-size="10">A+</button></div>' +
+    '<div class="label">Typeface</div>' + seg("font", [["serif", "Serif"], ["sans", "Sans"], ["original", "Book's own"]]) +
+    '<div class="label">Line spacing</div>' + seg("line", [[1.3, "Tight"], [1.5, "Normal"], [1.8, "Loose"]]) +
+    '<div class="label">Margins</div>' + seg("margin", [[2, "Narrow"], [5, "Normal"], [9, "Wide"]]) +
+    '<div class="label">Theme</div>' + seg("theme", [["light", "Light"], ["sepia", "Sepia"], ["dark", "Dark"]]));
+  p.querySelectorAll("[data-size]").forEach((b) => b.onclick = () => {
+    S.size = Math.max(60, Math.min(250, S.size + Number(b.dataset.size))); $("sz").textContent = S.size + "%"; applySettings(true);
+  });
+  p.querySelectorAll("[data-k]").forEach((b) => b.onclick = () => {
+    const k = b.dataset.k, v = b.dataset.v; S[k] = (k === "line" || k === "margin") ? Number(v) : v;
+    p.querySelectorAll(`[data-k="${k}"]`).forEach((x) => x.classList.toggle("on", x === b)); applySettings(true);
+  });
+}
+
+function showFind() {
+  const p = panel(head("Search in this book") + '<input id="q" type="search" placeholder="Words to find" enterkeyhint="search"><div id="hits"></div>');
+  const q = $("q"); q.focus();
+  q.onkeydown = async (e) => {
+    if (e.key !== "Enter" || !q.value.trim()) return;
+    q.blur();
+    const want = q.value.trim(), out = $("hits"); out.innerHTML = '<div class="row">Searching…</div>';
+    const hits = [];
+    for (const item of book.spine.spineItems) {
+      try {
+        await item.load(book.load.bind(book));
+        for (const h of item.find(want)) { hits.push({ cfi: h.cfi, excerpt: h.excerpt, where: chapterOf(item.href) }); if (hits.length >= 200) break; }
+      } catch (e) {} finally { item.unload(); }
+      if (hits.length >= 200) break;
+    }
+    const re = new RegExp(want.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
+    out.innerHTML = hits.length ? hits.map((h, i) => `<div class="row" data-i="${i}">${esc(h.excerpt).replace(re, (m) => `<mark>${m}</mark>`)}<small>${esc(h.where)}</small></div>`).join("")
+      : '<div class="row">Not found</div>';
+    out.querySelectorAll("[data-i]").forEach((r) => r.onclick = () => { closePanel(); rendition.display(hits[r.dataset.i].cfi); });
+  };
+}
+
+function showMore() {
+  const p = panel(head("Book") +
+    (WEB ? '<div class="row" id="openWith">Download this book<small>An EPUB file: Books on iPhone, or any ebook app, can open it</small></div>'
+         : '<div class="row" id="openWith">Open in another app<small>Read this EPUB in any ebook app on the phone</small></div>') +
+    '<div class="row" id="toStart">Go to the beginning</div>');
+  $("openWith").onclick = () => {
+    closePanel();
+    if (!WEB) return native("openWith");
+    const a = document.createElement("a");
+    a.href = `book/${ID}.epub`; a.download = (P.get("title") || ID) + ".epub"; document.body.appendChild(a); a.click(); a.remove();
+  };
+  $("toStart").onclick = () => { closePanel(); rendition.display(); };
+}
+
+// The contents entry a position falls under: the last entry (in reading order) at or before it. Entries
+// pointing into the page on screen are compared by position, so a file holding several chapters works.
+let flatToc = null;
+function tocEntries() {
+  if (flatToc) return flatToc;
+  flatToc = [];
+  const walk = (items) => { for (const i of items) { const [file, anchor] = i.href.split("#"); const sec = book.spine.get(file);
+    if (sec) flatToc.push({ label: i.label.trim(), index: sec.index, anchor }); if (i.subitems) walk(i.subitems); } };
+  walk(toc);
+  return flatToc;
+}
+function chapterAt(index, cfi) {
+  const contents = cfi ? rendition.getContents().find((c) => c.sectionIndex === index) : null;
+  const cmp = new ePub.CFI();
+  let best = "";
+  for (const e of tocEntries()) {
+    if (e.index < index || (e.index === index && !e.anchor)) { best = e.label; continue; }
+    if (e.index === index && contents) {
+      const el = contents.document.getElementById(e.anchor);
+      if (el && cmp.compare(contents.cfiFromNode(el), cfi) <= 0) best = e.label;
+    }
+  }
+  return best;
+}
+function chapterOf(href) {
+  const sec = book.spine.get(href);
+  return sec ? chapterAt(sec.index, null) : "";
+}
+
+$("back").onclick = () => { if (!WEB) return native("close"); if (history.length > 1) history.back(); else location.href = "/books"; };
+$("tocBtn").onclick = showToc;
+$("setBtn").onclick = showSettings;
+$("findBtn").onclick = showFind;
+$("moreBtn").onclick = showMore;
+$("slider").onchange = (e) => {
+  if (located) rendition.display(book.locations.cfiFromPercentage(Number(e.target.value) / 1000));
+};
+
+async function main() {
+  $("title").textContent = P.get("title") || "";
+  const saved = await get("settings");
+  if (saved) S = Object.assign(S, saved);
+  applyChrome();
+  const state = (await get(`state/${ID}`)) || {};
+  book = ePub(`book/${ID}.epub`, { openAs: "epub" });
+  rendition = book.renderTo("viewer", { width: "100%", height: "100%", flow: "paginated", spread: "none", allowScriptedContent: false });
+  rendition.hooks.content.register((c) => {
+    const s = c.document.createElement("style"); s.id = "sp-style"; s.textContent = readerCss(); c.document.head.appendChild(s);
+    c.document.addEventListener("touchstart", onStart, { passive: true });
+    c.document.addEventListener("touchend", onEnd);
+    c.document.addEventListener("keyup", onKey);
+    c.document.addEventListener("click", (e) => { if (!("ontouchstart" in window) && !e.target.closest("a")) tap(e.screenX); });
+  });
+  rendition.on("relocated", (loc) => {
+    lastCfi = loc.start.cfi;
+    const ch = chapterAt(loc.start.index, loc.start.cfi);
+    $("chapter").textContent = ch;
+    const page = loc.start.displayed ? `${loc.start.displayed.page} / ${loc.start.displayed.total} in chapter` : "";
+    if (located) {
+      const pct = book.locations.percentageFromCfi(loc.start.cfi);
+      $("status").textContent = `${Math.round(pct * 100)}%`;
+      $("slider").value = Math.round(pct * 1000);
+      $("pos").textContent = `${Math.round(pct * 100)}% · ${page}`;
+    } else {
+      $("status").textContent = page;
+      $("pos").textContent = page;
+    }
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => put(`state/${ID}`, { cfi: lastCfi, pct: located ? book.locations.percentageFromCfi(lastCfi) : state.pct }), 800);
+  });
+  await book.ready;
+  toc = (book.navigation && book.navigation.toc) || [];
+  try { await rendition.display(state.cfi || undefined); } catch (e) { await rendition.display(); }
+  $("loading").classList.add("hidden");
+  // whole-book positions for the % and the slider; cached per book after the first time
+  const cached = await get(`locations/${ID}`);
+  if (cached && cached.length) { book.locations.load(cached); }
+  else { await book.locations.generate(1200); put(`locations/${ID}`, book.locations.save()); }
+  located = true;
+  if (rendition.location) rendition.emit("relocated", rendition.location);
+}
+main().catch((e) => { $("loading").textContent = "Could not open this book: " + e; });
+</script>
+</body>
+</html>

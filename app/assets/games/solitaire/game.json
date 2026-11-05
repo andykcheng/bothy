@@ -1,0 +1,10 @@
+{
+  "id": "solitaire",
+  "title": "Solitaire",
+  "description": "Klondike patience: draw 1 or 3, tap a card to move it, hints and undo.",
+  "players": "1",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg"
+}

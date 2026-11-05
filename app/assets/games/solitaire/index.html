@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Solitaire</title>
+<style>
+  :root { color-scheme: dark; --cw: min(12.6vw, 74px); --ch: calc(var(--cw) * 1.4); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0e5a36; color: #fff; font: 15px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; overflow: hidden; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; gap: 6px; }
+  button { font: inherit; color: inherit; background: #ffffff22; border: 0; border-radius: 10px; padding: 8px 12px; }
+  #info { font-size: 13px; opacity: .85; }
+  #table { position: relative; margin: 4px auto 0; width: calc(var(--cw) * 7 + 6 * 1.4vw); }
+  .slot { position: absolute; width: var(--cw); height: var(--ch); border-radius: 7px; border: 2px solid #ffffff33; }
+  .card { position: absolute; width: var(--cw); height: var(--ch); border-radius: 7px; background: #fff; color: #111; box-shadow: 0 1px 2px #0006;
+    font-weight: 700; font-size: calc(var(--cw) * .3); line-height: 1; padding: 3px 4px; transition: top .12s, left .12s; }
+  .card.red { color: #c8102e; }
+  .card .big { position: absolute; right: 4px; bottom: 3px; font-size: calc(var(--cw) * .48); }
+  .card.back { background: repeating-linear-gradient(45deg, #2a4fa8 0 6px, #3560c4 6px 12px); border: 3px solid #fff; }
+  .card.hl { box-shadow: 0 0 0 3px #ffd54a; }
+  .card.shake { animation: shake .3s; } @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+  #win { position: fixed; inset: 0; background: #0008; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; font-size: 22px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header><button id="newg">New</button><span id="info"></span><button id="draw3">Draw 1</button><button id="hint">💡</button><button id="undo">↶</button></header>
+<div id="table"></div>
+<div id="win" class="hidden"><div>🎉 You won!</div><div id="winInfo" style="font-size:15px"></div><button id="again">Deal again</button></div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const SUITS = ['♠', '♥', '♦', '♣'], RANKS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const red = c => c.s === 1 || c.s === 2;
+let S, hist = [], draw3 = localStorage.getItem('sol.draw3') === '1';
+let stats = JSON.parse(localStorage.getItem('sol.stats') || '{"played":0,"won":0}');
+function deal() {
+  const deck = []; for (let s = 0; s < 4; s++) for (let r = 1; r <= 13; r++) deck.push({ s, r, up: false });
+  for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+  const tab = []; for (let i = 0; i < 7; i++) { tab.push(deck.splice(0, i + 1)); tab[i][i].up = true; }
+  S = { stock: deck, waste: [], found: [[], [], [], []], tab, moves: 0 }; hist = [];
+  stats.played++; saveStats(); $('win').classList.add('hidden'); render();
+}
+const saveStats = () => localStorage.setItem('sol.stats', JSON.stringify(stats));
+const snap = () => hist.push(JSON.stringify(S));
+const topOf = a => a[a.length - 1];
+function canFound(c, f) { const t = topOf(S.found[f]); return t ? t.s === c.s && c.r === t.r + 1 : c.r === 1 && !S.found.some((x, i) => i !== f && x.length && x[0].s === c.s) ; }
+function canTab(c, col) { const t = topOf(S.tab[col]); return t ? t.up && red(t) !== red(c) && c.r === t.r - 1 : c.r === 13; }
+// a tap on a card: move it (and the cards on top of it) to the best place
+function tapCard(where, col, idx) {
+  if (where === 'stock') return flip();
+  let cards, from;
+  if (where === 'waste') { if (!S.waste.length) return; cards = [topOf(S.waste)]; from = S.waste; }
+  else if (where === 'found') { cards = [topOf(S.found[col])]; from = S.found[col]; }
+  else { const t = S.tab[col]; if (!t[idx] || !t[idx].up) return; cards = t.slice(idx); from = t; }
+  const c = cards[0];
+  if (cards.length === 1 && where !== 'found') for (let f = 0; f < 4; f++) if (canFound(c, f)) return move(from, cards.length, S.found[f]);
+  const order = [...Array(7).keys()].filter(k => !(where === 'tab' && k === col)).sort((a, b) => (S.tab[b].length > 0) - (S.tab[a].length > 0));
+  for (const k of order) if (canTab(c, k) && !(c.r === 13 && where === 'tab' && idx === 0)) return move(from, cards.length, S.tab[k]);
+  const el = document.querySelector(`[data-id="${c.s}-${c.r}"]`); if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+}
+function move(from, n, to) {
+  snap(); to.push(...from.splice(from.length - n, n)); S.moves++;
+  for (const t of S.tab) if (t.length && !topOf(t).up) topOf(t).up = true;
+  render(); checkWin();
+}
+function flip() {
+  snap();
+  if (!S.stock.length) { S.stock = S.waste.reverse().map(c => ({ ...c, up: false })); S.waste = []; }
+  else { const n = draw3 ? 3 : 1; for (let k = 0; k < n && S.stock.length; k++) { const c = S.stock.pop(); c.up = true; S.waste.push(c); } }
+  S.moves++; render();
+}
+function checkWin() {
+  if (S.found.every(f => f.length === 13)) { stats.won++; saveStats(); localStorage.removeItem('sol.game'); $('winInfo').textContent = `${S.moves} moves · won ${stats.won} of ${stats.played}`; $('win').classList.remove('hidden'); return; }
+  // everything face up and the stock empty: finish automatically
+  if (!S.stock.length && !S.waste.length && S.tab.every(t => t.every(c => c.up))) setTimeout(autoStep, 120);
+}
+function autoStep() {
+  for (const t of S.tab) if (t.length) for (let f = 0; f < 4; f++) if (canFound(topOf(t), f)) { S.found[f].push(t.pop()); S.moves++; render(); return checkWin(); }
+}
+function hint() {
+  const tries = [];
+  if (S.waste.length) tries.push(['waste', 0, 0]);
+  S.tab.forEach((t, col) => t.forEach((c, i) => { if (c.up && (i === 0 || !t[i - 1].up)) tries.push(['tab', col, i]); }));
+  S.tab.forEach((t, col) => t.length && tries.push(['tab', col, t.length - 1]));
+  for (const [w, col, i] of tries) {
+    const c = w === 'waste' ? topOf(S.waste) : S.tab[col][i];
+    const okF = (w === 'waste' || i === S.tab[col].length - 1) && [0, 1, 2, 3].some(f => canFound(c, f));
+    const okT = [...Array(7).keys()].some(k => !(w === 'tab' && k === col) && canTab(c, k) && !(c.r === 13 && w === 'tab' && i === 0));
+    if (okF || okT) { const el = document.querySelector(`[data-id="${c.s}-${c.r}"]`); el.classList.add('hl'); setTimeout(() => el.classList.remove('hl'), 900); return; }
+  }
+  const st = document.querySelector('[data-w=stock]'); if (st) { st.classList.add('hl'); setTimeout(() => st.classList.remove('hl'), 900); }
+}
+function cardEl(c, x, y, attrs) {
+  return `<div class="card ${c.up ? (red(c) ? 'red' : '') : 'back'}" style="left:${x};top:${y}" ${c.up ? `data-id="${c.s}-${c.r}"` : ''} ${attrs}>${c.up ? `${RANKS[c.r]}${SUITS[c.s]}<span class="big">${SUITS[c.s]}</span>` : ''}</div>`;
+}
+function render() {
+  const cw = parseFloat(getComputedStyle(document.querySelector('.slot') || document.body).width) || 54;
+  const W = $('table').clientWidth, gap = (W - 7 * cw) / 6, X = k => `${k * (cw + gap)}px`, ch = cw * 1.4;
+  let h = '';
+  h += `<div class="slot" style="left:${X(0)};top:0" data-w="stock"></div>`;
+  if (S.stock.length) h += cardEl(S.stock[0], X(0), '0', 'data-w="stock"');
+  const wv = S.waste.slice(draw3 ? -3 : -1);
+  wv.forEach((c, k) => { h += cardEl(c, `${(cw + gap) + k * cw * .28}px`, '0', k === wv.length - 1 ? 'data-w="waste"' : ''); });
+  for (let f = 0; f < 4; f++) { h += `<div class="slot" style="left:${X(3 + f)};top:0"></div>`; if (S.found[f].length) h += cardEl(topOf(S.found[f]), X(3 + f), '0', `data-w="found" data-c="${f}"`); }
+  const avail = innerHeight - 70 - ch * 1.15 - ch;
+  S.tab.forEach((t, col) => {
+    h += `<div class="slot" style="left:${X(col)};top:${ch * 1.15}px" data-w="tab" data-c="${col}" data-i="0"></div>`;
+    const ups = t.filter(c => c.up).length, downs = t.length - ups;
+    let du = cw * .14, uu = cw * .42; const need = downs * du + (ups - 1) * uu; if (need > avail && ups > 1) uu = Math.max(cw * .2, (avail - downs * du) / (ups - 1));
+    let y = ch * 1.15;
+    t.forEach((c, i) => { h += cardEl(c, X(col), y + 'px', `data-w="tab" data-c="${col}" data-i="${i}"`); y += c.up ? uu : du; });
+  });
+  $('table').innerHTML = h;
+  $('info').textContent = `${S.moves} moves · ${stats.won}/${stats.played} won`;
+  $('draw3').textContent = draw3 ? 'Draw 3' : 'Draw 1';
+  localStorage.setItem('sol.game', JSON.stringify(S));
+}
+$('table').onclick = e => {
+  const el = e.target.closest('[data-w]'); if (!el) return;
+  const w = el.dataset.w, col = +el.dataset.c, i = +el.dataset.i;
+  if (w === 'tab' && el.classList.contains('slot')) return;
+  tapCard(w, col, i);
+};
+$('newg').onclick = deal; $('again').onclick = deal; $('hint').onclick = hint;
+$('undo').onclick = () => { if (hist.length) { S = JSON.parse(hist.pop()); render(); } };
+$('draw3').onclick = () => { draw3 = !draw3; localStorage.setItem('sol.draw3', draw3 ? '1' : '0'); deal(); };
+addEventListener('resize', () => S && render());
+// first slot to measure card width
+$('table').innerHTML = '<div class="slot"></div>';
+try { S = JSON.parse(localStorage.getItem('sol.game')); } catch (e) { S = null; }
+if (S && S.tab) render(); else deal();
+</script>
+</body>
+</html>

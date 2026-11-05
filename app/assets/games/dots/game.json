@@ -1,0 +1,13 @@
+{
+  "id": "dots",
+  "title": "Dots and Boxes",
+  "description": "Draw lines, close boxes, take another turn. 2–4 players, any of them can be the computer.",
+  "players": "1–4",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "Play"
+  ]
+}

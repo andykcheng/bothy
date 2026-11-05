@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Sudoku</title>
+<style>
+  :root { color-scheme: dark; --bg: #11161c; --fg: #e8eef4; --dim: #7d8a96; --accent: #5aa9ff; --cell: #19212a;
+    --given: #e8eef4; --entered: #8cc8ff; --bad: #ff6b5b; --sel: #24405e; --peer: #1e2a36; --same: #2f4f73; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 16px system-ui, sans-serif; user-select: none; -webkit-user-select: none; }
+  #wrap { max-width: 480px; margin: 0 auto; padding: 8px; display: flex; flex-direction: column; gap: 10px; }
+  header { display: flex; justify-content: space-between; align-items: center; }
+  select, button { background: #2a3540; color: var(--fg); border: 0; border-radius: 8px; padding: 10px 12px; font-size: 16px; }
+  #grid { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); grid-template-rows: repeat(9, minmax(0, 1fr)); height: min(calc(100vw - 16px), 464px); background: #3b4855; gap: 1px; border: 2px solid #3b4855; border-radius: 6px; overflow: hidden; }
+  .c { background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: min(7vw, 30px); position: relative; }
+  .c.given { color: var(--given); font-weight: 600; } .c.entered { color: var(--entered); }
+  .c.peer { background: var(--peer); } .c.same { background: var(--same); } .c.sel { background: var(--sel); }
+  .c.bad { color: var(--bad); }
+  .notes { position: absolute; inset: 1px; display: grid; grid-template-columns: repeat(3, 1fr); font-size: min(2.6vw, 11px); color: var(--dim); }
+  .notes span { display: flex; align-items: center; justify-content: center; }
+  #pad { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+  #pad button { padding: 14px 0; font-size: 22px; } #pad button.done { opacity: .3; }
+  #tools { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  #tools button.on { background: var(--accent); color: #021b33; }
+  #status { color: var(--dim); text-align: center; min-height: 1.3em; }
+  #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #0009; }
+  #overlay div { background: #1b232c; padding: 24px; border-radius: 12px; text-align: center; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <select id="level">
+      <option value="easy">Easy</option><option value="medium">Medium</option>
+      <option value="hard">Hard</option><option value="expert">Expert</option>
+    </select>
+    <span id="clock">0:00</span>
+    <button id="new">New</button>
+  </header>
+  <div id="grid"></div>
+  <div id="pad"></div>
+  <div id="tools">
+    <button id="undo">Undo</button><button id="erase">Erase</button>
+    <button id="notes">Notes</button><button id="check">Check</button>
+  </div>
+  <div id="status"></div>
+</div>
+<div id="overlay" class="hidden"><div><h2>Solved!</h2><p id="solvedMsg"></p><button id="again">New puzzle</button></div></div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const ROW = i => Math.floor(i / 9), COL = i => i % 9, BOX = i => Math.floor(ROW(i) / 3) * 3 + Math.floor(COL(i) / 3);
+const PEERS = Array.from({ length: 81 }, (_, i) => {
+  const s = new Set();
+  for (let j = 0; j < 81; j++) if (j !== i && (ROW(j) === ROW(i) || COL(j) === COL(i) || BOX(j) === BOX(i))) s.add(j);
+  return [...s];
+});
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+// Counts solutions up to `limit` (bitmask candidates, fewest-candidates-first).
+function solve(g, limit, out) {
+  let best = -1, bestMask = 0, bestCount = 10;
+  for (let i = 0; i < 81; i++) {
+    if (g[i]) continue;
+    let used = 0;
+    for (const p of PEERS[i]) if (g[p]) used |= 1 << g[p];
+    const mask = ~used & 0x3fe;
+    let n = 0; for (let m = mask; m; m &= m - 1) n++;
+    if (n === 0) return 0;
+    if (n < bestCount) { best = i; bestMask = mask; bestCount = n; if (n === 1) break; }
+  }
+  if (best < 0) { if (out) out.push(g.slice()); return 1; }
+  let count = 0;
+  const digits = []; for (let d = 1; d <= 9; d++) if (bestMask & (1 << d)) digits.push(d);
+  for (const d of out ? shuffle(digits) : digits) {
+    g[best] = d;
+    count += solve(g, limit - count, out);
+    if (count >= limit) break;
+  }
+  g[best] = 0;
+  return count;
+}
+
+// A full random grid, then remove clues while the solution stays unique.
+const TARGET = { easy: 40, medium: 32, hard: 27, expert: 23 };
+function generate(level) {
+  const out = []; solve(new Array(81).fill(0), 1, out);
+  const solution = out[0], puzzle = solution.slice();
+  let clues = 81;
+  for (const i of shuffle([...Array(81).keys()])) {
+    if (clues <= TARGET[level]) break;
+    const keep = puzzle[i]; puzzle[i] = 0;
+    if (solve(puzzle.slice(), 2) !== 1) puzzle[i] = keep; else clues--;
+  }
+  return { puzzle, solution };
+}
+
+let S;   // game state, saved to localStorage after every move
+let sel = -1, notesMode = false, ticker;
+
+function newGame() {
+  const level = $('level').value;
+  $('status').textContent = 'Making a puzzle…';
+  setTimeout(() => {
+    const { puzzle, solution } = generate(level);
+    S = { level, puzzle, solution, cells: puzzle.slice(), notes: Array.from({ length: 81 }, () => []), undo: [], seconds: 0, done: false };
+    sel = -1; save(); render(); $('status').textContent = ''; $('overlay').classList.add('hidden');
+  }, 20);
+}
+
+function save() { localStorage.setItem('sudoku.game', JSON.stringify(S)); }
+
+function input(d) {
+  if (sel < 0 || S.puzzle[sel] || S.done) return;
+  S.undo.push([sel, S.cells[sel], S.notes[sel].slice()]);
+  if (S.undo.length > 500) S.undo.shift();
+  if (notesMode && d) {
+    if (S.cells[sel]) return;
+    const n = S.notes[sel], k = n.indexOf(d);
+    if (k >= 0) n.splice(k, 1); else n.push(d);
+  } else {
+    S.cells[sel] = S.cells[sel] === d ? 0 : d;
+    S.notes[sel] = [];
+    if (d && S.cells[sel]) for (const p of PEERS[sel]) S.notes[p] = S.notes[p].filter(x => x !== d);   // tidy notes
+  }
+  save(); render();
+  if (S.cells.every((v, i) => v === S.solution[i])) win();
+}
+
+function win() {
+  S.done = true; save();
+  const key = 'sudoku.best.' + S.level, best = Math.min(S.seconds, +(localStorage.getItem(key) || Infinity));
+  localStorage.setItem(key, best);
+  const n = +(localStorage.getItem('sudoku.solved') || 0) + 1; localStorage.setItem('sudoku.solved', n);
+  $('solvedMsg').textContent = `${S.level[0].toUpperCase() + S.level.slice(1)} in ${fmt(S.seconds)}. Best ${fmt(best)}. Puzzles solved: ${n}.`;
+  $('overlay').classList.remove('hidden');
+}
+
+const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+function render() {
+  const g = $('grid'); g.innerHTML = '';
+  const v = sel >= 0 ? S.cells[sel] : 0;
+  for (let i = 0; i < 81; i++) {
+    const c = document.createElement('div');
+    c.className = 'c';
+    if (COL(i) === 2 || COL(i) === 5) c.style.borderRight = '2px solid #3b4855';
+    if (ROW(i) === 2 || ROW(i) === 5) c.style.borderBottom = '2px solid #3b4855';
+    if (S.puzzle[i]) c.classList.add('given'); else if (S.cells[i]) c.classList.add('entered');
+    if (sel >= 0 && PEERS[sel].includes(i)) c.classList.add('peer');
+    if (v && S.cells[i] === v) c.classList.add('same');
+    if (i === sel) c.classList.add('sel');
+    if (S.cells[i] && PEERS[i].some(p => S.cells[p] === S.cells[i])) c.classList.add('bad');   // visible clash
+    if (S.checked && S.cells[i] && S.cells[i] !== S.solution[i]) c.classList.add('bad');
+    if (S.cells[i]) c.textContent = S.cells[i];
+    else if (S.notes[i].length) {
+      const n = document.createElement('div'); n.className = 'notes';
+      for (let d = 1; d <= 9; d++) { const sp = document.createElement('span'); sp.textContent = S.notes[i].includes(d) ? d : ''; n.appendChild(sp); }
+      c.appendChild(n);
+    }
+    c.onclick = () => { sel = i; render(); };
+    g.appendChild(c);
+  }
+  const pad = $('pad'); pad.innerHTML = '';
+  for (let d = 1; d <= 9; d++) {
+    const b = document.createElement('button'); b.textContent = d;
+    if (S.cells.filter(x => x === d).length >= 9) b.className = 'done';
+    b.onclick = () => input(d); pad.appendChild(b);
+  }
+  $('notes').classList.toggle('on', notesMode);
+  $('level').value = S.level;
+  $('clock').textContent = fmt(S.seconds);
+}
+
+$('undo').onclick = () => {
+  const u = S.undo.pop(); if (!u || S.done) return;
+  [sel, S.cells[u[0]], S.notes[u[0]]] = [u[0], u[1], u[2]]; save(); render();
+};
+$('erase').onclick = () => input(0);
+$('notes').onclick = () => { notesMode = !notesMode; render(); };
+$('check').onclick = () => {
+  S.checked = true; save(); render();
+  const wrong = S.cells.filter((v, i) => v && v !== S.solution[i]).length;
+  $('status').textContent = wrong ? `${wrong} wrong (in red)` : 'No mistakes so far';
+  setTimeout(() => { S.checked = false; save(); render(); }, 2500);
+};
+$('new').onclick = () => { if (S.done || confirm('Start a new puzzle? This one will be lost.')) newGame(); };
+$('again').onclick = newGame;
+$('level').onchange = () => { if (S.done || confirm('Start a new puzzle at this level?')) newGame(); else $('level').value = S.level; };
+addEventListener('keydown', e => {
+  if (e.key >= '1' && e.key <= '9') input(+e.key);
+  else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') input(0);
+  else if (e.key === 'n') { notesMode = !notesMode; render(); }
+  else if (sel >= 0 && e.key.startsWith('Arrow')) {
+    const m = { ArrowUp: -9, ArrowDown: 9, ArrowLeft: -1, ArrowRight: 1 }[e.key];
+    sel = (sel + m + 81) % 81; render(); e.preventDefault();
+  }
+});
+// the clock only runs while the puzzle is on screen
+let away = false;   // the app sends sp-pause / sp-resume when it goes to the background and back
+addEventListener('sp-pause', () => { away = true; if (S) save(); });
+addEventListener('sp-resume', () => { away = false; });
+ticker = setInterval(() => {
+  if (!S || S.done || document.hidden || away) return;
+  S.seconds++; $('clock').textContent = fmt(S.seconds);
+  if (S.seconds % 10 === 0) save();
+}, 1000);
+
+try { S = JSON.parse(localStorage.getItem('sudoku.game')); } catch (e) { S = null; }
+if (S && S.cells) { if (S.done) newGame(); else render(); } else newGame();
+</script>
+</body>
+</html>

@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Emberdeep</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #1a1424; color: #efe6d8; font: 14px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; overflow: hidden; touch-action: manipulation; }
+  body { display: flex; flex-direction: column; }
+  #top { display: grid; grid-template-columns: auto 1fr 1fr auto; gap: 8px; align-items: center; padding: 6px 10px; background: #120e1a; }
+  #where { font-size: 13px; line-height: 1.1; } #where small { display: block; font-weight: 400; color: #b8a9c9; font-size: 11px; }
+  .bar { height: 9px; background: #0007; border-radius: 5px; overflow: hidden; position: relative; }
+  .bar i { display: block; height: 100%; } .lab { font-size: 11px; color: #b8a9c9; white-space: nowrap; }
+  #wrap { flex: 1; position: relative; min-height: 0; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  #log { position: absolute; left: 6px; right: 6px; bottom: 4px; font-size: 13px; pointer-events: none; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+  #log div { opacity: .55; } #log div:last-child { opacity: 1; }
+  #ctl { display: grid; grid-template-columns: 160px 1fr; gap: 8px; padding: 8px; background: #120e1a; }
+  #pad { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 46px); gap: 4px; }
+  #acts { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 46px; gap: 4px; }
+  #acts button { font-size: 15px; line-height: 1.05; } #acts button small { display: block; font-size: 10px; color: #d8cbe6; }
+  button { font: inherit; color: inherit; background: #2e2440; border: 0; border-radius: 10px; padding: 0 4px; box-shadow: 0 3px 0 #0006; }
+  button:active { transform: translateY(2px); box-shadow: none; }
+  button:disabled { opacity: .35; } button.hot { background: #6b3fa0; } button.gold { background: #8a6a1c; } button.on { outline: 2px solid #f2c94c; }
+  #pad button { font-size: 20px; }
+  #ov { position: fixed; inset: 0; background: #000b; display: flex; align-items: flex-end; justify-content: center; z-index: 5; }
+  #sheet { background: #241b33; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; border-radius: 16px 16px 0 0; padding: 14px 14px 20px; line-height: 1.45; }
+  #sheet h2 { margin: 2px 0 8px; font-size: 18px; display: flex; align-items: center; gap: 8px; line-height: 1.2; }
+  #sheet h3 { margin: 14px 0 4px; font-size: 15px; color: #f2c94c; }
+  #sheet p { margin: 8px 0; } #sheet .story { font-size: 15px; } #sheet .say { font-style: italic; color: #f3e3c3; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; } .row button { flex: 1; min-height: 44px; padding: 4px 8px; }
+  .item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #ffffff12; }
+  .item .n { flex: 1; } .item small { display: block; color: #b8a9c9; } .item button { min-height: 38px; padding: 0 12px; }
+  canvas.ic { position: static; width: 40px; height: 40px; flex: none; } canvas.ic.sm { width: 28px; height: 28px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 8px; } .tabs button { flex: 1; min-height: 36px; }
+  .dim { color: #b8a9c9; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="top">
+  <b id="where"></b>
+  <div><div class="lab" id="hpl"></div><div class="bar"><i id="hpb" style="background:#e0533d"></i></div></div>
+  <div><div class="lab" id="mpl"></div><div class="bar"><i id="mpb" style="background:#4f8fe0"></i></div></div>
+  <b id="goldl" style="color:#f2c94c"></b>
+</div>
+<div id="wrap"><canvas id="cv"></canvas><div id="log"></div></div>
+<div id="ctl">
+  <div id="pad">
+    <span></span><button data-d="0,-1">▲</button><span></span>
+    <button data-d="-1,0">◀</button><button data-a="wait" title="Wait">⏳</button><button data-d="1,0">▶</button>
+    <span></span><button data-d="0,1">▼</button><span></span>
+  </div>
+  <div id="acts">
+    <button data-a="skill" id="skillB" class="hot">Skill</button><button data-a="skill2" id="skill2B" class="hot">Skill</button><button data-a="explore">🧭<small>Explore</small></button><button data-a="stairs" id="stairsB">⬇<small>Stairs</small></button>
+    <button data-a="pr" id="prB">❤️ 0</button><button data-a="pb" id="pbB">💙 0</button><button data-a="pg" id="pgB">💚 0</button><button data-a="scroll" id="scB">📜 0</button>
+    <button data-a="hero">🧙<small>Hero</small></button><button data-a="journal">📖<small>Journal</small></button><button data-a="menu">☰<small>Menu</small></button><span></span>
+  </div>
+</div>
+<div id="ov" class="hidden"><div id="sheet"></div></div>
+<script>
+'use strict';
+// Emberdeep — an original fantasy dungeon campaign. Art: Kenney "Tiny Dungeon" (CC0).
+const $ = id => document.getElementById(id);
+const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const chance = p => Math.random() < p;
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const TS = 16, SHEET = new Image(); SHEET.src = 'tiles.png';
+// tile ids in Kenney's Tiny Dungeon sheet (12 columns)
+const T = { stairs: 18, banner: 29, gold: 101, shield: 102, potR: 115, potB: 116, potG: 114, chest: 89, chestOpen: 91, mimic: 92, spikes: 41, page: 66,
+  shrine: 32, altar: 31, fountain: 8, fountainDry: 7, head: 19, stone: 65, crystal: 56, barrel: 82, table: 72, stool: 73, shelf: 63, anvil: 74 };
+
+// ---- the campaign ------------------------------------------------------------------------------------------
+const CLASSES = {
+  knight: { n: 'Knight', t: 96, hp: 34, mp: 6, atk: 4, def: 2, crit: .05, e: '🛡️',
+    skill: 'Shield bash', sd: 'Your next blow does double damage and stuns for 2 turns.', cost: 3,
+    skill2: 'Rally', sd2: 'Catch your breath mid-fight: heal a third of your health.', cost2: 5 },
+  rogue: { n: 'Rogue', t: 88, hp: 26, mp: 8, atk: 4, def: 1, crit: .2, e: '👤',
+    skill: 'Shadowstep', sd: 'Vanish for 6 turns. Monsters lose you; your next strike is a triple critical.', cost: 4,
+    skill2: 'Knife fan', sd2: 'Throw knives at every monster within 2 steps.', cost2: 5 },
+  wizard: { n: 'Wizard', t: 84, hp: 22, mp: 12, atk: 2, def: 0, crit: .05, e: '🔥',
+    skill: 'Firebolt', sd: 'Hurl fire at the nearest monster you can see (5 + 1.5×level + wand power).', cost: 3,
+    skill2: 'Frost nova', sd2: 'Freeze every monster within 3 steps: damage and 2 turns stunned.', cost2: 6 },
+};
+const SKILL2_LV = 5;
+const WEAPONS = [
+  { n: 'Dagger', t: 103, atk: 1 }, { n: 'Short sword', t: 104, atk: 2 }, { n: 'Cleaver', t: 105, atk: 3 }, { n: 'Spear', t: 131, atk: 4 },
+  { n: 'Broadsword', t: 106, atk: 5 }, { n: 'War hammer', t: 117, atk: 7 }, { n: 'Axe', t: 119, atk: 8 }, { n: 'Battle axe', t: 118, atk: 10 },
+  { n: 'Ember blade', t: 107, atk: 12 }, { n: 'Deepforge axe', t: 119, c: '#8ab0e0', atk: 14 }, { n: 'Runed hammer', t: 117, c: '#60e0e0', atk: 16 },
+  { n: 'Knight’s longsword', t: 106, c: '#c8d0ff', atk: 18 }, { n: 'Templar blade', t: 104, c: '#ffd060', atk: 20 }, { n: 'Drakebone spear', t: 131, c: '#ff9050', atk: 22 },
+];
+const WYRMFANG = { n: 'Wyrmfang', t: 107, c: '#ff5020', atk: 27 }, DAWNBRAND = { n: 'Dawnbrand', t: 106, c: '#fff090', atk: 30 };
+const WANDS = [{ n: 'Amethyst wand', t: 129, pow: 3 }, { n: 'Frost wand', t: 130, pow: 6 }, { n: 'Storm wand', t: 130, c: '#ffe060', pow: 10 },
+  { n: 'Ember staff', t: 129, c: '#ff8040', pow: 15 }, { n: 'Star wand', t: 129, c: '#a0c0ff', pow: 20 }, { n: 'Dawn sceptre', t: 130, c: '#fff090', pow: 26 }];
+
+// monsters: mh/ma/md/mx scale health, attack, defence, xp against the hero we expect on that floor
+const M_ = (id, n, t, c, mh, ma, md, mx, ai = '', extra = {}) => ({ id, n, t, c, mh, ma, md, mx, ai, ...extra });
+const CH = [
+  { n: 'The Old Mines', s: 'Old Mines', f0: 1, style: 'rooms', fl: [1, 24, 12], wall: [40, 57], top: ['#33261c', '#4a382a'], tint: '#f2dcc4', light: '#ffb45a', deco: [82, 82, 65, 72, 73, 63], feat: [29],
+    mons: [M_('rat', 'Giant rat', 123, '', .7, .6, .5, .8), M_('bat', 'Cave bat', 120, '', .6, .6, .3, .8, 'flutter'), M_('slime', 'Green slime', 108, '', 1.3, .6, 1, 1, 'slow'),
+      M_('spider', 'Tunnel spider', 122, '', .9, .8, .5, 1.2, 'poison', { d: 2 }), M_('crawler', 'Rock crawler', 124, '', 1.3, .9, 1.6, 1.4, '', { d: 3 })],
+    boss: M_('grumm', 'Grumm the Cyclops', 109, '', 7, 2.1, 1.3, 12, 'quake', { boss: 1, sc: 1.5, title: 'the gatekeeper' }),
+    intro: `Cinderfold was a mining town before it was anything else. Last spring the miners broke through into older tunnels — dwarf-cut, the old folk said, from before the town had a name. Since then the lamps burn red in the deep shafts, miners go missing, and things climb out at night.<br><br>The mayor’s daughter was taken a week ago. Father Vharex, the town priest, went down after her and never came back. The mayor has posted a reward. You light your lamp and go down.`,
+    amb: ['Somewhere, a pick-axe taps — then stops.', 'An empty ore cart creaks on its rails.', 'The lamplight flickers red for a moment.', 'Chalk arrows on the wall point down.', 'You smell hot iron, very far below.'] },
+  { n: 'The Drowned Crypts', s: 'Drowned Crypts', f0: 6, style: 'crypt', fl: [36, 37, 39], wall: [57, 59], top: ['#1c2232', '#2a3450'], tint: '#a9bde0', light: '#7fb0ff', deco: [64, 64, 65, 66, 82], feat: [8, 7],
+    mons: [M_('ghost', 'Wailing ghost', 121, '', .8, .9, .6, 1.1, 'ghost'), M_('ghoul', 'Crypt ghoul', 98, '#7fbf7f', 1.1, 1, 1, 1.2, 'drain'), M_('gspider', 'Grave spider', 122, '#9a6ad0', .9, .9, .6, 1.1, 'poison'),
+      M_('drowned', 'Drowned one', 108, '#4a70c0', 1.6, .9, 1.3, 1.3, 'slow'), M_('archer', 'Bone archer', 97, '*#d8d0b8', .8, .8, .8, 1.2, 'caster', { sp: 'bone arrow', d: 7 }), M_('cbat', 'Crypt bat', 120, '#8a5ac0', .6, .7, .4, .8, 'flutter')],
+    boss: M_('ossa', 'Mother Ossa', 100, '#9fe09f', 7.5, 1.8, 1.2, 13, 'caster', { boss: 1, sc: 1.5, sp: 'grave-curse', title: 'the Bone Witch', summon: ['ghost', 'archer'], every: 6, sumMsg: 'Mother Ossa lifts her lantern: “Up, my sleepers!” The dead rise.' }),
+    intro: `Below the mines the tunnels open into flooded halls lined with stone coffins: the tombs of the dwarves who dug here first. The water is black and very still, and it remembers things. Something down here is waking the dead — and selling the living.`,
+    amb: ['Water drips somewhere, steady as a heartbeat.', 'A coffin lid shifts, just slightly.', 'Your breath fogs in the cold.', 'Faint singing echoes, then stops.', 'The water at your feet is very, very still.'] },
+  { n: 'The Gilded Vaults', s: 'Gilded Vaults', f0: 11, style: 'vault', fl: [42, 48, 49], wall: [40, 58], top: ['#2e2818', '#4a4026'], tint: '#f5e3a0', light: '#ffd870', deco: [63, 75, 72, 82, 74, 56], feat: [29],
+    mons: [M_('robber', 'Vault robber', 112, '', .9, 1, .8, 1), M_('warden', 'Iron warden', 87, '#8aa8e0', 1.6, 1, 2, 1.4, 'slow'), M_('coins', 'Coin swarm', 101, '#ffd34a', .7, 1, .5, 1, 'fast'),
+      M_('ogre', 'Stone ogre', 109, '*#b0b0b0', 1.8, 1.3, 1.2, 1.5), M_('armour', 'Living armour', 96, '*#606878', 1.2, 1.1, 1.8, 1.3)],
+    boss: M_('mimicking', 'The Mimic King', 92, '#ffd060', 8, 1.9, 1.5, 14, '', { boss: 1, sc: 1.7, title: 'the hoard that hungers', summon: ['coins'], every: 5, sumMsg: 'The Mimic King spits a torrent of living coins!' }),
+    intro: `Past the crypts stand the doors of the Deepforge vaults, where King Durmek Stonehand kept the wealth of a hundred years of mining. The dwarves vanished long ago. Their gold did not — and down here, gold has learned to bite.`,
+    amb: ['Coins clink in the dark, though nothing moves.', 'Rows of empty armour stand to attention.', 'A dwarf rune glows faintly, then fades.', 'The air tastes of metal.', 'Somewhere a heavy door grinds shut.'] },
+  { n: 'The Temple of Embers', s: 'Ember Temple', f0: 16, style: 'rooms', fl: [48, 49, 51], wall: [40, 57], top: ['#3a1c18', '#58302a'], tint: '#f7b8a0', light: '#ff7a3a', deco: [31, 72, 73, 64, 82], feat: [29, 20],
+    mons: [M_('cultist', 'Ember cultist', 111, '', .9, 1, .8, 1.1, 'caster', { sp: 'ember bolt' }), M_('wisp', 'Flame wisp', 121, '#ff9030', .7, 1, .5, 1, 'ghost', { burn: 1 }),
+      M_('hound', 'Cinder hound', 124, '#e05030', 1, 1.1, 1, 1.2, 'fast'), M_('acolyte', 'Fire acolyte', 84, '#e04040', .9, 1, .8, 1.2, 'caster', { sp: 'firebrand' }), M_('zealot', 'Ember zealot', 112, '#d05030', 1.4, 1.2, 1.4, 1.4)],
+    boss: M_('vharex', 'Father Vharex', 111, '#ffb040', 8, 1.8, 1.4, 15, 'caster', { boss: 1, sc: 1.5, sp: 'fire storm', title: 'the Ember Priest', summon: ['cultist', 'acolyte'], every: 7, blink: 1, sumMsg: 'Vharex raises his hands: “Brothers, sisters — to me!”' }),
+    intro: `The dwarf halls give way to a temple carved in red stone, its braziers lit and its walls freshly painted with flames. This is the Ember Cult’s work, and it is not old at all. Somewhere ahead, voices are singing a hymn you almost recognise — the Dawn hymn from Cinderfold’s chapel, sung backwards.`,
+    amb: ['A hymn echoes from far away, sung backwards.', 'Braziers flare as you pass.', 'Fresh red paint drips down a carved flame.', 'Ash drifts down like snow.', 'You hear a bell, slow and deep.'] },
+  { n: 'Wyrmhollow', s: 'Wyrmhollow', f0: 21, style: 'cave', fl: [1, 12, 24], wall: [57, 58], top: ['#2a120c', '#4a2014'], tint: '#ff9a7a', light: '#ff5a20', deco: [65, 65, 56, 64], feat: [],
+    mons: [M_('drake', 'Ember drake', 110, '#ff8a30', 1.2, 1.1, 1.2, 1.3), M_('sala', 'Salamander', 108, '#ff5a20', 1.4, 1, 1.3, 1.2, 'slow', { burn: 1 }), M_('fbat', 'Fire bat', 120, '#ff7020', .6, .9, .5, .9, 'flutter'),
+      M_('scaled', 'Scaled zealot', 88, '#60b060', .9, 1, .9, 1.2, 'caster', { sp: 'flame spit' }), M_('mogre', 'Magma ogre', 109, '#ff4020', 1.9, 1.3, 1.4, 1.6)],
+    boss: M_('sythra', 'Sythra', 110, '#ffb000', 11, 2, 1.6, 18, 'breath', { boss: 1, sc: 2.2, title: 'the Cinder Wyrm' }),
+    intro: `Heat rolls up from the deep. The walls here are not cut but melted. The cult’s maps call this place Wyrmhollow, and every one of them carries the same warning scratched beside it: DO NOT WAKE THE WARDEN.`,
+    amb: ['The rock under your hand is warm.', 'Something enormous shifts in its sleep, far off.', 'A gust of hot wind, like breath.', 'Black glass crunches underfoot.', 'Old chains, as thick as your arm, lie melted on the floor.'] },
+  { n: 'The Sleeper’s Heart', s: 'Sleeper’s Heart', f0: 26, style: 'rooms', fl: [48, 42, 49], wall: [59, 40], top: ['#22101e', '#3a1a30'], tint: '#c79ad0', light: '#c050ff', deco: [65, 56, 64, 31], feat: [19],
+    mons: [M_('fiend', 'Pit fiend', 110, '', 1.2, 1.1, 1.2, 1.3), M_('shadow', 'Living shadow', 121, '*#303048', .8, 1, .6, 1.1, 'ghost', { drain: 1 }), M_('doom', 'Doom knight', 96, '#a02030', 1.5, 1.2, 1.8, 1.5),
+      M_('golem', 'Ember golem', 109, '#ff9a40', 2, 1.3, 1.6, 1.6, 'slow'), M_('gnawer', 'Soul gnawer', 123, '#c03040', .7, 1, .6, 1, 'fast')],
+    boss: M_('ashmaw', 'Ashmaw', 110, '#9040c0', 15, 2.1, 1.8, 30, 'caster', { boss: 1, sc: 2.6, sp: 'hellfire', title: 'the Sleeper Beneath', phases: 1 }),
+    intro: `The last stairs lead down into a heat like a forge-mouth. Dwarf runes glow in the rock, and they are cracking, one by one. Somewhere below, something enormous is breathing — slowly, the way a sleeper breathes just before waking.`,
+    amb: ['A rune in the wall cracks with a sound like a bell.', 'The floor rises and falls, ever so slightly.', 'Whispers, in a voice too big for words.', 'Your shadow moves a moment after you do.', 'The heat presses on you like a hand.'] },
+  { n: 'The Endless Dark', s: 'Endless Dark', f0: 31, style: 'cave', fl: [36, 37, 39], wall: [59, 57], top: ['#141418', '#24242c'], tint: '#9a9aaa', light: '#a0a0ff', deco: [65, 64, 56], feat: [],
+    mons: [], boss: null,
+    intro: `Beyond the Heart the stairs keep going down, into a dark that has no name and no map. There is no story here — only depth, and whatever lives in it.`,
+    amb: ['Silence.', 'Nothing has walked here for a very long time.', 'The dark seems to lean in.'] },
+];
+CH[6].mons = CH.slice(0, 6).flatMap(c => c.mons);
+const chOf = f => f <= 0 ? null : f > 30 ? CH[6] : CH[Math.floor((f - 1) / 5)];
+const MONDEF = {}; for (const c of CH) { for (const m of c.mons) MONDEF[m.id] = m; if (c.boss) MONDEF[c.boss.id] = c.boss; }
+const BOSSES = { 5: CH[0].boss, 10: CH[1].boss, 15: CH[2].boss, 20: CH[3].boss, 25: CH[4].boss, 30: CH[5].boss };
+
+const BOSS_TEXT = {
+  grumm: [`A one-eyed giant squats among broken mine carts, a rusted chain still locked around one ankle. <span class="say">“GRUMM GUARDS THE DOOR,”</span> it booms. <span class="say">“LITTLE PRIEST SAYS: NOBODY PASSES.”</span> It hefts a club made from a pit prop.`,
+    `Grumm sits down heavily. <span class="say">“Grumm… tired. Priest promised Grumm the sky again.”</span> The giant’s eye slides shut and it begins, enormously, to snore. Tucked in its belt you find a scrap of red cloth stitched with an ember — the mark of the Ember Cult.`],
+  ossa: [`The black water stills. A crooked woman of bone and wet linen rises from a sarcophagus, a lantern of green fire in her hand. <span class="say">“Another bright little life come to visit my sleepers? The Priest pays me in names, child. I shall add yours to the ledger.”</span>`,
+    `Mother Ossa crumbles into wet bones and green ash. Her lantern gutters out, and all through the crypt you hear the drowned dead sigh and lie still. Among her things is a ledger of names — miners from Cinderfold, sold to the Ember Priest one by one.`],
+  mimicking: [`The vault doors stand open on a mountain of gold. Then the mountain opens one enormous eye. Coins slide away from a lid as wide as a cart, and a tongue the colour of a wound rolls out. King Durmek’s hoard has grown hungry.`,
+    `The great mimic shudders and splits, spilling a tide of coins. Deep in its gullet lies King Durmek’s crown, and pressed into the gold, a single word in dwarven runes: <b>SEAL</b>.`],
+  vharex: [`Before the burning altar stands a man in priest’s white, scorched to grey. You know him. Everyone in Cinderfold knows him — Father Vharex, who blessed every child in town and every miner’s lamp. <span class="say">“Turn back,”</span> he says gently. <span class="say">“Can you not hear him? He is dreaming of us. When he wakes there will be no more cold, no more hunger, no more dark. Only fire.”</span>`,
+    `Vharex falls to his knees. The fire goes out of his eyes and for a moment he is only an old, frightened man. <span class="say">“I heard it in the dark,”</span> he whispers. <span class="say">“Forty years I prayed to the Dawnmother and she never answered. It answered.”</span> He presses an iron key into your hand — the key to the Warden’s gate — and is still.`],
+  sythra: [`The cavern is a furnace. Coiled about a pillar of black glass lies a dragon the colour of a dying coal, dwarf-iron chains broken on her limbs. <span class="say">“I was the Warden,”</span> she says, and the stone hums with her voice. <span class="say">“Four hundred years I lay upon the seal so the Sleeper would not wake. Then the priest came and sang to me, and I forgot what I was for. Leave, little ember. Or burn.”</span>`, ''],
+  ashmaw: [`The Heart of Emberdeep is a cathedral of molten stone. At its centre, bound by runes older than Cinderfold, something vast uncoils: Ashmaw, the Sleeper Beneath, wakes. Its voice is everywhere at once. <span class="say">“SMALL. WARM. YOU WILL DO.”</span>`, ''],
+};
+
+// one lore page per floor
+const PAGES = [
+  ['Tobin’s journal, day 1', `The new shaft breaks into a tunnel no miner dug: square-cut, with runes on the lintels. The mayor wants a map before anyone goes further. Packed chalk, string, three candles. Hanna says I am too old for this. She is right. — T. Ashgrove, cartographer`],
+  ['Tobin’s journal, day 3', `Rats the size of dogs. The miners say they came up with the red light. I have marked the safe paths in chalk: an arrow pointing down means “down”; an arrow pointing up means “run”.`],
+  ['Tobin’s journal, day 4', `Found a dwarf door, half buried. Carved above it: a sleeping figure wrapped in chains, and a dragon coiled on top of it. I copied it carefully. Something about it made my hands shake.`],
+  ['Tobin’s journal, day 6', `Saw people in red robes with lanterns. They had a giant on a chain — one eye, big as a cartwheel. They called it Grumm and fed it bread. I hid in an ore cart until they passed. One of them had Father Vharex’s voice.`],
+  ['Tobin’s journal, day 7', `They have found me. If you are reading this, tell Hanna I mapped as far as Grumm’s door and no further. The rest of the map is in my head. Look for me below.`],
+  ['A dwarf epitaph', `Carved deep in a coffin lid: HERE LIES BORIN FLINTBROW, WHO KEPT THE WATCH. MAY THE STONE KEEP HIM AS HE KEPT THE SEAL.`],
+  ['Scrawled on a burial list', `The dead here do not rest. A woman made of bones talks to them like children. She trades with the cult: their prisoners for her lantern oil. I am in a cage of ribs. It is surprisingly comfortable. I am lying. — T.A.`],
+  ['From Mother Ossa’s ledger', `Received from the Priest: twelve souls, miners, healthy. Paid: the names of the seven dwarves who sang the Seal, from the old tombs. He wants to know who can sing the Sealing Song. He will not like the answer: they are all dead.`],
+  ['A hymn on a coffin lid', `Sleep, Old Fire, sleep below / where the Warden’s watch-fires glow. / Gold above and stone between: / sleep, and never more be seen.`],
+  ['A note pinned with a dagger', `Elin — if they ever bring you here, do not drink the water. It remembers. — V.<br><br><span class="dim">The handwriting is Father Vharex’s, from before.</span>`],
+  ['Ledger of King Durmek, year 212', `Iron, four thousand weights. Silver, six hundred. Gold, ninety. And one stone that burns without fuel, found in the deepest seam. The smiths call it the Emberstone. It is warm to the touch, and it whispers.`],
+  ['Ledger of King Durmek, year 213', `The Emberstone has made our forges the finest under any mountain. Our blades do not dull. Our gold breeds. I have doubled the guard on the vault and I do not know why.`],
+  ['Ledger of King Durmek, year 214', `The stone was not a stone. It was an eyelid. Below the seam, in the molten dark, something sleeps — and it has been dreaming through our forges. Ashmaw, the oldest songs call it. The Sleeper. We have fed it a hundred years of fire.`],
+  ['Ledger of King Durmek, year 215', `We will not flee. We will seal it. The wyrm Sythra has sworn to lie upon the seal and guard it with her own fire, in return for all the gold in this vault. Let the gold stay here. Let no one ever come for it.`],
+  ['Ledger of King Durmek, last entry', `The seal holds. The singers are dead — the Sealing Song takes its singers with it. I lock the vault and lead my people away. If you have found this place: turn back. The gold is bait.`],
+  ['The Ember Catechism, I', `What is the Dawn? — A cold light that promises and does not keep.<br>What is the Ember? — The fire beneath, that keeps and does not promise.`],
+  ['A letter, never sent', `Elin — I prayed every night for forty years and heard nothing. Then I went down the new shaft and heard Him. He is so tired, Elin. He only wants to wake. Is that so terrible? — V.`],
+  ['A cult order, sealed in red wax', `The mayor’s daughter is to be kept unharmed until the Waking. A light from the surface, given up in the deep, is what the Song requires. — Vharex, First Ember`],
+  ['The Ember Catechism, II', `When the Warden forgets her watch, when the Song is sung backwards, when the surface-light is given, the Sleeper shall rise, and the world shall be warm for ever.`],
+  ['Scratched on the altar step', `In a child’s careful letters, very small: WREN WAS HERE. I AM NOT SCARED. (A BIT SCARED.)`],
+  ['A miner’s tag on a melted chain', `J. COLLIER, SHAFT 9.<br><br><span class="dim">The cult used Cinderfold’s miners to dig a road to the Warden.</span>`],
+  ['Runes on a broken chain-link', `Each rune is as tall as you are: SYTHRA, WARDEN, BY OATH AND GOLD BOUND: GUARD THE SEAL UNTIL THE STONE FORGETS.`],
+  ['A cult chant on a scrap of hide', `Forget, forget, great Warden. / Your oath is ash, your gold is dross. / Lay down your fire, lay down your head, / and let the Sleeper pass.`],
+  ['A dragon scale, still warm', `As big as a shield. Scratched on its inner face, in dwarven: IF EVER SHE FORGETS, REMIND HER THAT SHE CHOSE THIS. A CHOICE CAN BE MADE AGAIN.`],
+  ['Corvin’s notebook, last page', `The Sealing Song cannot be sung again; its singers died of it. But a seal can be held by force, if the Sleeper is wounded deeply enough to sleep. Someone must go down and wound it. I am too old. I hope whoever finds this is not.`],
+  ['Runes that shift as you read', `I WAS HERE BEFORE THE MOUNTAIN. I WILL BE HERE AFTER. I DREAM OF WARMTH. WHY DO YOU FEAR WARMTH?`],
+  ['A dwarf’s last carving', `Seven sang. Seven fell. The Sleeper sleeps. Let our names be the lock: Borin, Dagna, Kell, Ulf, Meri, Harrow, Joss.`],
+  ['Ash, swirling into words', `LITTLE EMBER. JOIN ME. YOU COULD BE SO BRIGHT.`],
+  ['A page in Sister Elin’s hand', `Carried down here by who knows what wind: Whoever you are — the Dawnmother does answer. Not with voices. With people who go down into the dark for strangers. Come home.`],
+  ['The last stone of the seal', `Cracked straight through: WHEN THE SEAL BREAKS, STRIKE THE HEART. ONLY A FIRE THAT CHOOSES CAN QUENCH A FIRE THAT HUNGERS.`],
+];
+
+// prisoners who come back to Cinderfold and open a shop
+const CAPTIVES = {
+  7: { k: 'C', n: 'Tobin Ashgrove', t: 85, c: '',
+    text: `In a cage of lashed rib-bones sits a thin man with chalk on his fingers. <span class="say">“You followed my arrows! I knew someone would read them.”</span> You break the cage open. <span class="say">“Tobin Ashgrove, cartographer. I’ll be in Cinderfold — come and see me. I’ve a map in my head that will save your life.”</span>` },
+  12: { k: 'R', n: 'Hilda Runeshield', t: 87, c: '',
+    text: `A dwarf in a horned helm is chained to a vault pillar among the bones of treasure-hunters. <span class="say">“Took you long enough,”</span> she says. <span class="say">“Hilda Runeshield, last smith of the Deepforge. My great-grandmother sang the seal on this place. I came to make sure it stayed sealed. It did not.”</span> She will carve runes for you in town.` },
+  14: { k: 'P', n: 'Pip Merrybuckle', t: 98, c: '#e0a060',
+    text: `From inside a locked strongbox comes very muffled singing. You prise it open, and out climbs a small, round, extremely pleased halfling with a lute. <span class="say">“Pip Merrybuckle, minstrel! I came for the gold and stayed for the… being locked in a box. Every hero needs a song. I’ll write yours.”</span>` },
+  18: { k: 'M', n: 'Wren', t: 99, c: '#e07030',
+    text: `A girl of about twelve sits on the altar steps, wrists bound in red cord, glaring at nothing in particular. <span class="say">“You’re not a cultist,”</span> she says. <span class="say">“Good. I’m Wren. My father’s the mayor. They said I was going to be the light for their song.”</span> She sniffs. <span class="say">“I’d rather not.”</span> You cut her free. She knows the way up better than you do.` },
+  23: { k: 'G', n: 'Corvin the Grey', t: 84, c: '#5a90ff',
+    text: `An old man in blue sits in a circle of cooling runes, writing. He does not look up. <span class="say">“Ah. A rescuer. One moment, I’m nearly at the end of the paragraph.”</span> He finishes, blots the page and stands. <span class="say">“Corvin. Sage, lately of the College at Westmere. I came to study the Sleeper. It studied me back. I have scrolls you will want — find me in town.”</span>` },
+};
+const RIDDLES = [
+  ['The more you take, the more you leave behind. What am I?', 'Footsteps', 'Memories', 'Coins'],
+  ['What has a neck but no head?', 'A bottle', 'A snake', 'A shirt'],
+  ['What can you catch but never throw?', 'A cold', 'A shadow', 'A fish'],
+  ['What gets wetter the more it dries?', 'A towel', 'A sponge', 'The sea'],
+  ['What has one eye but cannot see?', 'A needle', 'A sleeping cyclops', 'A storm'],
+  ['What runs but never walks, has a mouth but never talks, and a bed but never sleeps?', 'A river', 'A road', 'A rumour'],
+  ['I am always hungry and must always be fed. The finger I lick will soon turn red. What am I?', 'Fire', 'A wolf', 'Frost'],
+  ['What belongs to you, yet others use it far more than you do?', 'Your name', 'Your shadow', 'Your purse'],
+  ['What has hands but cannot clap?', 'A clock', 'A statue', 'A glove'],
+  ['The one who makes it sells it. The one who buys it never uses it. The one who uses it never sees it.', 'A coffin', 'A crown', 'A key'],
+  ['What can fill a room but takes up no space?', 'Light', 'Smoke', 'Silence'],
+  ['What has many teeth but cannot bite?', 'A comb', 'A saw', 'A skull'],
+  ['The more of me there is, the less you see. What am I?', 'Darkness', 'Fog', 'Gold'],
+  ['What breaks as soon as you say its name?', 'Silence', 'Glass', 'A promise'],
+  ['I have cities but no houses, forests but no trees, and rivers without water. What am I?', 'A map', 'A dream', 'A ruin'],
+];
+const RUMOURS = [
+  'Grumm’s no cultist — just a big frightened thing on a chain. When he lifts that club over his head, get two steps away.',
+  'The Bone Witch calls up her dead every few breaths. Kill her fast, or the crypt fills up.',
+  'Not every chest down here is a chest. And the king of them sits on the vault floor pretending to be a hoard.',
+  'Vharex blinks about like a candle flame once he’s hurt. Keep after him, and mind his fire.',
+  'The Warden breathes in a straight line. When she draws breath, get out of her row and her column.',
+  'The Sleeper calls fiends out of the cracks as it weakens. Save your potions for the end.',
+  'Nobody comes back from down here to tell rumours. Except, apparently, me.',
+];
+const WOUNDED = ['Bryn of the Silver Road', 'Old Haskel', 'Sera Quickfingers', 'Tamsin the Bold', 'Goran Halfhelm', 'Ysolde Marsh', 'Little Edric', 'Captain Moss'];
+
+// ---- state ------------------------------------------------------------------------------------------------------
+let S = null, M = null, shake = 0, pops = [], hitFx = new Set(), bolt = null;
+const META = 'emberdeep.meta', RUN = 'emberdeep.run';
+function loadMeta() {
+  try { M = JSON.parse(localStorage.getItem(META)); } catch (e) { }
+  M = Object.assign({ gold: 0, best: 0, runs: 0, smith: 0, armour: 0, vigor: 0, kills: 0, bosses: {}, pages: {}, rescued: {}, seen: {}, slain: {}, ways: {}, won: 0,
+    maps: 0, runes: 0, tales: 0, scout: 0, phoenix: 0, paid: 0, stash: { potR: 0, potB: 0, potG: 0, fire: 0, tele: 0, map: 0 }, bounty: [], hall: [], sythra: '' }, M || {});
+}
+const saveMeta = () => localStorage.setItem(META, JSON.stringify(M));
+const save = () => { if (S && !S.stub) localStorage.setItem(RUN, JSON.stringify(S)); saveMeta(); };
+
+// ---- maps -------------------------------------------------------------------------------------------------------
+// cell: 0 wall, 1 floor, 2 stairs. deco: blocking furniture (tile id, or -1 for an invisible block under an NPC). feat: wall decoration
+function blank(w, h) { return { w, h, c: Array(w * h).fill(0), seen: Array(w * h).fill(0), deco: {}, feat: {}, var: Array.from({ length: w * h }, () => Math.random()) }; }
+const idx = (x, y) => y * S.map.w + x;
+const inside = (x, y) => x >= 0 && y >= 0 && x < S.map.w && y < S.map.h;
+const cell = (x, y) => inside(x, y) ? S.map.c[idx(x, y)] : 0;
+const walkable = (x, y) => cell(x, y) > 0 && S.map.deco[idx(x, y)] === undefined;
+const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]], N8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
+function town() {
+  const rows = ['#################', '#.A...........H.#', '#...............#', '#.S.....T.....B.#', '#...............#', '#.C.....>.....R.#', '#...............#', '#.P.....M.....G.#', '#...............#', '#################'];
+  const m = blank(rows[0].length, rows.length), npcs = [];
+  const look = { A: [100, ''], H: [99, ''], S: [86, ''], B: [97, ''], T: [100, '#d08a40'], C: [85, ''], R: [87, ''], P: [98, '#e0a060'], M: [85, '#4060c0'], G: [84, '#5a90ff'] };
+  const need = { C: 'C', R: 'R', P: 'P', M: 'M', G: 'G' };
+  rows.forEach((r, y) => [...r].forEach((ch, x) => {
+    const i = y * m.w + x; m.c[i] = ch === '#' ? 0 : ch === '>' ? 2 : 1;
+    if (look[ch] && (!need[ch] || M.rescued[ch])) { npcs.push({ k: ch, x, y, t: look[ch][0], c: look[ch][1] }); m.deco[i] = -1; }
+  }));
+  m.feat[4] = T.banner; m.feat[12] = T.banner;
+  for (const [x, y, t] of [[6, 2, T.table], [10, 2, T.table], [7, 2, T.stool], [9, 2, T.stool], [3, 1, T.shelf], [3, 4, T.anvil], [12, 1, T.altar], [4, 8, T.barrel], [12, 8, T.fountain], [5, 8, T.barrel]]) m.deco[y * m.w + x] = t;
+  return { m, npcs };
+}
+function rooms(W, H, want, rw, rh) {
+  const m = blank(W, H), rs = [];
+  for (let tries = 0; tries < 500 && rs.length < want; tries++) {
+    const w = R(...rw), h = R(...rh), x = R(1, W - w - 2), y = R(2, H - h - 2);
+    if (rs.some(r => x < r.x + r.w + 2 && x + w + 2 > r.x && y < r.y + r.h + 2 && y + h + 2 > r.y)) continue;
+    rs.push({ x, y, w, h, cx: x + (w >> 1), cy: y + (h >> 1) });
+    for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) m.c[yy * W + xx] = 1;
+  }
+  const dig = (a, b) => {   // L-shaped corridor between room centres
+    let x = a.cx, y = a.cy; const hFirst = chance(.5);
+    const sx = () => { while (x !== b.cx) { m.c[y * W + x] = m.c[y * W + x] || 1; x += Math.sign(b.cx - x); } };
+    const sy = () => { while (y !== b.cy) { m.c[y * W + x] = m.c[y * W + x] || 1; y += Math.sign(b.cy - y); } };
+    if (hFirst) { sx(); sy(); } else { sy(); sx(); } m.c[y * W + x] = m.c[y * W + x] || 1;
+  };
+  rs.sort((a, b) => a.cx - b.cx);
+  for (let i = 1; i < rs.length; i++) dig(rs[i - 1], rs[i]);
+  for (let k = 0; k < 2; k++) dig(pick(rs), pick(rs));
+  return { m, rs };
+}
+function cave(W, H) {
+  let c = Array.from({ length: W * H }, (_, i) => { const x = i % W, y = (i / W) | 0; return x > 0 && y > 1 && x < W - 1 && y < H - 1 && chance(.56) ? 1 : 0; });
+  for (let it = 0; it < 4; it++) c = c.map((v, i) => { const x = i % W, y = (i / W) | 0; if (x < 1 || y < 2 || x >= W - 1 || y >= H - 1) return 0; let n = 0; for (const [dx, dy] of N8) n += c[(y + dy) * W + x + dx]; return n >= 5 || (v && n >= 4) ? 1 : 0; });
+  // keep the biggest connected region
+  const lab = new Array(W * H).fill(-1); let best = -1, bestN = 0;
+  for (let i = 0; i < W * H; i++) if (c[i] && lab[i] < 0) {
+    let n = 0; const q = [i]; lab[i] = i;
+    while (q.length) { const j = q.pop(); n++; const x = j % W, y = (j / W) | 0; for (const [dx, dy] of N4) { const k = (y + dy) * W + x + dx; if (c[k] && lab[k] < 0) { lab[k] = i; q.push(k); } } }
+    if (n > bestN) { bestN = n; best = i; }
+  }
+  const m = blank(W, H); for (let i = 0; i < W * H; i++) m.c[i] = lab[i] === best ? 1 : 0;
+  return m;
+}
+function openSpot(m, x, y) { let n = 0; for (const [dx, dy] of N8) if (m.c[(y + dy) * m.w + x + dx] === 1 && m.deco[(y + dy) * m.w + x + dx] === undefined) n++; return n === 8; }
+function gen(depth) {
+  const ch = chOf(depth), W = 32 + Math.min(12, depth >> 1), H = 24 + Math.min(10, depth >> 1);
+  let m, spots = [], start;
+  if (ch.style === 'cave') {
+    m = cave(W + 4, H + 2);
+    const fl = []; for (let i = 0; i < m.c.length; i++) if (m.c[i]) fl.push(i);
+    const s = pick(fl); start = [s % m.w, (s / m.w) | 0];
+    for (const i of fl) { const x = i % m.w, y = (i / m.w) | 0; if (Math.abs(x - start[0]) + Math.abs(y - start[1]) > 5) spots.push([x, y]); }
+    for (const [x, y] of shuffle(spots.slice()).slice(0, 14)) if (openSpot(m, x, y)) m.deco[y * m.w + x] = pick(ch.deco);
+  } else {
+    const want = ch.style === 'vault' ? 5 + Math.min(3, depth >> 3) : ch.style === 'crypt' ? 9 + Math.min(4, depth >> 2) : 6 + Math.min(6, depth >> 1);
+    const r = ch.style === 'vault' ? rooms(W, H, want, [6, 10], [5, 7]) : ch.style === 'crypt' ? rooms(W, H, want, [3, 6], [3, 5]) : rooms(W, H, want, [4, 8], [4, 6]);
+    m = r.m; start = [r.rs[0].cx, r.rs[0].cy];
+    for (const rm of r.rs.slice(1)) for (let y = rm.y; y < rm.y + rm.h; y++) for (let x = rm.x; x < rm.x + rm.w; x++) spots.push([x, y]);
+    for (const rm of r.rs.slice(1)) for (const [x, y] of [[rm.x, rm.y], [rm.x + rm.w - 1, rm.y], [rm.x, rm.y + rm.h - 1], [rm.x + rm.w - 1, rm.y + rm.h - 1]]) {
+      const near = N4.filter(([dx, dy]) => m.c[(y + dy) * m.w + x + dx]).length;
+      if (near <= 2 && chance(.4)) m.deco[y * m.w + x] = pick(ch.deco);
+    }
+  }
+  if (ch.feat.length) for (let i = m.w; i < m.w * (m.h - 1); i++) if (!m.c[i] && m.c[i + m.w] && chance(.07)) m.feat[i] = pick(ch.feat);
+  return { m, spots, start };
+}
+function newFloor(depth) {
+  S.floor = depth; S.mons = []; S.items = []; S.npcs = [];
+  if (depth === 0) { const t = town(); S.map = t.m; S.npcs = t.npcs; S.px = 8; S.py = 6; fov(); return; }
+  const ch = chOf(depth);
+  const { m, spots, start } = gen(depth); S.map = m; S.px = start[0]; S.py = start[1];
+  const dist = bfs(S.px, S.py, false);
+  let far = null, fd = -1;
+  for (const [x, y] of spots) { const d = dist[y * m.w + x]; if (d < 1e9 && d > fd && walkable(x, y)) { fd = d; far = [x, y]; } }
+  const boss = BOSSES[depth] && !S.bossDone[depth] ? BOSSES[depth] : null;
+  if (boss) { const b = mk(boss, depth, far[0], far[1]); if (boss.id === 'ashmaw' && sythraSpared()) { b.hp = b.mhp = Math.round(b.mhp * .72); } S.mons.push(b); }
+  else m.c[far[1] * m.w + far[0]] = 2;
+  const used = new Set([far[1] * m.w + far[0]]);
+  const free = (open) => {
+    for (let k = 0; k < 300; k++) {
+      const [x, y] = pick(spots), i = y * m.w + x;
+      if (used.has(i) || !walkable(x, y) || cell(x, y) !== 1 || monAt(x, y) || (open && !openSpot(m, x, y))) continue;
+      if (Math.abs(x - S.px) + Math.abs(y - S.py) < 4) continue;
+      used.add(i); return [x, y];
+    }
+    return null;
+  };
+  // a prisoner, a special encounter or two
+  const cap = CAPTIVES[depth];
+  if (cap && !M.rescued[cap.k]) { const p = free(true); if (p) { S.npcs.push({ k: 'captive', f: depth, x: p[0], y: p[1], t: cap.t, c: cap.c }); m.deco[idx(...p)] = -1; } }
+  if (!boss) {
+    const evs = ['shrine', 'fountain', 'riddle', 'peddler', 'wounded'].concat(depth > 10 ? ['idol'] : []);
+    const nEv = chance(.75) ? (chance(.3) ? 2 : 1) : 0;
+    for (const k of shuffle(evs).slice(0, nEv)) { const p = free(true); if (!p) break; const n = { k, x: p[0], y: p[1] }; eventLook(n); S.npcs.push(n); m.deco[idx(...p)] = -1; }
+  }
+  // lore
+  if (depth <= 30 && !M.pages[depth]) { const p = free(); if (p) S.items.push({ k: 'page', x: p[0], y: p[1], f: depth }); }
+  const pool = ch.mons.filter(mm => (mm.d || ch.f0) <= depth);
+  const n = Math.min(18, 4 + Math.round(depth * .9)) + (depth > 30 ? 2 : 0);
+  for (let k = 0; k < n; k++) { const p = free(); if (!p) break; S.mons.push(mk(pick(pool), depth, ...p, chance(.04 + depth * .004))); }
+  const put = (k, extra = {}) => { const p = free(); if (p) S.items.push({ k, x: p[0], y: p[1], ...extra }); };
+  for (let k = 0; k < R(3, 6); k++) put('gold', { v: R(3, 8) * (1 + depth) });
+  for (let k = 0; k < R(1, 3); k++) put(pick(['potR', 'potR', 'potB', 'potG']));
+  const mimicP = depth < 2 ? 0 : ch === CH[2] ? .3 : .1;
+  for (let k = 0; k < R(1, 2) + (ch === CH[2] ? 1 : 0); k++) put('chest', { mimic: chance(mimicP) });
+  for (let k = 0; k < (depth >= 2 && chance(.4) ? R(1, 2) : 0); k++) put('spikes');
+  // the Cartographer's maps
+  if (M.maps >= 1 && !boss) { const st = S.map.c.indexOf(2); if (st >= 0) for (const [dx, dy] of [[0, 0], ...N8]) { const j = st + dy * m.w + dx; if (j >= 0 && j < m.c.length) S.map.seen[j] = 1; } }
+  if (M.maps >= 2) for (let i = 0; i < m.c.length; i++) if (m.c[i] || N4.some(([dx, dy]) => m.c[i + dx + dy * m.w])) S.map.seen[i] = 1;
+  // chapter intro
+  if (depth === ch.f0 && depth <= 31) {
+    if (!M.seen['ch' + depth]) { M.seen['ch' + depth] = 1; queue(() => story(`📜 ${ch.n}`, depth > 30 ? '' : `Chapter ${CH.indexOf(ch) + 1}`, ch.intro)); }
+    else log(`— ${ch.n} —`);
+  }
+  log(boss ? `Floor ${depth}. A heavy silence. Something waits here…` : `Floor ${depth}. ${pick(ch.amb)}`);
+  if (cap && !M.rescued[cap.k]) log('You hear someone calling for help.');
+  fov();
+}
+// stats against the hero we expect to meet on floor f
+const P = f => ({ atk: 5 + 1.35 * (f - 1), def: 2 + .55 * (f - 1), hp: 34 + 4.5 * (f - 1) });
+function mk(d, f, x, y, elite) {
+  const p = P(f), ng = S.ng || 0;
+  const de = Math.max(0, Math.round(d.md * (1 + (f - 1) * .3)) - 1);
+  const hp = Math.round(d.mh * Math.max(5, (p.atk - de) * 1.85) * (1 + .35 * ng) * (elite ? 1.8 : 1));
+  const atk = Math.max(1, Math.round((p.def + d.ma * .095 * p.hp) * (1 + .12 * ng) * (elite ? 1.2 : 1)));
+  const xp = Math.round(d.mx * (3 + 3.5 * (f - 1)) * (elite ? 2 : 1) * (1 + .2 * ng));
+  return { id: d.id, n: (elite ? 'Dread ' + d.n.toLowerCase() : d.n), t: d.t, c: d.c || '', x, y, hp, mhp: hp, atk, def: de, xp, ai: d.ai || '', sp: d.sp || '', burn: !!d.burn, drain: d.ai === 'drain' || !!d.drain,
+    boss: !!d.boss, elite: !!elite, sc: d.sc || 1, stun: 0, awake: 0, tick: 0 };
+}
+const monAt = (x, y) => S.mons.find(m => m.x === x && m.y === y);
+const npcAt = (x, y) => S.npcs.find(n => n.x === x && n.y === y);
+function bfs(sx, sy, ignoreDeco) {   // distance field over walkable cells
+  const W = S.map.w, d = new Array(W * S.map.h).fill(1e9), q = [sy * W + sx]; d[q[0]] = 0;
+  for (let h = 0; h < q.length; h++) { const i = q[h], x = i % W, y = (i / W) | 0; for (const [dx, dy] of N4) { const nx = x + dx, ny = y + dy; if (!inside(nx, ny)) continue; const j = ny * W + nx; if (d[j] < 1e9 || !cell(nx, ny) || (!ignoreDeco && S.map.deco[j] !== undefined)) continue; d[j] = d[i] + 1; q.push(j); } }
+  return d;
+}
+// ---- field of view --------------------------------------------------------------------------------------------
+let VIS = new Set();
+function fov() {
+  VIS = new Set(); const r = S.floor === 0 ? 20 : 7;
+  for (let y = S.py - r; y <= S.py + r; y++) for (let x = S.px - r; x <= S.px + r; x++) {
+    if (!inside(x, y) || (x - S.px) ** 2 + (y - S.py) ** 2 > r * r + 1) continue;
+    if (los(S.px, S.py, x, y)) { VIS.add(idx(x, y)); S.map.seen[idx(x, y)] = 1; }
+  }
+}
+function los(x0, y0, x1, y1) {
+  let dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1, err = dx - dy, x = x0, y = y0;
+  while (x !== x1 || y !== y1) {
+    if ((x !== x0 || y !== y0) && !cell(x, y)) return false;
+    const e2 = 2 * err; if (e2 > -dy) { err -= dy; x += sx; } if (e2 < dx) { err += dx; y += sy; }
+  }
+  return true;
+}
+// ---- the hero -----------------------------------------------------------------------------------------------------
+let selStart = 1, selNg = 0;
+function newRun(cls, startF = 1, ng = 0) {
+  const c = CLASSES[cls];
+  S = { v: 2, cls, lv: 1, xp: 0, mhp: c.hp + 4 * M.vigor, hp: c.hp + 4 * M.vigor, mmp: c.mp, mp: c.mp, batk: c.atk + M.smith, bdef: c.def + M.armour, crit: c.crit + .04 * M.runes,
+    weapon: cls === 'wizard' ? null : WEAPONS[0], wand: cls === 'wizard' ? { n: 'Twig wand', t: 129, pow: 0 } : null, shield: 0, gold: 0,
+    pots: { potR: 2 + M.scout + M.stash.potR, potB: 1 + M.stash.potB, potG: M.stash.potG }, scr: { fire: M.stash.fire, tele: M.stash.tele, map: M.stash.map },
+    floor: 0, map: null, mons: [], items: [], npcs: [], px: 0, py: 0, turn: 0, log: [], st: { poison: 0, invis: 0, regen: 0, bash: 0, ambush: 0 }, kills: 0, bossDone: {},
+    ng, phoenix: M.phoenix ? 1 : 0, sythra: '', start: startF, blessed: 0 };
+  M.stash = { potR: 0, potB: 0, potG: 0, fire: 0, tele: 0, map: 0 };
+  if (startF > 1) {   // the Waystone: start as a seasoned hero
+    const L = Math.round(1 + .8 * (startF - 1));
+    for (let l = 1; l < L; l++) { S.lv++; S.mhp += 4; S.mmp += 1; pick(BOONS)[3](); }
+    S.hp = S.mhp; S.mp = S.mmp;
+    const wf = startF - 1;
+    if (S.weapon) S.weapon = [...WEAPONS].reverse().find(w => w.atk <= 1 + .8 * wf) || WEAPONS[0];
+    if (S.wand) S.wand = [...WANDS].reverse().find(w => w.pow <= .8 * wf) || S.wand;
+    S.shield = Math.floor(wf / 6); S.pots.potR += 2; S.pots.potB += 1;
+    for (let f = 1; f < startF; f++) if (BOSSES[f]) S.bossDone[f] = 1;
+  }
+  M.runs++; newFloor(startF); save(); draw();
+}
+const atk = () => S.batk + (S.weapon ? S.weapon.atk : 0) + (S.wand ? Math.floor(S.wand.pow / 3) : 0) + Math.floor(S.lv / 2);
+const def = () => S.bdef + S.shield + Math.floor(S.lv / 4);
+const xpNext = () => Math.round(18 * Math.pow(S.lv, 1.55));
+function log(t) { S.log.push(t); if (S.log.length > 40) S.log.splice(0, 10); }
+function gainXp(n) {
+  S.xp += Math.round(n * (1 + .1 * M.tales));
+  while (S.xp >= xpNext()) {
+    S.xp -= xpNext(); S.lv++; S.mhp += 4; S.hp = S.mhp; S.mmp += 1; S.mp = S.mmp;
+    log(`⭐ Level ${S.lv}!`); if (S.lv === SKILL2_LV) log(`✨ New skill: ${CLASSES[S.cls].skill2}!`);
+    queue(boonSheet);
+  }
+}
+const BOONS = [
+  ['❤️', 'Vitality', '+8 max health', () => { S.mhp += 8; S.hp += 8; }], ['⚔️', 'Might', '+2 attack', () => { S.batk += 2; }],
+  ['🛡️', 'Guard', '+1 defence', () => { S.bdef += 1; }], ['💙', 'Focus', '+3 max mana', () => { S.mmp += 3; S.mp += 3; }],
+  ['🎯', 'Precision', '+6% critical hits', () => { S.crit += .06; }], ['🧪', 'Alchemy', '2 healing potions', () => { S.pots.potR += 2; }],
+];
+function boonSheet() {
+  const opts = shuffle([...BOONS]).slice(0, 3);
+  sheet(`<h2>⭐ Level ${S.lv}</h2><p class="dim">Health and mana restored. Choose a boon:</p>${opts.map(b => `<div class="item"><span style="font-size:26px">${b[0]}</span><span class="n">${b[1]}<small>${b[2]}</small></span><button data-a="boon" data-v="${BOONS.indexOf(b)}" class="hot">Take</button></div>`).join('')}`,
+    (a, v) => { if (a === 'boon') { BOONS[v][3](); save(); closeSheet(); } }, true);
+}
+// ---- turns ------------------------------------------------------------------------------------------------------
+const busy = () => !$('ov').classList.contains('hidden');
+function act(kind, dx, dy) {
+  if (!S || busy() || S.dead) return false;
+  pops = []; hitFx.clear();
+  if (kind === 'move') {
+    const nx = S.px + dx, ny = S.py + dy, m = monAt(nx, ny), n = npcAt(nx, ny);
+    if (m) attack(m);
+    else if (n) { meet(n); return false; }
+    else if (walkable(nx, ny)) { S.px = nx; S.py = ny; step(); }
+    else return false;
+  } else if (kind === 'wait') { if (S.hp < S.mhp && S.turn % 2 === 0) S.hp++; log('You wait and listen.'); }
+  endTurn();
+  return true;
+}
+function step() {
+  const it = S.items.find(i => i.x === S.px && i.y === S.py);
+  if (it) {
+    if (it.k === 'gold') { S.gold += it.v; log(`Picked up ${it.v} gold.`); remove(it); }
+    else if (it.k.startsWith('pot')) { S.pots[it.k]++; log(`Picked up a ${{ potR: 'healing', potB: 'mana', potG: 'regeneration' }[it.k]} potion.`); remove(it); }
+    else if (it.k === 'chest') openChest(it);
+    else if (it.k === 'loot') { takeLoot(it.loot); remove(it); }
+    else if (it.k === 'page') { remove(it); M.pages[it.f] = 1; const p = PAGES[it.f - 1]; log(`📜 You found a page: ${p[0]}.`); queue(() => story('📜 ' + p[0], `page ${it.f} of 30`, p[1])); }
+    else if (it.k === 'spikes') { const d = R(2, 4 + S.floor); hurt(d, 'spikes'); log(`Spikes! You take ${d} damage.`); }
+  }
+  if (cell(S.px, S.py) === 2) log('Stairs leading deeper. Tap ⬇ Stairs.');
+}
+const remove = it => S.items.splice(S.items.indexOf(it), 1);
+function fitWeapon() { const f = S.floor; const ok = WEAPONS.filter(w => w.atk <= 2 + .85 * f && w.atk >= Math.max(1, .55 * f)); return ok.length ? pick(ok) : WEAPONS.filter(w => w.atk <= 2 + .85 * f).pop(); }
+function fitWand() { const f = S.floor; const ok = WANDS.filter(w => w.pow <= 1 + f * .9 && w.pow >= f * .4); return ok.length ? pick(ok) : WANDS.filter(w => w.pow <= 1 + f).pop() || WANDS[0]; }
+function openChest(it) {
+  if (it.mimic) { remove(it); const mm = mk({ id: 'mimic', n: 'Mimic', t: T.mimic, mh: 1.6, ma: 1.1, md: 1, mx: 1.6 }, S.floor, it.x, it.y); S.mons.push(mm); mm.awake = 1; log('The chest grows teeth — a MIMIC!'); const [ox, oy] = freeAround(it.x, it.y); S.px = ox; S.py = oy; shake = 6; return; }
+  it.k = 'opened';
+  const r = Math.random();
+  if (r < .4) { if (S.cls === 'wizard') takeLoot({ k: 'wand', ...fitWand() }); else takeLoot({ k: 'weapon', ...fitWeapon() }); }
+  else if (r < .55) takeLoot({ k: 'shield' });
+  else if (r < .7) { const s = pick(['fire', 'tele', 'map']); S.scr[s]++; log(`The chest holds a ${SCROLLS[s][1]}.`); }
+  else { const g = R(15, 30) * (1 + S.floor); S.gold += g; S.pots[pick(['potR', 'potB', 'potG'])]++; log(`The chest holds ${g} gold and a potion.`); }
+}
+function freeAround(x, y) { for (const [dx, dy] of N8) if (walkable(x + dx, y + dy) && !monAt(x + dx, y + dy)) return [x + dx, y + dy]; return [x, y]; }
+function takeLoot(l) {
+  if (l.k === 'weapon') {
+    if (S.cls === 'wizard') { const g = l.atk * 15; S.gold += g; log(`A ${l.n}. Wizards don’t fight with steel: sold for ${g} gold.`); return; }
+    if (!S.weapon || l.atk > S.weapon.atk) { S.weapon = { n: l.n, t: l.t, c: l.c, atk: l.atk }; log(`You wield the ${l.n} (+${l.atk} attack)!`); } else { const g = l.atk * 10; S.gold += g; log(`A ${l.n} — no better than yours. Worth ${g} gold.`); }
+  } else if (l.k === 'wand') {
+    if (S.cls !== 'wizard') { const g = l.pow * 15; S.gold += g; log(`A ${l.n}. Worth ${g} gold to a wizard.`); return; }
+    if (!S.wand || l.pow > S.wand.pow) { S.wand = { n: l.n, t: l.t, c: l.c, pow: l.pow }; log(`You take the ${l.n} (+${l.pow} spell power)!`); } else { S.gold += 10 * l.pow; log(`Another ${l.n}. Worth ${10 * l.pow} gold.`); }
+  }
+  else if (l.k === 'shield') { S.shield++; log(`A sturdy shield plate: +1 defence (now ${def()}).`); }
+}
+function attack(m) {
+  let dmg = Math.max(1, atk() + R(0, 2) - m.def), crit = chance(S.crit);
+  if (S.st.ambush) { dmg *= 3; crit = false; S.st.ambush = 0; S.st.invis = 0; log('You strike from the shadows!'); }
+  if (S.st.bash) { dmg *= 2; m.stun = 2; S.st.bash = 0; log(`You bash the ${m.n} — stunned!`); }
+  if (crit) dmg = Math.round(dmg * (S.cls === 'rogue' ? 2.5 : 2));
+  m.awake = 1; damage(m, dmg, crit);
+}
+function damage(m, dmg, crit) {
+  if (!S.mons.includes(m)) return;
+  m.hp -= dmg; hitFx.add(m); pops.push({ x: m.x, y: m.y, t: (crit ? '‼' : '') + dmg, c: crit ? '#ffd34a' : '#fff' });
+  if (m.hp <= 0) {
+    S.mons.splice(S.mons.indexOf(m), 1); S.kills++; M.kills++; M.slain[m.id] = (M.slain[m.id] || 0) + 1;
+    for (const b of M.bounty) if (b.id === m.id && b.have < b.need) { b.have++; if (b.have === b.need) log(`📋 Bounty complete: ${b.need} × ${MONDEF[b.id].n}. Claim it from Marta.`); }
+    log(`${m.n} is defeated! +${m.xp} xp`);
+    if (chance(m.boss || m.elite ? 1 : .25)) S.items.push({ k: chance(.5) ? 'gold' : pick(['potR', 'potB']), x: m.x, y: m.y, v: R(4, 10) * (1 + S.floor) * (m.elite ? 3 : 1) });
+    if (m.boss) bossDown(m);
+    gainXp(m.xp);
+  } else if (!m.boss || !m.phase || true) { log(`You hit the ${m.n} for ${dmg}${crit ? ' — critical!' : ''}.`); if (m.boss) bossPhase(m); }
+}
+function bossDown(m) {
+  S.bossDone[S.floor] = 1; M.bosses[m.id] = 1; shake = 10;
+  const f = S.floor, nextCh = f + 1;
+  if (f <= 25 && !M.ways[nextCh]) { M.ways[nextCh] = 1; log(`🔮 A Waystone in Cinderfold now leads to floor ${nextCh}.`); }
+  S.items = S.items.filter(i => i.x !== m.x || i.y !== m.y);
+  S.map.c[idx(m.x, m.y)] = 2;
+  const drop = () => { const [x, y] = freeAround(m.x, m.y); if (S.cls === 'wizard') S.items.push({ k: 'loot', x, y, loot: { k: 'wand', ...([...WANDS].reverse().find(w => w.pow <= .8 * f + 2) || WANDS[0]) } }); else S.items.push({ k: 'loot', x, y, loot: { k: 'weapon', ...([...WEAPONS].reverse().find(w => w.atk <= 1 + .9 * f) || WEAPONS[0]) } }); };
+  const title = `🏆 ${m.n}`, sub = BOSSES[f] ? BOSSES[f].title : '';
+  if (m.id === 'sythra') return queue(() => sythraChoice());
+  if (m.id === 'ashmaw') { if (S.cls === 'wizard') S.items.push({ k: 'loot', x: m.x, y: m.y - 0, loot: { k: 'wand', ...WANDS[5] } }); else S.items.push({ k: 'loot', x: freeAround(m.x, m.y)[0], y: freeAround(m.x, m.y)[1], loot: { k: 'weapon', ...DAWNBRAND } }); return queue(() => epilogue()); }
+  drop();
+  queue(() => story(title, 'is defeated', (BOSS_TEXT[m.id] || ['', 'The way down is open.'])[1] + '<br><br><span class="dim">The way down lies open.</span>'));
+}
+function bossPhase(m) {
+  if (m.id !== 'ashmaw') return;
+  const r = m.hp / m.mhp;
+  if (r < .66 && !m.ph) { m.ph = 1; summon(m, ['fiend', 'shadow', 'fiend'], 'Ashmaw’s chains crack. Fiends crawl out of the cracks!'); shake = 10; }
+  else if (r < .33 && m.ph === 1) { m.ph = 2; summon(m, ['doom', 'gnawer', 'gnawer'], '“I HAVE SLEPT A THOUSAND YEARS. I CAN SLEEP A THOUSAND MORE — WHEN YOU ARE ASH.”'); m.atk = Math.round(m.atk * 1.15); shake = 10; }
+}
+function sythraSpared() { return (S.sythra || M.sythra) === 'spared'; }
+function sythraChoice() {
+  sheet(`<h2>🐉 Sythra, the Cinder Wyrm</h2><p class="story">Sythra lies broken across the black glass, her fire burning low. <span class="say">“Finish it,”</span> she rasps. <span class="say">“Or… do not. Without my fire on the seal, the Sleeper wakes in all its strength. With it — perhaps you have a chance.”</span><br><br>Her heart-fire glows through her scales. A smith could forge a terrible blade from it.</p>
+    <div class="row"><button data-a="spare" class="hot">Spare her: let her guard the seal again</button></div><div class="row"><button data-a="take">Take her heart-fire for a weapon</button></div>`, a => {
+    const [x, y] = freeAround(S.px, S.py);
+    if (a === 'spare') { S.sythra = M.sythra = 'spared'; closeSheet(); S.items.push({ k: 'potR', x, y }); S.pots.potR += 2; S.pots.potG += 1;
+      queue(() => story('🐉 The Warden remembers', '', `Sythra drags herself back onto the seal, coiling around the black pillar. When her fire returns it burns blue — true at last. <span class="say">“I chose this once,”</span> she says. <span class="say">“I choose it again. Go down, little ember. I will hold him as long as I can.”</span><br><br>She breathes on you, gently. Your wounds close, and you feel your pack grow heavier: two healing potions and a regeneration potion.<br><br><span class="dim">The Sleeper will be weaker for her watch.</span>`)); }
+    else { S.sythra = M.sythra = 'slain'; closeSheet(); if (S.cls === 'wizard') { S.wand = { n: 'Wyrmheart staff', t: 129, c: '#ff5020', pow: 24 }; log('You bind the heart-fire into a staff: +24 spell power!'); } else { S.weapon = { ...WYRMFANG }; log('You quench a blade in the heart-fire: Wyrmfang, +27 attack!'); }
+      queue(() => story('🔥 Wyrmfang', '', `You take the heart-fire. The Warden’s last breath goes out of her in a long sigh, and the cavern cools at once. The blade you forge in her fire is the finest weapon you have ever held.<br><br>Far below, something laughs.`)); }
+    save(); draw();
+  }, true);
+}
+function epilogue() {
+  M.won++; addHall(true);
+  const R_ = M.rescued, lines = [`Ashmaw’s roar fades into a long, slow breath, and then into nothing. The runes in the rock flare white and go cool. For the first time in a year, Emberdeep is quiet.`];
+  lines.push(sythraSpared() ? `Sythra the Warden lies down upon the seal once more — by choice this time. Miners say that on still nights you can feel her breathing far below, like a hearth that never goes out.` : `With the Warden gone, the seal holds only by the wound you dealt the Sleeper. The town council votes to collapse the deep shafts. Nobody argues.`);
+  lines.push(R_.C ? `Tobin Ashgrove’s map of Emberdeep hangs above the bar of the Smouldering Flagon. He charges a copper to look at it and tells the story for free.` : `Nobody ever learned what became of Tobin Ashgrove. His wife Hanna still leaves a candle in the window.`);
+  lines.push(R_.M ? `Wren, the mayor’s daughter, grows up to be Cinderfold’s first Warden of the Deep Shafts. There is a chalk arrow on her door, pointing down.` : `The mayor’s daughter is never found. The mayor resigns, and Cinderfold’s lamps burn a little dimmer.`);
+  if (R_.R) lines.push(`Hilda Runeshield relights the Deepforge, and for the first time in four hundred years dwarf-steel is sold in Cinderfold market.`);
+  if (R_.P) lines.push(`Pip’s song of your descent is sung in every tavern from here to the coast. It gets longer every year, and less accurate.`);
+  if (R_.G) lines.push(`Old Corvin writes it all down properly, in a book with a lock on it, and gives the key to Sister Elin.`);
+  lines.push(`Sister Elin buries Father Vharex in the chapel yard, under his own name. <span class="say">“He was ours before he was its,”</span> she says.`);
+  lines.push(`And you? Cinderfold has a statue now. It doesn’t look much like you. The stairs below the Heart still go down — further than anyone has mapped.`);
+  sheet(`<h2>🌅 Epilogue</h2>${lines.map(l => `<p class="story">${l}</p>`).join('')}<p class="dim">You have finished Emberdeep (${M.won}×). New runs can now be Ember-touched: tougher monsters, richer rewards. The stairs here lead on into the Endless Dark.</p><div class="row"><button data-a="ok" class="hot">Continue</button></div>`, () => { closeSheet(); save(); }, true);
+}
+function hurt(d, by) {
+  S.hp -= d; shake = 4; pops.push({ x: S.px, y: S.py, t: '-' + d, c: '#ff6b5b' });
+  if (S.hp <= 0) {
+    if (S.phoenix) { S.phoenix = 0; S.hp = Math.round(S.mhp / 2); log('🪶 The phoenix feather flares — you rise again!'); shake = 10; return; }
+    die(by);
+  }
+}
+function endTurn() {
+  if (S.dead) return save(), draw();
+  S.turn++;
+  if (S.st.invis) S.st.invis--;
+  if (S.st.poison) { S.st.poison--; hurt(1 + (S.floor / 6 | 0), S.st.burning ? 'burns' : 'poison'); if (!S.st.poison) S.st.burning = 0; }
+  if (S.dead) return save(), draw();
+  if (S.turn % (S.st.regen ? 1 : 7) === 0 && S.hp < S.mhp) S.hp += S.st.regen ? 1 + (S.lv >> 2) : 1;
+  S.hp = Math.min(S.hp, S.mhp);
+  if (S.st.regen) S.st.regen--;
+  if (S.turn % 4 === 0 && S.mp < S.mmp) S.mp++;
+  fov();
+  monstersAct();
+  fov();
+  for (const m of S.mons) if (m.boss && !m.met && VIS.has(idx(m.x, m.y))) { m.met = 1; const b = BOSSES[S.floor] || {}; let txt = BOSS_TEXT[m.id][0]; if (m.id === 'ashmaw' && sythraSpared()) txt += `<br><br>Far above, a blue fire flares: Sythra holds the seal, and the Sleeper is weakened.`; queue(() => story(`⚔️ ${m.n}`, b.title || '', txt)); }
+  save(); draw();
+}
+function monstersAct() {
+  if (S.floor === 0) return;
+  const dist = bfs(S.px, S.py, false);
+  for (const m of [...S.mons]) {
+    if (S.dead) return;
+    if (!S.mons.includes(m)) continue;
+    if (m.stun) { m.stun--; continue; }
+    const seen = VIS.has(idx(m.x, m.y));
+    if (seen && !S.st.invis) m.awake = 1;
+    if (!m.awake) continue;
+    if (S.st.invis) { wander(m); continue; }
+    m.tick++;
+    if (m.boss && bossAct(m)) continue;
+    if (m.ai === 'slow' && m.tick % 2) continue;
+    if (m.ai === 'flutter' && chance(.4)) { wander(m); continue; }
+    const md = Math.abs(m.x - S.px) + Math.abs(m.y - S.py);
+    if (m.ai === 'caster' && md > 1 && md <= 5 && seen && chance(.6)) { const d = Math.max(1, Math.round(m.atk * .8) + R(0, 2) - def()); log(`The ${m.n} hurls a ${m.sp || 'bolt'} for ${d}!`); bolt = { x0: m.x, y0: m.y, x1: S.px, y1: S.py, c: '#ff6a3a' }; hurt(d, m.n); continue; }
+    const moves = m.ai === 'fast' ? 2 : 1;
+    for (let k = 0; k < moves; k++) {
+      if (Math.abs(m.x - S.px) + Math.abs(m.y - S.py) === 1) { strike(m); break; }
+      stepToward(m, dist);
+    }
+  }
+}
+function summon(m, ids, msg) {
+  let made = 0;
+  for (const id of ids) {
+    for (let r = 1; r <= 3 && made < ids.length; r++) {
+      const c = []; for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const x = m.x + dx, y = m.y + dy; if (walkable(x, y) && !monAt(x, y) && (x !== S.px || y !== S.py)) c.push([x, y]); }
+      if (c.length) { const [x, y] = pick(c), s = mk(MONDEF[id], S.floor, x, y); s.awake = 1; s.xp = Math.round(s.xp / 2); S.mons.push(s); made++; break; }
+    }
+  }
+  if (made) log(msg);
+}
+function bossAct(m) {
+  const md = Math.abs(m.x - S.px) + Math.abs(m.y - S.py), b = MONDEF[m.id];
+  if (m.warn) {   // the blow that was wound up last turn lands now
+    const w = m.warn; m.warn = 0;
+    if (w === 'quake') { shake = 10; if (Math.max(Math.abs(m.x - S.px), Math.abs(m.y - S.py)) <= 2) { const d = Math.max(2, Math.round(m.atk * 1.6) - def()); log(`💥 The club comes down and the ceiling with it! ${d} damage.`); hurt(d, m.n); } else log('💥 The ceiling comes down — but you are clear!'); }
+    if (w === 'breath') { if (inBreath(m, S.px, S.py)) { const d = Math.max(3, Math.round(m.atk * 1.9) - def()); log(`🔥 Dragonfire engulfs you for ${d}!`); hurt(d, m.n); S.st.poison = 3; S.st.burning = 1; } else log('🔥 A river of fire roars past you!'); bolt = { x0: m.x, y0: m.y, x1: m.bx, y1: m.by, c: '#ff8a00', w: 3 }; }
+    return true;
+  }
+  if (b.ai === 'quake' && m.tick % 4 === 0 && md <= 4) { m.warn = 'quake'; log('⚠️ Grumm lifts his club high over his head…'); return true; }
+  if (b.ai === 'breath' && m.tick % 4 === 0 && md <= 8 && (m.x === S.px || m.y === S.py || md <= 3)) {
+    m.warn = 'breath'; m.bx = S.px; m.by = S.py;
+    if (m.x !== S.px && m.y !== S.py) { if (Math.abs(m.x - S.px) > Math.abs(m.y - S.py)) m.by = m.y; else m.bx = m.x; }
+    log('⚠️ Sythra rears back and draws a deep breath — get out of her line!'); return true;
+  }
+  if (b.summon && m.tick % b.every === 0 && S.mons.length < 14) { summon(m, b.summon, b.sumMsg); return true; }
+  if (b.blink && m.hp < m.mhp * .6 && m.tick % 6 === 3) {
+    const c = []; for (const i of VIS) { const x = i % S.map.w, y = (i / S.map.w) | 0, d = Math.abs(x - S.px) + Math.abs(y - S.py); if (d >= 3 && d <= 6 && walkable(x, y) && !monAt(x, y)) c.push([x, y]); }
+    if (c.length) { [m.x, m.y] = pick(c); log('Vharex vanishes in a burst of sparks — and reappears!'); return true; }
+  }
+  return false;
+}
+function inBreath(m, x, y) {   // the line from the wyrm towards where it aimed, 8 long
+  const dx = Math.sign(m.bx - m.x), dy = Math.sign(m.by - m.y);
+  if (!dx && !dy) return Math.abs(x - m.x) + Math.abs(y - m.y) <= 1;
+  for (let k = 1; k <= 8; k++) { const cx = m.x + dx * k, cy = m.y + dy * k; if (!cell(cx, cy)) return false; if (cx === x && cy === y) return true; if (Math.abs(cx - x) + Math.abs(cy - y) === 1 && (dx ? cy !== y : cx !== x) && k <= 3) return true; }
+  return false;
+}
+function strike(m) {
+  if (chance(.1)) { log(`The ${m.n} misses.`); return; }
+  const d = Math.max(1, m.atk + R(-1, 1) - def()); log(`The ${m.n} hits you for ${d}.`);
+  if (m.ai === 'poison' && chance(.35)) { S.st.poison = 4; S.st.burning = 0; log('You are poisoned!'); }
+  if (m.burn && chance(.35)) { S.st.poison = 3; S.st.burning = 1; log('You are burning!'); }
+  if (m.drain) { m.hp = Math.min(m.mhp, m.hp + d); }
+  hurt(d, m.n);
+}
+function stepToward(m, dist) {
+  let best = null, bd = m.ai === 'ghost' ? 1e9 : dist[idx(m.x, m.y)];
+  for (const [dx, dy] of N4) {
+    const nx = m.x + dx, ny = m.y + dy; if (!inside(nx, ny) || monAt(nx, ny) || npcAt(nx, ny) || (nx === S.px && ny === S.py)) continue;
+    let d;
+    if (m.ai === 'ghost') d = Math.abs(nx - S.px) + Math.abs(ny - S.py);   // ghosts drift through walls
+    else { if (!walkable(nx, ny)) continue; d = dist[idx(nx, ny)]; }
+    if (d < bd) { bd = d; best = [nx, ny]; }
+  }
+  if (best) { m.x = best[0]; m.y = best[1]; }
+}
+function wander(m) { const [dx, dy] = pick(N4); const nx = m.x + dx, ny = m.y + dy; if ((m.ai === 'ghost' ? inside(nx, ny) : walkable(nx, ny)) && !monAt(nx, ny) && !npcAt(nx, ny) && (nx !== S.px || ny !== S.py)) { m.x = nx; m.y = ny; } }
+function addHall(won) {
+  M.hall.push({ c: S.cls, f: S.floor, lv: S.lv, k: S.kills, w: won ? 1 : 0, ng: S.ng || 0 });
+  M.hall.sort((a, b) => b.w - a.w || b.f - a.f || b.lv - a.lv); M.hall = M.hall.slice(0, 8);
+}
+function die(by) {
+  S.dead = true; S.hp = 0;
+  const kept = Math.floor(S.gold / 2); M.gold += kept; M.best = Math.max(M.best, S.floor);
+  const f = S.floor, lv = S.lv, k = S.kills; addHall(false);
+  localStorage.removeItem(RUN); saveMeta();
+  queue(() => story('💀', 'You have fallen', `Slain by ${by} on floor ${f}, at level ${lv}, after ${k} kills.<br>You are carried back to Cinderfold with ${kept} gold (half your purse).<br>Deepest floor ever: ${M.best}.`, () => { S = null; heroSelect(); }));
+}
+// ---- player actions -----------------------------------------------------------------------------------------------
+function near(r) { return S.mons.filter(m => VIS.has(idx(m.x, m.y)) && Math.max(Math.abs(m.x - S.px), Math.abs(m.y - S.py)) <= r); }
+function skill(n = 1) {
+  if (!S || S.floor === 0 || busy() || S.dead) return;
+  const c = CLASSES[S.cls], cost = n === 1 ? c.cost : c.cost2;
+  if (n === 2 && S.lv < SKILL2_LV) { log(`${c.skill2} unlocks at level ${SKILL2_LV}.`); return draw(); }
+  if (S.mp < cost) { log(`Not enough mana (${cost}).`); return draw(); }
+  pops = []; hitFx.clear();
+  if (n === 1) {
+    if (S.cls === 'knight') { S.st.bash = 1; log('You raise your shield — your next blow will stun.'); }
+    else if (S.cls === 'rogue') { S.st.invis = 6; S.st.ambush = 1; log('You melt into the shadows…'); for (const m of S.mons) m.awake = 0; }
+    else {
+      const tg = S.mons.filter(m => VIS.has(idx(m.x, m.y))).sort((a, b) => (Math.abs(a.x - S.px) + Math.abs(a.y - S.py)) - (Math.abs(b.x - S.px) + Math.abs(b.y - S.py)))[0];
+      if (!tg) { log('No target in sight.'); return draw(); }
+      const d = 5 + Math.round(1.5 * S.lv) + (S.wand ? S.wand.pow : 0) + R(0, 3);
+      bolt = { x0: S.px, y0: S.py, x1: tg.x, y1: tg.y, c: '#ffb02e' }; tg.awake = 1; log('🔥 Firebolt!'); S.mp -= cost; damage(tg, d, false); return endTurn();
+    }
+  } else {
+    if (S.cls === 'knight') { const h = Math.min(S.mhp - S.hp, Math.round(S.mhp / 3)); S.hp += h; log(`You rally: +${h} health.`); }
+    else if (S.cls === 'rogue') { const ts = near(2); if (!ts.length) { log('No one close enough.'); return draw(); } log('🗡️ A fan of knives!'); S.mp -= cost; for (const m of ts) { m.awake = 1; damage(m, Math.max(1, atk() + R(0, 2) - (m.def >> 1)), false); } return endTurn(); }
+    else { const ts = near(3); if (!ts.length) { log('No one close enough.'); return draw(); } log('❄️ Frost nova!'); S.mp -= cost; for (const m of ts) { m.awake = 1; m.stun = Math.max(m.stun, m.boss ? 1 : 2); damage(m, 4 + S.lv + (S.wand ? S.wand.pow >> 1 : 0), false); } return endTurn(); }
+  }
+  S.mp -= cost; endTurn();
+}
+const SCROLLS = { fire: ['🔥', 'scroll of flame', 'Fire washes over every monster you can see.'], tele: ['🌀', 'scroll of teleport', 'Whisks you to a far corner of the floor.'], map: ['🗺️', 'scroll of mapping', 'Reveals this floor and its stairs.'] };
+function readScroll(k) {
+  if (!S.scr[k]) return;
+  S.scr[k]--; pops = []; hitFx.clear();
+  if (k === 'fire') { const ts = S.mons.filter(m => VIS.has(idx(m.x, m.y))); log(ts.length ? '🔥 The scroll bursts into flame!' : 'The scroll burns away harmlessly.'); for (const m of ts) { m.awake = 1; damage(m, 8 + 3 * S.floor + R(0, 4), false); } shake = 6; }
+  if (k === 'tele') { const d = bfs(S.px, S.py, false), c = []; for (let i = 0; i < d.length; i++) if (d[i] > 12 && d[i] < 1e9) { const x = i % S.map.w, y = (i / S.map.w) | 0; if (walkable(x, y) && !monAt(x, y) && !S.mons.some(m => Math.abs(m.x - x) + Math.abs(m.y - y) < 3)) c.push([x, y]); } if (c.length) { [S.px, S.py] = pick(c); log('🌀 The world folds — you are somewhere else.'); } else log('The scroll fizzles.'); }
+  if (k === 'map') { for (let i = 0; i < S.map.c.length; i++) if (S.map.c[i] || N4.some(([dx, dy]) => S.map.c[i + dx + dy * S.map.w])) S.map.seen[i] = 1; log('🗺️ The floor’s layout burns itself into your mind.'); }
+  endTurn();
+}
+function scrollSheet() {
+  if (!S || S.inTown) return;
+  sheet(`<h2>📜 Scrolls</h2>${Object.entries(SCROLLS).map(([k, s]) => `<div class="item"><span style="font-size:24px">${s[0]}</span><span class="n">${s[1][0].toUpperCase() + s[1].slice(1)} × ${S.scr[k]}<small>${s[2]}</small></span><button data-a="read" data-v="${k}" class="hot" ${S.scr[k] ? '' : 'disabled'}>Read</button></div>`).join('')}<div class="row"><button data-a="x">Close</button></div>`,
+    (a, v) => { closeSheet(); if (a === 'read') readScroll(v); });
+}
+function drink(k) {
+  if (!S || !S.pots[k] || busy() || S.dead) return;
+  pops = []; hitFx.clear(); S.pots[k]--;
+  if (k === 'potR') { const h = Math.min(S.mhp - S.hp, 12 + S.lv * 3); S.hp += h; log(`You drink a healing potion: +${h} health.`); }
+  if (k === 'potB') { S.mp = S.mmp; log('Mana restored.'); }
+  if (k === 'potG') { S.st.poison = 0; S.st.burning = 0; S.st.regen = 15; log('Warmth spreads through you: poison cured, regenerating.'); }
+  endTurn();
+}
+function stairs() {
+  if (!S || busy()) return;
+  if (S.floor === 0) { if (cell(S.px, S.py) === 2 || S.stub) return heroSelect(); }
+  if (cell(S.px, S.py) !== 2) { log('Find the stairs first (🧭 Explore helps).'); return draw(); }
+  newFloor(S.floor + 1); M.best = Math.max(M.best, S.floor); save(); draw();
+}
+function explore() {
+  if (!S || S.floor === 0) return;
+  let steps = 0;
+  const go = () => {
+    if (!S || S.dead || busy()) return;
+    if (S.mons.some(m => VIS.has(idx(m.x, m.y)))) { if (steps === 0) { log('A monster is in sight!'); draw(); } return; }
+    const nn = S.npcs.find(n => VIS.has(idx(n.x, n.y)) && !n.noted);
+    if (nn) { nn.noted = 1; log(`You spot ${nn.k === 'captive' ? 'someone — a prisoner!' : EVENT_NAMES[nn.k]}.`); return draw(); }
+    const W = S.map.w, d = bfs(S.px, S.py, false);
+    let target = -1, best = 1e9;
+    for (let i = 0; i < d.length; i++) {
+      if (d[i] >= 1e9 || d[i] === 0) continue;
+      const x = i % W, y = (i / W) | 0;
+      const frontier = N4.some(([dx, dy]) => inside(x + dx, y + dy) && !S.map.seen[idx(x + dx, y + dy)]);
+      const item = S.items.some(it => it.x === x && it.y === y && it.k !== 'opened' && it.k !== 'spikes');
+      if ((frontier || item) && d[i] < best) { best = d[i]; target = i; }
+    }
+    if (target < 0) { const st = S.map.c.indexOf(2); if (st >= 0 && st !== idx(S.px, S.py) && d[st] < 1e9) target = st; else { log(st >= 0 && st === idx(S.px, S.py) ? 'Explored. Take the stairs.' : 'Explored.'); return draw(); } }
+    const back = bfs(target % W, (target / W) | 0, false);
+    let nx = S.px, ny = S.py, bd = back[idx(S.px, S.py)];
+    for (const [dx, dy] of N4) { const x = S.px + dx, y = S.py + dy; if (inside(x, y) && back[idx(x, y)] < bd && !monAt(x, y)) { bd = back[idx(x, y)]; nx = x; ny = y; } }
+    if (nx === S.px && ny === S.py) return;
+    act('move', nx - S.px, ny - S.py); steps++;
+    if (cell(S.px, S.py) === 2 && target === idx(S.px, S.py)) return;
+    if (steps < 60) setTimeout(go, 70);
+  };
+  go();
+}
+// ---- encounters in the deep -----------------------------------------------------------------------------------------
+const EVENT_NAMES = { shrine: 'a shrine to the Dawnmother', fountain: 'an old dwarf fountain', riddle: 'a great stone head', peddler: 'a peddler’s lantern', wounded: 'a wounded adventurer', idol: 'an ember-eyed idol' };
+function eventLook(n) {
+  const L = { shrine: [T.shrine, ''], fountain: [T.fountain, ''], riddle: [T.head, ''], peddler: [98, '#70c070'], wounded: [pick([97, 88, 96, 99]), '*#b0a0a0'], idol: [T.shrine, '#ff6020'] }[n.k];
+  n.t = L[0]; n.c = L[1];
+  if (n.k === 'wounded') n.name = pick(WOUNDED);
+  if (n.k === 'riddle') n.r = R(0, RIDDLES.length - 1);
+}
+function spent(n, tile) { S.npcs.splice(S.npcs.indexOf(n), 1); if (tile !== undefined) S.map.deco[idx(n.x, n.y)] = tile; else delete S.map.deco[idx(n.x, n.y)]; save(); draw(); }
+function blessing() {
+  const b = pick([
+    ['☀️ Warm light fills you: fully healed, and regenerating.', () => { S.hp = S.mhp; S.st.regen = 20; S.st.poison = 0; }],
+    ['☀️ Your arm feels stronger: +1 attack.', () => { S.batk++; }], ['☀️ Your skin feels like stone: +1 defence.', () => { S.bdef++; }],
+    ['☀️ Your heart beats strong: +6 max health.', () => { S.mhp += 6; S.hp += 6; }], ['☀️ Your mind clears: +2 max mana, mana restored.', () => { S.mmp += 2; S.mp = S.mmp; }],
+  ]);
+  b[1](); return b[0];
+}
+function meet(n) {
+  if (S.floor === 0) return townNpc(n);
+  const f = S.floor;
+  if (n.k === 'captive') {
+    const c = CAPTIVES[n.f]; M.rescued[c.k] = 1; spent(n);
+    return story(`🔓 ${c.n}`, 'rescued', c.text + `<br><br><span class="dim">${c.n} will be waiting for you in Cinderfold.</span>`);
+  }
+  if (n.k === 'shrine') {
+    const cost = 25 * f;
+    return sheet(`<h2>☀️ Shrine of the Dawnmother</h2><p class="story">A small shrine cut into the rock by miners long ago. The Dawnmother’s sun-disc is worn smooth by hands. Someone has left a candle stub here, recently.</p>
+      <div class="row"><button data-a="pray" class="hot">Pray</button><button data-a="give" class="gold" ${S.gold < cost ? 'disabled' : ''}>Offer ${cost} gold</button><button data-a="x">Leave</button></div>`, a => {
+      if (a === 'x') return closeSheet();
+      let msg;
+      if (a === 'give') { S.gold -= cost; msg = blessing(); }
+      else msg = chance(.4) ? blessing() : 'Silence. Perhaps she is listening somewhere else today.';
+      closeSheet(); spent(n, T.altar); log(msg); story('☀️ Shrine', '', msg);
+    });
+  }
+  if (n.k === 'fountain') {
+    return sheet(`<h2>⛲ A dwarf fountain</h2><p class="story">Water trickles from a carved face into a basin green with age. Dwarf runes around the rim read: DRINK, AND REMEMBER.</p><div class="row"><button data-a="drink" class="hot">Drink</button><button data-a="x">Leave</button></div>`, a => {
+      if (a === 'x') return closeSheet();
+      const r = Math.random(); let msg;
+      if (r < .35) { S.hp = S.mhp; msg = 'Cold, clean water. Your wounds close: fully healed.'; }
+      else if (r < .55) { S.mp = S.mmp; msg = 'The water tingles. Mana fully restored.'; }
+      else if (r < .7) { S.mhp += 4; S.hp += 4; msg = 'You remember an old song your mother sang. +4 max health.'; }
+      else if (r < .85) { S.st.poison = 5; S.st.burning = 0; msg = 'It tastes of rust and grave-dirt. You are poisoned!'; }
+      else { for (let i = 0; i < S.map.c.length; i++) if (S.map.c[i]) S.map.seen[i] = 1; msg = 'You remember — somehow — the whole of this floor, as though you had walked it before.'; }
+      closeSheet(); spent(n, T.fountainDry); log(msg); story('⛲ Fountain', '', msg);
+    });
+  }
+  if (n.k === 'riddle') {
+    const [q, ...ans] = RIDDLES[n.r], opts = shuffle([...ans]);
+    return sheet(`<h2>🗿 The Riddling Head</h2><p class="story">A great stone face is set into the floor, its eyes glowing faintly. Its lips grind open. <span class="say">“Answer, and be rewarded. Answer wrongly, and be bitten. ${q}”</span></p>${opts.map(o => `<div class="row"><button data-a="ans" data-v="${o}">${o}</button></div>`).join('')}<div class="row"><button data-a="x" class="dim">Walk away</button></div>`, (a, v) => {
+      if (a === 'x') return closeSheet();
+      closeSheet();
+      if (v === ans[0]) { const g = 30 * f; S.gold += g; S.pots.potR++; const l = S.cls === 'wizard' ? { k: 'wand', ...fitWand() } : { k: 'weapon', ...fitWeapon() }; takeLoot(l); spent(n, T.stone); story('🗿 Correct', '', `<span class="say">“${ans[0]}. Yes.”</span> The head sinks into the floor, and where it was lies a hoard: ${g} gold, a healing potion, and a ${l.n}.`); }
+      else { const d = Math.max(3, Math.round(S.mhp * .18)); spent(n, T.stone); story('🗿 Wrong', '', `<span class="say">“No. It was ${ans[0].toLowerCase()}.”</span> The stone teeth snap shut on your hand: ${d} damage. Then the head crumbles to rubble.`, () => { hurt(d, 'the Riddling Head'); save(); draw(); }); }
+    });
+  }
+  if (n.k === 'peddler') {
+    const items = [['potR', '❤️', 'Healing potion', 15 + 4 * f], ['potB', '💙', 'Mana potion', 15 + 4 * f], ['potG', '💚', 'Regeneration potion', 18 + 4 * f], ['fire', '🔥', 'Scroll of flame', 30 + 6 * f], ['tele', '🌀', 'Scroll of teleport', 25 + 5 * f], ['map', '🗺️', 'Scroll of mapping', 20 + 4 * f]];
+    const show = () => sheet(`<h2>🏮 Nim the peddler</h2><p class="story">A gnome sits on a crate of clinking bottles under a little lantern. <span class="say">“Everything’s for sale and nothing’s refundable! Don’t ask how I got down here. Don’t ask how I get back up.”</span></p><p>🪙 ${S.gold} gold</p>${items.map(([k, e, d, p]) => `<div class="item"><span style="font-size:24px">${e}</span><span class="n">${d}<small>You have ${(S.pots[k] ?? S.scr[k]) || 0}</small></span><button data-a="buy" data-v="${k}" class="gold" ${S.gold < p ? 'disabled' : ''}>${p} g</button></div>`).join('')}<div class="row"><button data-a="x">Leave</button></div>`, (a, v) => {
+      if (a === 'buy') { const it = items.find(i => i[0] === v); S.gold -= it[3]; if (v in S.pots) S.pots[v]++; else S.scr[v]++; save(); draw(); return show(); }
+      closeSheet();
+    });
+    return show();
+  }
+  if (n.k === 'wounded') {
+    const ci = Math.min(6, CH.indexOf(chOf(f)));
+    return sheet(`<h2>🩸 ${n.name}</h2><p class="story">An adventurer slumps against the wall, bandaged and pale. <span class="say">“Don’t mind me. Listen — ${RUMOURS[ci]}”</span> They eye your pack. <span class="say">“You couldn’t spare a healing potion?”</span></p><div class="row"><button data-a="give" class="hot" ${S.pots.potR ? '' : 'disabled'}>Give a healing potion</button><button data-a="no">Sorry</button></div>`, a => {
+      closeSheet();
+      if (a === 'give') { S.pots.potR--; const r = Math.random(); let gift;
+        if (r < .5) { const l = S.cls === 'wizard' ? { k: 'wand', ...fitWand() } : { k: 'weapon', ...[...WEAPONS].reverse().find(w => w.atk <= 3 + .9 * f) }; takeLoot(l); gift = `their ${l.n}`; }
+        else if (r < .75) { S.shield++; gift = 'a dented but sturdy shield plate (+1 defence)'; }
+        else { const g = 50 * f; S.gold += g; gift = `a purse of ${g} gold`; }
+        spent(n); story(`🩸 ${n.name}`, '', `<span class="say">“Thank you. Truly.”</span> They drink, and some colour comes back. <span class="say">“Here — take this. I won’t be going any deeper.”</span><br><br>They give you ${gift}, then limp off towards the stairs up.`);
+      } else { spent(n); log(`${n.name} nods. “Good luck down there.”`); }
+    });
+  }
+  if (n.k === 'idol') {
+    return sheet(`<h2>👁️ An idol of Ashmaw</h2><p class="story">A squat black idol with two coals for eyes. The cult has left offerings: rings, teeth, a child’s shoe. As you approach, a voice like a banked fire speaks inside your head: <span class="say">“POWER, LITTLE EMBER. JUST TOUCH ME.”</span></p>
+      <div class="row"><button data-a="touch" class="hot">Touch it (more power, less health)</button></div><div class="row"><button data-a="smash">Smash it</button><button data-a="x">Leave it be</button></div>`, a => {
+      if (a === 'x') return closeSheet();
+      closeSheet();
+      if (a === 'touch') { const lose = Math.round(S.mhp * .12); S.mhp -= lose; S.hp = Math.min(S.hp, S.mhp); S.batk += 3; if (S.wand) S.wand.pow += 3; spent(n, T.altar); story('👁️ Ember-touched', '', `Heat pours up your arm. You feel <b>strong</b> — +3 attack${S.wand ? ' and +3 spell power' : ''} — and somehow less: −${lose} max health. Somewhere below, something is pleased with you.`); }
+      else if (chance(.55)) { const g = 40 * f; S.gold += g; spent(n, T.stone); story('👁️ Smashed', '', `The idol cracks like an egg. Inside, the cult’s tithe: ${g} gold.`); }
+      else { const d = Math.max(3, Math.round(S.mhp * .2)); spent(n, T.stone); story('👁️ Smashed', '', `The idol bursts in a gout of fire! ${d} damage.`, () => { hurt(d, 'a burning idol'); save(); draw(); }); }
+    });
+  }
+}
+// ---- Cinderfold ---------------------------------------------------------------------------------------------------
+const bank = () => M.gold + (S && !S.stub ? S.gold : 0);
+function spend(g) { M.gold -= g; saveMeta(); }
+function shopSheet(title, quote, rows, extraHtml = '', extraCb) {
+  const show = () => {
+    sheet(`<h2>${title}</h2><p class="say">“${quote}”</p><p>🪙 ${M.gold} gold in the bank</p>${rows().map(r => `<div class="item"><span style="font-size:24px">${r.e}</span><span class="n">${r.d}<small>${r.s || ''}</small></span>${r.p === null ? '<button disabled>Done</button>' : `<button data-a="buy" data-v="${r.k}" class="gold" ${M.gold < r.p ? 'disabled' : ''}>${r.p} g</button>`}</div>`).join('')}${extraHtml}<div class="row"><button data-a="x">Leave</button></div>`, (a, v) => {
+      if (a === 'buy') { const r = rows().find(r => r.k === v); spend(r.p); r.f(); saveMeta(); draw(); return show(); }
+      if (extraCb && extraCb(a, v, show)) return;
+      closeSheet();
+    });
+  };
+  show();
+}
+const lvlRow = (k, e, d, base, max, each) => { const n = M[k]; return { k, e, d, s: `Level ${n}${max ? ' of ' + max : ''}${each ? ' · ' + each : ''}`, p: max && n >= max ? null : base * (n + 1) ** 2, f: () => M[k]++ }; };
+function townNpc(n) {
+  const k = n.k;
+  if (k === 'S') return shopSheet('🔨 Brannoc the smith', 'Every blade I sharpen stays sharp — for every hero you’ll ever be.', () => [lvlRow('smith', '⚔️', 'Sharpen: +1 attack, for good', 120, 10)]);
+  if (k === 'B') return shopSheet('🛡️ Old Ferra, armourer', 'Good leather and better stitching. It’ll outlast you. Most things do.', () => [lvlRow('armour', '🛡️', 'Reinforce: +1 defence, for good', 150, 10)]);
+  if (k === 'H') return shopSheet('✨ Sister Elin', 'The Dawnmother keeps those who keep her light. And I keep bandages.', () => [lvlRow('vigor', '❤️', 'Blessing of vigour: +4 max health, for good', 100, 10)]);
+  if (k === 'A') return shopSheet('⚗️ Mother Maud', 'Potions! Fresh this morning, mostly. I’ll pack them for your next trip down.', () => [['potR', '❤️', 'Healing potion', 25], ['potB', '💙', 'Mana potion', 30], ['potG', '💚', 'Regeneration potion', 35]].map(([k, e, d, p]) => ({ k, e, d, s: `Packed for your next run: ${M.stash[k]}`, p, f: () => M.stash[k]++ })));
+  if (k === 'C') return shopSheet('🗺️ Tobin Ashgrove, cartographer', 'I mapped that place in my head while I sat in a cage. Let me draw it for you.', () => [{ k: 'maps', e: '🗺️', d: M.maps ? 'Full survey: see the whole layout of every floor' : 'Stair charts: see where the stairs are on every floor', s: `Level ${M.maps} of 2`, p: M.maps >= 2 ? null : [400, 1500][M.maps], f: () => M.maps++ }]);
+  if (k === 'R') return shopSheet('ᚱ Hilda Runeshield', 'A rune on the edge, a rune on the grip. You’ll strike true. Dwarf promise.', () => [lvlRow('runes', '🎯', 'Rune of striking: +4% critical hits, for good', 200, 5)]);
+  if (k === 'P') return shopSheet('🎶 Pip Merrybuckle', 'Every hero needs a song! Pay the minstrel and the tale grows taller — and so do you.', () => [lvlRow('tales', '📯', 'Tales of glory: +10% experience, for good', 300, 3)], `<div class="row"><button data-a="song">🎵 Sing me the tale so far</button></div>`, (a, v, show) => { if (a === 'song') { song(); return true; } });
+  if (k === 'G') return shopSheet('📚 Corvin the Grey', 'Scrolls, freshly inked. And one rather special feather.', () => [
+    ...[['fire', '🔥', 'Scroll of flame', 60], ['tele', '🌀', 'Scroll of teleport', 50], ['map', '🗺️', 'Scroll of mapping', 40]].map(([k, e, d, p]) => ({ k, e, d, s: `Packed for your next run: ${M.stash[k]}`, p, f: () => M.stash[k]++ })),
+    { k: 'phoenix', e: '🪶', d: 'Phoenix feather: once per run, rise again at half health', s: M.phoenix ? 'Yours' : 'For good', p: M.phoenix ? null : 2500, f: () => { M.phoenix = 1; } }]);
+  if (k === 'M') {
+    if (!M.paid) { M.paid = 1; M.gold += 600; saveMeta(); draw(); return story('🏛️ Mayor Aldous and Wren', '', `The mayor grips your hand in both of his and won’t let go. Wren rolls her eyes. <span class="say">“The reward,”</span> he says, <span class="say">“and the town’s thanks, for ever. Six hundred gold. It’s not enough. It’s what we have.”</span><br><br><span class="say">“I can make you a scout’s pack,”</span> Wren adds. <span class="say">“I know what you actually need down there.”</span>`); }
+    return shopSheet('🧭 Wren', 'Extra potions, tucked where the cultists never look. Trust me.', () => [lvlRow('scout', '🎒', 'Scout’s pack: +1 healing potion at the start of every run', 250, 3)]);
+  }
+  if (k === 'T') return tavern();
+}
+function song() {
+  const b = M.bosses, verses = [];
+  verses.push('🎵 <i>Oh, down went our hero, past Cinderfold’s gate, with a lamp and a blade and a terrible fate…</i>');
+  if (b.grumm) verses.push('🎵 <i>They felled mighty Grumm with his club and one eye — though he only, poor lad, wished to go see the sky!</i>');
+  if (b.ossa) verses.push('🎵 <i>Through the crypts drowned in shadow where dead folk once stirred, they snuffed Mother Ossa’s green lantern unheard!</i>');
+  if (b.mimicking) verses.push('🎵 <i>And the gold with a tongue in King Durmek’s great hall got a stomach-ache worse than the worst of them all!</i>');
+  if (b.vharex) verses.push('🎵 <i>The priest in the temple who sang the hymn wrong — well, they sang it back right, and that ended his song.</i>');
+  if (b.sythra) verses.push(M.sythra === 'spared' ? '🎵 <i>And the Warden who’d slept on her duty awoke, and remembered her oath, and breathed blue where she spoke!</i>' : '🎵 <i>And the Warden fell silent, her fire made steel, and the dark down below gave a laugh you could feel…</i>');
+  if (b.ashmaw) verses.push('🎵 <i>Then they struck at the Heart where the Sleeper lay coiled — and the fire that chose beat the fire that boiled!</i>');
+  if (verses.length === 1) verses.push('🎵 <i>…and that’s all so far! Do go and do something heroic. I need a second verse.</i>');
+  story('🎶 Pip’s song', '', verses.join('<br>'));
+}
+function newBounty() {
+  const maxCh = Math.min(5, Math.max(0, Math.floor((Math.max(1, M.best) - 1) / 5)));
+  const ch = R(Math.max(0, maxCh - 1), maxCh), m = pick(CH[ch].mons.filter(x => !M.bounty.some(b => b.id === x.id)) || CH[ch].mons);
+  const need = R(5, 10); return { id: m.id, need, have: 0, g: need * (12 + 18 * ch) };
+}
+function tavern() {
+  while (M.bounty.length < 3) M.bounty.push(newBounty());
+  saveMeta();
+  const tab = (t) => {
+    let h = `<h2>🍺 The Smouldering Flagon</h2><div class="tabs"><button data-a="tab" data-v="b" ${t === 'b' ? 'class="on"' : ''}>📋 Bounties</button><button data-a="tab" data-v="r" ${t === 'r' ? 'class="on"' : ''}>💬 Rumours</button><button data-a="tab" data-v="h" ${t === 'h' ? 'class="on"' : ''}>🏆 Heroes</button></div>`;
+    if (t === 'b') h += `<p class="say">“Marta’s bounties. Kill them down there, get paid up here. Gold goes straight in your bank.”</p>` + M.bounty.map((b, i) => { const d = MONDEF[b.id]; return `<div class="item">${iconHtml(d.t, d.c)}<span class="n">${d.n} × ${b.need}<small>${b.have}/${b.need} slain · reward ${b.g} gold</small></span>${b.have >= b.need ? `<button data-a="claim" data-v="${i}" class="gold">Claim</button>` : `<button data-a="drop" data-v="${i}">Swap</button>`}</div>`; }).join('');
+    if (t === 'r') { const ci = Math.min(5, Math.floor(Math.max(0, M.best - 1) / 5)); h += `<p class="story">Marta wipes a tankard that was already clean. <span class="say">“What are folk saying? ${['That the miners heard singing down the new shaft, the night before they started vanishing.', 'That the dwarves buried their dead underwater so nothing could dig them up. Didn’t work, did it?', 'That old King Durmek left his gold behind on purpose. Who leaves gold behind on purpose?', 'That Father Vharex was seen going down the shaft with a lantern, smiling. Smiling!', 'That there’s a dragon under the mountain, and she was meant to be on our side.', 'That the mountain is breathing. Don’t laugh. Put your hand on the cellar wall.'][ci]}”</span></p><p class="dim">Tip: ${RUMOURS[ci]}</p>`; }
+    if (t === 'h') h += M.hall.length ? M.hall.map((e, i) => `<div class="item">${iconHtml(CLASSES[e.c].t)}<span class="n">${i + 1}. ${CLASSES[e.c].n}, level ${e.lv}${e.w ? ' 🌅' : ''}${e.ng ? ' 🔥×' + e.ng : ''}<small>Floor ${e.f} · ${e.k} kills${e.w ? ' · defeated the Sleeper' : ''}</small></span></div>`).join('') : '<p class="dim">No heroes yet. Be the first.</p>';
+    sheet(h + '<div class="row"><button data-a="x">Leave</button></div>', (a, v) => {
+      if (a === 'tab') return tab(v);
+      if (a === 'claim') { const b = M.bounty[v]; M.gold += b.g; M.bounty.splice(v, 1, newBounty()); saveMeta(); draw(); return tab('b'); }
+      if (a === 'drop') { M.bounty.splice(v, 1, newBounty()); saveMeta(); return tab('b'); }
+      closeSheet();
+    });
+    paintIcons();
+  };
+  tab('b');
+}
+function heroSelect() {
+  S = { cls: 'knight', lv: 1, xp: 0, mhp: 1, hp: 1, mmp: 0, mp: 0, batk: 0, bdef: 0, crit: 0, weapon: null, wand: null, shield: 0, gold: 0, pots: { potR: 0, potB: 0, potG: 0 }, scr: { fire: 0, tele: 0, map: 0 },
+    floor: 0, map: null, mons: [], items: [], npcs: [], px: 0, py: 0, turn: 0, log: [], st: {}, kills: 0, bossDone: {}, inTown: true, stub: true };
+  newFloor(0); log('Cinderfold. Walk into the town folk to trade; the stairs lead down into Emberdeep.'); draw();
+  const starts = [1, ...[6, 11, 16, 21, 26].filter(f => M.ways[f])];
+  if (!starts.includes(selStart)) selStart = 1; if (selNg > M.won) selNg = 0;
+  sheet(`<h2>🔥 Emberdeep</h2><p class="dim">Beneath the mining town of Cinderfold the old dwarf halls burn with a strange ember-light, and things crawl up out of them at night. Six chapters, thirty floors, and something asleep at the bottom. Choose a hero and go down.</p>
+    ${Object.entries(CLASSES).map(([k, c]) => `<div class="item">${iconHtml(c.t)}<span class="n"><b>${c.n}</b><small>❤️ ${c.hp + 4 * M.vigor} · 💙 ${c.mp} · ⚔️ ${c.atk + M.smith} · 🛡️ ${c.def + M.armour}<br>${c.skill}: ${c.sd}<br>From level ${SKILL2_LV}, ${c.skill2}: ${c.sd2}</small></span><button data-a="cls" data-v="${k}" class="hot">Play</button></div>`).join('')}
+    ${starts.length > 1 ? `<h3>🔮 Waystone — start at</h3><div class="row">${starts.map(f => `<button data-a="start" data-v="${f}" ${f === selStart ? 'class="on"' : ''}>${f === 1 ? 'Floor 1' : `${f} · ${chOf(f).s}`}</button>`).join('')}</div>` : ''}
+    ${M.won ? `<h3>🔥 Difficulty</h3><div class="row">${Array.from({ length: Math.min(M.won, 5) + 1 }, (_, i) => `<button data-a="ng" data-v="${i}" ${i === selNg ? 'class="on"' : ''}>${i ? 'Ember-touched ' + 'I'.repeat(i) : 'Normal'}</button>`).join('')}</div>` : ''}
+    <p class="dim" style="font-size:13px">Deepest floor: ${M.best} · Runs: ${M.runs} · Monsters slain: ${M.kills} · Pages found: ${Object.keys(M.pages).length}/30 · Bank: ${M.gold} gold<br>Spend gold with the town folk for permanent upgrades: walk into them. Rescue prisoners in the deep and they will open shops here too.</p>
+    <div class="row"><button data-a="town">Walk around town first</button><button data-a="journal">📖 Journal</button></div>`, (a, v) => {
+    if (a === 'cls') { closeSheet(); newRun(v, selStart, selNg); }
+    if (a === 'start') { selStart = +v; heroSelect(); }
+    if (a === 'ng') { selNg = +v; heroSelect(); }
+    if (a === 'town') closeSheet();
+    if (a === 'journal') journal('s', heroSelect);
+  }, true);
+  paintIcons();
+}
+// ---- sheets ---------------------------------------------------------------------------------------------------------
+const Q = [];
+function queue(f) { Q.push(f); if (!busy()) next(); }
+function next() { const f = Q.shift(); if (f) f(); else { $('ov').classList.add('hidden'); draw(); } }
+function sheet(html, cb, lock) {
+  $('sheet').innerHTML = html; $('ov').classList.remove('hidden'); $('sheet').dataset.lock = lock ? 1 : ''; $('sheet').scrollTop = 0;
+  $('sheet').onclick = e => { const b = e.target.closest('button'); if (b && !b.disabled) cb(b.dataset.a, b.dataset.v); };
+  paintIcons();
+}
+function closeSheet() { next(); }
+$('ov').onclick = e => { if (e.target === $('ov') && !$('sheet').dataset.lock) closeSheet(); };
+function story(title, sub, text, after) { sheet(`<h2>${title} <span class="dim" style="font-size:14px">${sub}</span></h2><p class="story">${text}</p><div class="row"><button data-a="ok" class="hot">Continue</button></div>`, () => { closeSheet(); if (after) after(); }, true); }
+function iconHtml(t, c = '', cls = '') { return `<canvas class="ic ${cls}" width="16" height="16" data-t="${t}" data-c="${c}"></canvas>`; }
+function paintIcons() { document.querySelectorAll('canvas.ic').forEach(c => { const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.clearRect(0, 0, 16, 16); g.drawImage(c.dataset.c ? tinted(+c.dataset.t, c.dataset.c) : SHEET, c.dataset.c ? 0 : (c.dataset.t % 12) * TS, c.dataset.c ? 0 : Math.floor(c.dataset.t / 12) * TS, TS, TS, 0, 0, 16, 16); }); }
+function heroInfo() {
+  if (!S || S.inTown) return;
+  const c = CLASSES[S.cls], st = [];
+  if (S.st.poison) st.push(S.st.burning ? '🔥 Burning' : '🤢 Poisoned'); if (S.st.invis) st.push('👤 Hidden'); if (S.st.regen) st.push('💚 Regenerating'); if (S.phoenix) st.push('🪶 Phoenix feather ready');
+  sheet(`<h2>${iconHtml(c.t)} ${c.n}, level ${S.lv}</h2>
+    <div class="item"><span class="n">⚔️ Attack ${atk()} · 🛡️ Defence ${def()} · 🎯 Crit ${Math.round(S.crit * 100)}%<small>XP ${S.xp}/${xpNext()} · Gold ${S.gold} (bank ${M.gold}) · Kills ${S.kills}${S.ng ? ` · Ember-touched ${'I'.repeat(S.ng)}` : ''}</small></span></div>
+    ${S.weapon ? `<div class="item">${iconHtml(S.weapon.t, S.weapon.c)}<span class="n">${S.weapon.n}<small>+${S.weapon.atk} attack</small></span></div>` : ''}
+    ${S.wand ? `<div class="item">${iconHtml(S.wand.t, S.wand.c)}<span class="n">${S.wand.n}<small>+${S.wand.pow} spell power (and +${Math.floor(S.wand.pow / 3)} attack)</small></span></div>` : ''}
+    ${S.shield ? `<div class="item">${iconHtml(T.shield)}<span class="n">Shield plates<small>+${S.shield} defence</small></span></div>` : ''}
+    <div class="item"><span class="n">${c.e} ${c.skill} (${c.cost} mana)<small>${c.sd}</small></span></div>
+    <div class="item"><span class="n">✨ ${c.skill2} (${c.cost2} mana)${S.lv < SKILL2_LV ? ` — unlocks at level ${SKILL2_LV}` : ''}<small>${c.sd2}</small></span></div>
+    ${st.length ? `<p>${st.join(' · ')}</p>` : ''}
+    <div class="row"><button data-a="x">Close</button></div>`, () => closeSheet());
+}
+function journal(t = 's', back) {
+  const tabs = [['s', '📜 Story'], ['p', '📄 Pages'], ['b', '👹 Bestiary']];
+  let h = `<h2>📖 Journal</h2><div class="tabs">${tabs.map(([k, l]) => `<button data-a="tab" data-v="${k}" ${k === t ? 'class="on"' : ''}>${l}</button>`).join('')}</div>`;
+  if (t === 's') {
+    let any = false;
+    CH.forEach((c, i) => {
+      if (!M.seen['ch' + c.f0]) return; any = true;
+      h += `<h3>${i < 6 ? `Chapter ${i + 1}: ` : ''}${c.n}</h3><p>${c.intro}</p>`;
+      if (c.boss && M.bosses[c.boss.id]) h += `<p><b>${c.boss.n}, ${c.boss.title}.</b> ${BOSS_TEXT[c.boss.id][1] || (c.boss.id === 'sythra' ? (M.sythra === 'spared' ? 'You spared the Warden, and she returned to her watch upon the seal.' : 'You took the Warden’s heart-fire, and forged it into a blade.') : 'The Sleeper sleeps again. Cinderfold is safe.')}</p>`;
+    });
+    if (!any) h += '<p class="dim">Your story has not begun yet. Go down the stairs.</p>';
+    const res = Object.entries(CAPTIVES).filter(([, c]) => M.rescued[c.k]);
+    if (res.length) h += `<h3>Rescued</h3><p>${res.map(([, c]) => c.n).join(', ')}.</p>`;
+  }
+  if (t === 'p') {
+    const got = Object.keys(M.pages).length;
+    h += `<p class="dim">${got} of 30 pages found. One lies somewhere on each floor.</p>`;
+    PAGES.forEach((p, i) => { if (M.pages[i + 1]) h += `<h3>${i + 1}. ${p[0]}</h3><p>${p[1]}</p>`; else h += `<p class="dim">${i + 1}. ???</p>`; });
+  }
+  if (t === 'b') {
+    const all = CH.slice(0, 6).flatMap(c => [...c.mons, c.boss]);
+    h += `<p class="dim">${all.filter(m => M.slain[m.id]).length} of ${all.length} kinds of foe defeated.</p>` + all.map(m => M.slain[m.id] ? `<div class="item">${iconHtml(m.t, m.c, 'sm')}<span class="n">${m.n}${m.boss ? `, ${m.title}` : ''}<small>${m.boss ? 'Guardian · ' : ''}defeated ${M.slain[m.id]}× · ${chOf(CH.find(c => c.mons.includes(m) || c.boss === m).f0).n}</small></span></div>` : `<div class="item">${iconHtml(m.t, '*#000000', 'sm')}<span class="n dim">???</span></div>`).join('');
+  }
+  sheet(h + '<div class="row"><button data-a="x">Close</button></div>', (a, v) => { if (a === 'tab') return journal(v, back); if (back) back(); else closeSheet(); }, !!back);
+}
+function menu() {
+  sheet(`<h2>☰ Emberdeep</h2><p class="dim">Tap the arrows (or tap the map in a direction) to move; walk into monsters to fight, and into people and strange things to meet them. 🧭 Explore walks for you until something comes into view. Potions: ❤️ heal, 💙 mana, 💚 cure poison and regenerate. Watch for ⚠️ warnings: a guardian winding up a big attack can be dodged.<br><br>If you fall, you are carried back to town with half your gold: spend it on permanent upgrades. Each guardian you beat opens a Waystone, so later runs can start further down.</p>
+    <div class="row"><button data-a="x" class="hot">Back to the game</button></div>
+    <div class="row"><button data-a="give">Give up this run</button></div>
+    <p class="dim" style="font-size:12px">An original story. Art: “Tiny Dungeon” by Kenney (kenney.nl), CC0.</p>`, a => {
+    if (a === 'give' && S && !S.inTown && !S.dead) { closeSheet(); die('giving up'); return; }
+    closeSheet();
+  });
+}
+// ---- drawing -------------------------------------------------------------------------------------------------------
+const cv = $('cv'), g = cv.getContext('2d');
+const TC = {};
+function tinted(t, c) {   // a recoloured copy of one tile: '#rrggbb' shifts hue, '*#rrggbb' multiplies (darkens)
+  const key = t + c; if (TC[key]) return TC[key];
+  const o = document.createElement('canvas'); o.width = o.height = 16; const x = o.getContext('2d');
+  x.drawImage(SHEET, (t % 12) * TS, Math.floor(t / 12) * TS, TS, TS, 0, 0, 16, 16);
+  x.globalCompositeOperation = c[0] === '*' ? 'multiply' : 'color'; x.fillStyle = c.replace('*', ''); x.fillRect(0, 0, 16, 16);
+  x.globalCompositeOperation = 'destination-in'; x.drawImage(SHEET, (t % 12) * TS, Math.floor(t / 12) * TS, TS, TS, 0, 0, 16, 16);
+  return TC[key] = o;
+}
+function tile(t, x, y, s, c) { if (c) g.drawImage(tinted(t, c), 0, 0, 16, 16, x, y, s, s); else g.drawImage(SHEET, (t % 12) * TS, Math.floor(t / 12) * TS, TS, TS, x, y, s, s); }
+function draw() {
+  if (!S || !S.map) return;
+  const dpr = devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  g.imageSmoothingEnabled = false;
+  const ch = chOf(S.floor);
+  const s = Math.max(16, Math.round(Math.min(W / 11, H / 13) * dpr / 8) * 8);   // tile size in device pixels (multiple of 8: crisp pixels)
+  const cols = Math.ceil(cv.width / s) + 1, rows = Math.ceil(cv.height / s) + 1;
+  const ox = Math.round(cv.width / 2 - (S.px + .5) * s + (shake ? R(-shake, shake) : 0)), oy = Math.round(cv.height / 2 - (S.py + .5) * s + (shake ? R(-shake, shake) : 0));
+  g.fillStyle = '#0d0a12'; g.fillRect(0, 0, cv.width, cv.height);
+  const x0 = Math.floor(-ox / s), y0 = Math.floor(-oy / s);
+  const fl = ch ? ch.fl : [48, 49, 49], wl = ch ? ch.wall : [40, 57], top = ch ? ch.top : ['#2b2236', '#3a2e48'];
+  for (let y = y0; y < y0 + rows; y++) for (let x = x0; x < x0 + cols; x++) {
+    if (!inside(x, y)) continue;
+    const i = idx(x, y); if (!S.map.seen[i]) continue;
+    const px = ox + x * s, py = oy + y * s, c = S.map.c[i], v = S.map.var[i];
+    if (c) {
+      tile(v < .12 ? fl[2] : v < .3 ? fl[1] : fl[0], px, py, s);
+      if (c === 2) tile(T.stairs, px, py, s);
+      const dc = S.map.deco[i]; if (dc !== undefined && dc >= 0) tile(dc, px, py, s);
+    } else if (cell(x, y + 1)) { tile(v < .7 ? wl[0] : wl[1], px, py, s); if (S.map.feat[i]) tile(S.map.feat[i], px, py, s); }
+    else { g.fillStyle = top[0]; g.fillRect(px, py, s, s); g.fillStyle = top[1]; g.fillRect(px, py + s - s / 8, s, s / 8); }
+  }
+  if (ch) { g.globalCompositeOperation = 'multiply'; g.fillStyle = ch.tint; g.fillRect(0, 0, cv.width, cv.height); g.globalCompositeOperation = 'source-over'; }
+  // telegraphed guardian attacks
+  for (const m of S.mons) if (m.warn) {
+    g.fillStyle = '#ff400055';
+    if (m.warn === 'quake') for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { if (cell(m.x + dx, m.y + dy)) g.fillRect(ox + (m.x + dx) * s, oy + (m.y + dy) * s, s, s); }
+    if (m.warn === 'breath') for (let y = 0; y < S.map.h; y++) for (let x = 0; x < S.map.w; x++) if (cell(x, y) && inBreath(m, x, y)) g.fillRect(ox + x * s, oy + y * s, s, s);
+  }
+  // items, people, monsters, hero
+  for (const it of S.items) { if (!S.map.seen[idx(it.x, it.y)]) continue; const t = { gold: T.gold, potR: T.potR, potB: T.potB, potG: T.potG, chest: T.chest, opened: T.chestOpen, spikes: T.spikes, page: T.page, loot: it.loot && it.loot.t }[it.k]; if (t !== undefined) tile(t, ox + it.x * s, oy + it.y * s, s, it.k === 'loot' ? it.loot.c : ''); if (it.k === 'page' && VIS.has(idx(it.x, it.y))) { g.fillStyle = '#fff6c040'; g.fillRect(ox + it.x * s, oy + it.y * s, s, s); } }
+  for (const n of S.npcs) {
+    if (!S.map.seen[idx(n.x, n.y)]) continue;
+    const px = ox + n.x * s, py = oy + n.y * s;
+    if (n.k === 'captive' || n.k === 'peddler' || n.k === 'wounded') { g.fillStyle = n.k === 'captive' ? '#ffe08a44' : '#ffffff22'; g.beginPath(); g.arc(px + s / 2, py + s / 2, s * .55, 0, 7); g.fill(); }
+    tile(n.t, px, py, s, n.c);
+    if (n.k === 'captive') { g.font = `${s * .4}px sans-serif`; g.fillText('❗', px + s * .62, py + s * .3); }
+  }
+  for (const m of S.mons) {
+    if (!VIS.has(idx(m.x, m.y))) continue;
+    const px = ox + m.x * s, py = oy + m.y * s, bs = Math.round(s * m.sc), bx = px + s / 2 - bs / 2, by = py + s - bs;
+    if (m.boss || m.elite) { g.fillStyle = m.boss ? '#ff6a2a40' : '#ffcc3340'; g.beginPath(); g.arc(px + s / 2, py + s - bs / 2, bs * .6, 0, 7); g.fill(); }
+    tile(m.t, bx, by, bs, m.c);
+    if (hitFx.has(m)) { g.globalCompositeOperation = 'lighter'; g.fillStyle = '#ff303050'; g.fillRect(bx, by, bs, bs); g.globalCompositeOperation = 'source-over'; }
+    if (m.hp < m.mhp && !m.boss) { g.fillStyle = '#000a'; g.fillRect(px + s * .1, by - s * .12, s * .8, s * .09); g.fillStyle = '#e0533d'; g.fillRect(px + s * .1, by - s * .12, s * .8 * Math.max(0, m.hp) / m.mhp, s * .09); }
+    if (m.stun) { g.font = `${s * .4}px sans-serif`; g.fillText('💫', px + s * .55, by + s * .3); }
+    if (m.warn) { g.font = `${s * .5}px sans-serif`; g.fillText('⚠️', px + s * .5, by - s * .05); }
+  }
+  {
+    const hx = ox + S.px * s, hy = oy + S.py * s;
+    g.globalAlpha = S.inTown ? .85 : S.st.invis ? .45 : 1; tile(CLASSES[S.cls].t, hx, hy, s); g.globalAlpha = 1;
+  }
+  // fog over remembered but unseen cells; coloured light around the hero
+  for (let y = y0; y < y0 + rows; y++) for (let x = x0; x < x0 + cols; x++) {
+    if (!inside(x, y)) continue; const i = idx(x, y);
+    if (S.map.seen[i] && !VIS.has(i)) { g.fillStyle = '#0d0a12b0'; g.fillRect(ox + x * s, oy + y * s, s, s); }
+  }
+  if (ch) {
+    const gr = g.createRadialGradient(cv.width / 2, cv.height / 2, s * 2, cv.width / 2, cv.height / 2, s * 7.5);
+    gr.addColorStop(0, ch.light + '12'); gr.addColorStop(1, '#0d0a1280'); g.fillStyle = gr; g.fillRect(0, 0, cv.width, cv.height);
+  }
+  if (bolt) { g.strokeStyle = bolt.c || '#ffb02e'; g.lineWidth = s / 6 * (bolt.w || 1); g.lineCap = 'round'; g.beginPath(); g.moveTo(ox + (bolt.x0 + .5) * s, oy + (bolt.y0 + .5) * s); g.lineTo(ox + (bolt.x1 + .5) * s, oy + (bolt.y1 + .5) * s); g.stroke(); }
+  g.textAlign = 'center'; g.font = `bold ${Math.round(s * .38)}px system-ui`;
+  for (const p of pops) { g.lineWidth = 4; g.strokeStyle = '#000'; g.strokeText(p.t, ox + (p.x + .5) * s, oy + p.y * s); g.fillStyle = p.c; g.fillText(p.t, ox + (p.x + .5) * s, oy + p.y * s); }
+  // the guardian's health across the top
+  const boss = S.mons.find(m => m.boss && VIS.has(idx(m.x, m.y)));
+  if (boss) {
+    const bw = cv.width * .8, bx = cv.width * .1, by = 10 * dpr, bh = 9 * dpr;
+    g.fillStyle = '#000c'; g.fillRect(bx - 2, by - 2, bw + 4, bh + 4); g.fillStyle = '#ff8a2a'; g.fillRect(bx, by, bw * Math.max(0, boss.hp) / boss.mhp, bh);
+    g.font = `bold ${12 * dpr}px system-ui`; g.lineWidth = 3 * dpr; g.strokeStyle = '#000'; const lbl = `${boss.n} — ${boss.hp}/${boss.mhp}`; g.strokeText(lbl, cv.width / 2, by + bh + 14 * dpr); g.fillStyle = '#ffd8b0'; g.fillText(lbl, cv.width / 2, by + bh + 14 * dpr);
+  }
+  if (shake || bolt) { shake = 0; bolt = null; setTimeout(draw, 160); }   // one settle frame, then idle (no animation loop)
+  hud();
+}
+function hud() {
+  const inTown = S.inTown, c = CLASSES[S.cls], ch = chOf(S.floor);
+  $('where').innerHTML = S.floor === 0 ? '🏘️ Cinderfold' : `⛏️ Floor ${S.floor}<small>${ch.s}</small>`;
+  $('hpl').textContent = inTown ? 'Choose a hero' : `❤️ ${Math.max(0, S.hp)}/${S.mhp}  ·  Lv ${S.lv}`; $('hpb').style.width = inTown ? '0' : 100 * Math.max(0, S.hp) / S.mhp + '%';
+  $('hpb').style.background = S.st && S.st.poison ? (S.st.burning ? '#ff8a2a' : '#7bc043') : '#e0533d';
+  $('mpl').textContent = inTown ? '' : `💙 ${S.mp}/${S.mmp}  ·  XP ${Math.round(100 * S.xp / xpNext())}%`; $('mpb').style.width = inTown ? '0' : 100 * S.mp / Math.max(1, S.mmp) + '%';
+  $('goldl').textContent = `🪙 ${S.floor === 0 ? M.gold : S.gold || 0}`;
+  $('skillB').innerHTML = inTown ? 'Skill' : `${c.e}<small>${c.skill.split(' ').pop()}</small>`;
+  $('skillB').disabled = inTown || S.floor === 0 || S.mp < c.cost;
+  $('skill2B').innerHTML = inTown ? '✨' : S.lv < SKILL2_LV ? `🔒<small>Lv ${SKILL2_LV}</small>` : `✨<small>${c.skill2.split(' ').pop()}</small>`;
+  $('skill2B').disabled = inTown || S.floor === 0 || S.lv < SKILL2_LV || S.mp < c.cost2;
+  for (const k of ['potR', 'potB', 'potG']) { const b = $({ potR: 'prB', potB: 'pbB', potG: 'pgB' }[k]); b.textContent = `${{ potR: '❤️', potB: '💙', potG: '💚' }[k]} ${S.pots[k] || 0}`; b.disabled = !S.pots[k] || inTown; }
+  const ns = S.scr ? S.scr.fire + S.scr.tele + S.scr.map : 0; $('scB').textContent = `📜 ${ns}`; $('scB').disabled = !ns || inTown;
+  $('stairsB').classList.toggle('gold', cell(S.px, S.py) === 2);
+  $('log').innerHTML = S.log.slice(-3).map(l => `<div>${l}</div>`).join('');
+}
+// ---- input ------------------------------------------------------------------------------------------------------------
+$('pad').onclick = e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.a === 'wait') { if (S && !S.inTown && S.floor > 0) act('wait'); return; } const [dx, dy] = b.dataset.d.split(',').map(Number); move(dx, dy); };
+function move(dx, dy) {
+  if (!S || busy()) return;
+  if (S.inTown) { const nx = S.px + dx, ny = S.py + dy; const n = npcAt(nx, ny); if (n) return meet(n); if (walkable(nx, ny)) { S.px = nx; S.py = ny; fov(); if (cell(nx, ny) === 2) log('The stairs down. Tap ⬇ Stairs to choose a hero and descend.'); } draw(); return; }
+  act('move', dx, dy);
+}
+$('acts').onclick = e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  const a = b.dataset.a;
+  if (a === 'skill') skill(1); if (a === 'skill2') skill(2); if (a === 'explore') explore(); if (a === 'stairs') stairs();
+  if (a === 'pr') drink('potR'); if (a === 'pb') drink('potB'); if (a === 'pg') drink('potG'); if (a === 'scroll') scrollSheet();
+  if (a === 'hero') heroInfo(); if (a === 'journal') journal(); if (a === 'menu') menu();
+};
+cv.addEventListener('pointerdown', e => {
+  if (!S) return; const r = cv.getBoundingClientRect(), dx = e.clientX - r.left - r.width / 2, dy = e.clientY - r.top - r.height / 2;
+  if (Math.abs(dx) < 14 && Math.abs(dy) < 14) return;
+  if (Math.abs(dx) > Math.abs(dy)) move(Math.sign(dx), 0); else move(0, Math.sign(dy));
+});
+addEventListener('keydown', e => { const k = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0], w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0] }[e.key]; if (k) { e.preventDefault(); move(...k); } if (e.key === ' ' && S && !S.inTown) act('wait'); });
+addEventListener('resize', () => draw());
+document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+addEventListener('sp-pause', save);
+SHEET.onload = () => {
+  loadMeta();
+  try { S = JSON.parse(localStorage.getItem(RUN)); } catch (e) { S = null; }
+  if (S && S.v === 2 && S.map && !S.dead) { fov(); draw(); } else heroSelect();
+};
+</script>
+</body>
+</html>

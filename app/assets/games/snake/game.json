@@ -1,0 +1,13 @@
+{
+  "id": "snake",
+  "title": "Snake",
+  "description": "Eat, grow, don't bite yourself. Swipe or use the arrow keys.",
+  "players": "1",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "Play"
+  ]
+}

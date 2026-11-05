@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Tinkerworks</title>
+<style>
+  :root { color-scheme: dark; --bg: #0c2236; --ink: #e8f1f8; --dim: #9fb6c8; --acc: #f2c14e; --btn: #1d4566; --btn2: #275a83; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 16px/1.35 system-ui, sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
+  button { font: inherit; color: var(--ink); background: var(--btn); border: 1px solid #3b6f99; border-radius: 10px; padding: 8px 12px; min-height: 42px; cursor: pointer; }
+  button:active { background: var(--btn2); }
+  button:disabled { opacity: .4; }
+  button.go { background: #2f8f4e; border-color: #4fbf72; font-weight: 700; }
+  button.stop { background: #a8432f; border-color: #d66a52; font-weight: 700; }
+  .screen { position: absolute; inset: 0; display: none; flex-direction: column; }
+  .screen.on { display: flex; }
+  /* menu */
+  #menu { overflow-y: auto; padding: 16px; align-items: center; }
+  #menu h1 { margin: 6px 0 2px; font-size: 30px; letter-spacing: 1px; color: var(--acc); }
+  #menu p { margin: 4px 0 14px; color: var(--dim); text-align: center; max-width: 420px; }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; width: 100%; max-width: 520px; }
+  #grid button { min-height: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 6px; }
+  #grid button b { font-size: 20px; }
+  #grid button small { color: var(--dim); font-size: 12px; text-align: center; }
+  #grid button.done { border-color: #4fbf72; }
+  #grid button.done b::after { content: ' ✓'; color: #6fe08f; }
+  #grid button.locked { opacity: .45; }
+  /* play */
+  #top { display: flex; align-items: center; gap: 8px; padding: 6px 8px; }
+  #top .t { flex: 1; min-width: 0; }
+  #top .t b { display: block; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #top .t span { display: block; font-size: 13px; color: var(--dim); }
+  #wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; position: relative; }
+  canvas { display: block; touch-action: none; border-radius: 6px; box-shadow: 0 0 0 1px #2d5a80; }
+  #msg { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); background: #0c2236ee; border: 2px solid var(--acc); border-radius: 14px; padding: 14px 18px; text-align: center; display: none; max-width: 86%; }
+  #msg.on { display: block; }
+  #msg h2 { margin: 0 0 6px; color: var(--acc); }
+  #msg div { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+  #tray { display: flex; gap: 6px; padding: 6px 8px 0; overflow-x: auto; }
+  #tray button { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 4px 10px; }
+  #tray button canvas { box-shadow: none; }
+  #tray button i { font-style: normal; font-weight: 700; color: var(--acc); }
+  #bar { display: flex; gap: 6px; padding: 6px 8px 8px; align-items: center; }
+  #bar .sp { flex: 1; }
+  #bar button { min-width: 46px; }
+  #run { min-width: 104px; }
+</style>
+</head>
+<body>
+<div id="menu" class="screen on">
+  <h1>Tinkerworks</h1>
+  <p>Build a contraption from the parts you are given, then press <b>Start</b> and watch it go. Get the red thing into the golden zone.</p>
+  <div id="grid"></div>
+  <p style="margin-top:18px;font-size:12px">Physics by matter.js (MIT). Your progress is saved on this device.</p>
+</div>
+
+<div id="play" class="screen">
+  <div id="top">
+    <button id="back" aria-label="Stages">◀</button>
+    <div class="t"><b id="title"></b><span id="desc"></span></div>
+    <button id="hint" aria-label="Hint">💡</button>
+  </div>
+  <div id="wrap">
+    <canvas id="cv"></canvas>
+    <div id="msg"><h2 id="mh"></h2><span id="mt"></span><div id="mb"></div></div>
+  </div>
+  <div id="tray"></div>
+  <div id="bar">
+    <button id="rl" aria-label="Turn left">⟲</button>
+    <button id="rr" aria-label="Turn right">⟳</button>
+    <button id="fl" aria-label="Flip">↔</button>
+    <button id="del" aria-label="Remove">🗑</button>
+    <span class="sp"></span>
+    <button id="clr" aria-label="Clear all">Clear</button>
+    <button id="run" class="go">▶ Start</button>
+  </div>
+</div>
+
+<script src="matter.min.js"></script>
+<script src="sim.js"></script>
+<script src="levels.js"></script>
+<script>
+'use strict';
+const T = window.Tinker, { W, H, PARTS } = T, M = window.Matter;
+const $ = id => document.getElementById(id);
+const KEY = 'tinkerworks.v1';
+let save = {};
+try { save = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+save.done = save.done || {}; save.placed = save.placed || {};
+const store = () => { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} };
+
+let li = 0, level = null, placed = [], sel = -1, world = null, running = false, raf = 0, hints = 0, result = null;
+const cv = $('cv'), cx = cv.getContext('2d');
+let scale = 1;
+
+// ---------- menu ----------
+function menu() {
+  stop(); $('play').classList.remove('on'); $('menu').classList.add('on');
+  const g = $('grid'); g.innerHTML = '';
+  const firstOpen = LEVELS.findIndex((_, i) => !save.done[i]);
+  LEVELS.forEach((L, i) => {
+    const b = document.createElement('button');
+    // stages open in order, three ahead of the first unsolved one
+    const open = firstOpen < 0 || i <= firstOpen + 2;
+    b.className = (save.done[i] ? 'done' : '') + (open ? '' : ' locked');
+    b.innerHTML = `<b>${i + 1}</b><small>${L.n}</small>`;
+    b.onclick = () => open ? start(i) : flash(b);
+    g.appendChild(b);
+  });
+}
+function flash(b) { b.animate([{ transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'none' }], 200); }
+
+// ---------- play ----------
+function start(i) {
+  li = i; level = LEVELS[i]; hints = 0; sel = -1; result = null; world = null;
+  placed = (save.placed[i] || []).map(p => ({ ...p }));
+  $('menu').classList.remove('on'); $('play').classList.add('on');
+  $('title').textContent = `${i + 1}. ${level.n}`; $('desc').textContent = level.d;
+  hideMsg(); resize(); rebuild();
+}
+const remaining = t => level.parts[t] - placed.filter(p => p.t === t).length;
+function persist() { save.placed[li] = placed; store(); }
+function rebuild() {   // edit mode: a fresh, unstepped world showing the stage as it is now
+  world = T.build(level, placed);
+  placed.forEach((p, i) => p.bad = !T.fits(level, placed.map(({ bad, ...q }) => q), i));
+  tray(); controls(); draw();
+}
+const clean = () => placed.map(({ bad, ...q }) => q);
+
+function tray() {
+  const tr = $('tray'); tr.innerHTML = '';
+  for (const t of Object.keys(level.parts)) {
+    const b = document.createElement('button'), n = remaining(t);
+    const ic = document.createElement('canvas'); ic.width = 34; ic.height = 34; ic.style.width = ic.style.height = '28px';
+    icon(ic.getContext('2d'), t);
+    b.appendChild(ic); b.insertAdjacentHTML('beforeend', `<span>${PARTS[t].n}</span><i>×${n}</i>`);
+    b.disabled = n <= 0 || running;
+    b.onclick = () => addPart(t);
+    tr.appendChild(b);
+  }
+}
+function controls() {
+  const p = placed[sel], ed = !running;
+  $('rl').disabled = $('rr').disabled = !(ed && p && PARTS[p.t].turn);
+  $('fl').disabled = !(ed && p && PARTS[p.t].flip);
+  $('del').disabled = !(ed && p);
+  $('clr').disabled = !(ed && placed.length);
+  $('hint').disabled = !ed || !level.sol;
+  const r = $('run');
+  if (running) { r.textContent = '■ Stop'; r.className = 'stop'; }
+  else if (result) { r.textContent = '↺ Reset'; r.className = ''; }
+  else { r.textContent = '▶ Start'; r.className = 'go'; }
+}
+function addPart(t) {
+  if (running || remaining(t) <= 0) return;
+  resetRun();
+  const p = { t, x: 180, y: 60, a: 0 }; if (PARTS[t].flip) p.f = 1;
+  // first free spot, scanning from the top middle
+  const base = clean();
+  outer: for (let y = 60; y < H - 20; y += 30) for (const dx of [0, -40, 40, -80, 80, -120, 120, -150, 150]) {
+    p.x = 180 + dx; p.y = y;
+    if (T.fits(level, [...base, p], base.length)) break outer;
+  }
+  placed.push(p); sel = placed.length - 1; persist(); rebuild();
+}
+function turn(d) { const p = placed[sel]; if (!p || running) return; resetRun(); const s = PARTS[p.t].turn; p.a = (((p.a || 0) + d * s) % 360 + 360) % 360; if (p.a > 180) p.a -= 360; persist(); rebuild(); }
+$('rl').onclick = () => turn(-1); $('rr').onclick = () => turn(1);
+$('fl').onclick = () => { const p = placed[sel]; if (!p || running) return; resetRun(); p.f = p.f === -1 ? 1 : -1; persist(); rebuild(); };
+$('del').onclick = () => { if (sel < 0 || running) return; resetRun(); placed.splice(sel, 1); sel = -1; persist(); rebuild(); };
+$('clr').onclick = () => { if (running) return; if (!confirm('Remove all your parts from this stage?')) return; resetRun(); placed = []; sel = -1; persist(); rebuild(); };
+$('back').onclick = menu;
+$('hint').onclick = () => {
+  if (!level.sol || running) return;
+  hints = Math.min(hints + 1, level.sol.length);
+  resetRun(); draw();
+  showMsg('Hint', hints < level.sol.length ? `The faint outline shows where one part could go. Tap 💡 again for another.` : 'The faint outlines show a full solution.', [['OK', hideMsg]]);
+};
+$('run').onclick = () => { if (running) { stop(); result = 'stopped'; controls(); } else if (result) { resetRun(); } else go(); };
+
+function resetRun() { stop(); result = null; hideMsg(); if (level) { world = T.build(level, clean()); controls(); tray(); draw(); } }
+function go() {
+  if (placed.some(p => p.bad)) { showMsg('Not yet', 'A part shown in red is overlapping something or is somewhere parts can’t go. Move it first.', [['OK', hideMsg]]); return; }
+  hideMsg(); world = T.build(level, clean()); running = true; sel = -1; result = null; tray(); controls();
+  let last = performance.now(), acc = 0;
+  const frame = now => {
+    if (!running) return;
+    acc += Math.min(100, now - last); last = now;
+    while (acc >= 1000 / 60 && running) {
+      acc -= 1000 / 60;
+      if (T.step(world)) { win(); break; }
+      if (world.t >= 900) { lose(); break; }
+    }
+    draw();
+    if (running) raf = requestAnimationFrame(frame);
+  };
+  raf = requestAnimationFrame(frame);
+}
+function stop() { running = false; cancelAnimationFrame(raf); }
+function win() {
+  stop(); result = 'win'; draw(); controls(); tray();
+  const first = !save.done[li]; save.done[li] = 1; store();
+  const next = li + 1 < LEVELS.length;
+  showMsg(first ? 'Solved!' : 'Solved again!', hints ? 'With a little help. Can you find a different way?' : 'Your machine works.',
+    [['Again', () => resetRun()], ...(next ? [['Next ▶', () => start(li + 1)]] : [['Stages', menu]])]);
+  if (!next) $('mt').textContent = 'That was the last stage. Well built!';
+}
+function lose() {
+  stop(); result = 'lose'; draw(); controls(); tray();
+  showMsg('Not quite', 'Time’s up. Tap Reset, adjust your parts and try again.', [['Reset', () => resetRun()]]);
+}
+function showMsg(h, t, btns) {
+  $('mh').textContent = h; $('mt').textContent = t; const d = $('mb'); d.innerHTML = '';
+  for (const [l, f] of btns) { const b = document.createElement('button'); b.textContent = l; b.onclick = f; d.appendChild(b); }
+  $('msg').classList.add('on');
+}
+function hideMsg() { $('msg').classList.remove('on'); }
+
+// ---------- pointer: tap a part to select it, drag to move ----------
+let drag = null;
+function toWorld(e) { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; }
+function partAt(pt) {
+  if (!world) return -1;
+  for (let i = world.partBodies.length - 1; i >= 0; i--) {
+    for (const b of world.partBodies[i]) {
+      if (M.Query.point([b], pt).length) return i;
+      // be generous with fingers: within 14 px of the part's bounding box counts
+      const bb = b.bounds; if (pt.x > bb.min.x - 14 && pt.x < bb.max.x + 14 && pt.y > bb.min.y - 14 && pt.y < bb.max.y + 14 && (bb.max.y - bb.min.y < 30 || bb.max.x - bb.min.x < 30)) return i;
+    }
+  }
+  return -1;
+}
+cv.addEventListener('pointerdown', e => {
+  if (running) return;
+  if (result) resetRun();
+  const pt = toWorld(e), i = partAt(pt);
+  sel = i;
+  if (i >= 0) { drag = { i, dx: placed[i].x - pt.x, dy: placed[i].y - pt.y, moved: false }; cv.setPointerCapture(e.pointerId); }
+  controls(); draw();
+});
+cv.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const pt = toWorld(e), p = placed[drag.i];
+  const nx = Math.max(0, Math.min(W, Math.round((pt.x + drag.dx) / 5) * 5)), ny = Math.max(0, Math.min(H, Math.round((pt.y + drag.dy) / 5) * 5));
+  if (nx === p.x && ny === p.y) return;
+  p.x = nx; p.y = ny; drag.moved = true;
+  world = T.build(level, clean()); p.bad = !T.fits(level, clean(), drag.i); draw();
+});
+const endDrag = () => { if (drag) { if (drag.moved) { persist(); rebuild(); } drag = null; } };
+cv.addEventListener('pointerup', endDrag); cv.addEventListener('pointercancel', endDrag);
+
+// ---------- drawing ----------
+function resize() {
+  const wr = $('wrap'), aw = wr.clientWidth - 8, ah = wr.clientHeight - 8;
+  scale = Math.max(.3, Math.min(aw / W, ah / H));
+  const dpr = window.devicePixelRatio || 1;
+  cv.style.width = W * scale + 'px'; cv.style.height = H * scale + 'px';
+  cv.width = Math.round(W * scale * dpr); cv.height = Math.round(H * scale * dpr);
+  cx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
+  if (level && world) draw();
+}
+window.addEventListener('resize', resize);
+
+const COL = { wall: '#7d93a8', plank: '#c8924f', bouncer: '#36c46a', fan: '#8a99a8', conveyor: '#3a3f47', ball: '#e6e9ee', heavy: '#4a525c',
+  crate: '#a8743a', domino: '#f1ead8', balloon: '#c46bd8', pin: '#c9d3dc', basket: '#c9a46a', button: '#e5483f', gate: '#e8892f', seesaw: '#d9a35e', target: '#e5483f' };
+
+function poly(c, b) { c.beginPath(); const v = b.vertices; c.moveTo(v[0].x, v[0].y); for (let k = 1; k < v.length; k++) c.lineTo(v[k].x, v[k].y); c.closePath(); }
+function grid(c) {
+  c.fillStyle = '#123a5c'; c.fillRect(0, 0, W, H);
+  c.strokeStyle = '#1b4a72'; c.lineWidth = 1;
+  c.beginPath(); for (let x = 0; x <= W; x += 20) { c.moveTo(x, 0); c.lineTo(x, H); } for (let y = 0; y <= H; y += 20) { c.moveTo(0, y); c.lineTo(W, y); } c.stroke();
+  c.strokeStyle = '#21557f'; c.beginPath(); for (let x = 0; x <= W; x += 100) { c.moveTo(x, 0); c.lineTo(x, H); } for (let y = 0; y <= H; y += 100) { c.moveTo(0, y); c.lineTo(W, y); } c.stroke();
+}
+function hatch(c, z, col) {
+  c.save(); c.beginPath(); c.rect(z.x, z.y, z.w, z.h); c.clip();
+  c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(z.x, z.y, z.w, z.h);
+  c.strokeStyle = col; c.lineWidth = 1; c.beginPath();
+  for (let d = -z.h; d < z.w; d += 12) { c.moveTo(z.x + d, z.y + z.h); c.lineTo(z.x + d + z.h, z.y); }
+  c.stroke(); c.restore();
+}
+function body(c, b, t) {
+  const k = b.plugin.kind;
+  if (b.plugin.gone) return;
+  if (b.circleRadius) {
+    const r = b.circleRadius, { x, y } = b.position;
+    if (b.plugin.balloon) {   // string
+      c.strokeStyle = '#ddd'; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y + r); c.quadraticCurveTo(x + 4, y + r + 10, x - 1, y + r + 20); c.stroke();
+    }
+    const g = c.createRadialGradient(x - r * .35, y - r * .35, r * .1, x, y, r);
+    const base = k === 'target' ? COL.target : b.plugin.balloon ? COL.balloon : COL[k] || '#ccc';
+    g.addColorStop(0, '#fff'); g.addColorStop(.25, base); g.addColorStop(1, shade(base, -.35));
+    c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+    if (k !== 'pin') { // a spoke so rolling shows
+      c.strokeStyle = 'rgba(0,0,0,.25)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(b.angle) * r * .8, y + Math.sin(b.angle) * r * .8); c.stroke();
+    }
+    return;
+  }
+  const isTarget = k === 'target';
+  c.fillStyle = isTarget ? COL.target : COL[k] || '#999';
+  if (k === 'gate') { c.fillStyle = COL.gate; poly(c, b); c.fill(); c.save(); poly(c, b); c.clip(); c.strokeStyle = '#3a2410'; c.lineWidth = 3; c.beginPath(); for (let d = b.bounds.min.x - 20; d < b.bounds.max.x; d += 10) { c.moveTo(d, b.bounds.max.y); c.lineTo(d + 10, b.bounds.min.y); } c.stroke(); c.restore(); return; }
+  if (k === 'button') {
+    const on = b.plugin.on, { x, y } = b.position;
+    c.fillStyle = '#5a6672'; c.fillRect(x - 22, y, 44, 5);
+    c.fillStyle = on ? '#7a2a24' : COL.button; c.beginPath(); c.roundRect(x - 16, on ? y - 1 : y - 6, 32, on ? 3 : 8, 3); c.fill();
+    return;
+  }
+  poly(c, b); c.fill();
+  c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1; c.stroke();
+  const { x, y } = b.position;
+  if (k === 'plank' || k === 'seesaw') {   // wood grain
+    c.save(); c.translate(x, y); c.rotate(b.angle); c.strokeStyle = 'rgba(90,50,10,.45)'; c.lineWidth = 1;
+    const hw = M.Vector.magnitude(M.Vector.sub(b.vertices[1], b.vertices[0])) / 2;
+    c.beginPath(); c.moveTo(-hw + 6, -1); c.lineTo(hw - 14, -1); c.moveTo(-hw + 18, 2); c.lineTo(hw - 6, 2); c.stroke(); c.restore();
+  }
+  if (k === 'seesaw') { c.fillStyle = '#5a6672'; c.beginPath(); c.moveTo(x, y + 3); c.lineTo(x - 12, y + 30); c.lineTo(x + 12, y + 30); c.closePath(); c.fill(); c.fillStyle = '#ddd'; c.beginPath(); c.arc(x, y, 3, 0, 7); c.fill(); }
+  if (k === 'bouncer') { c.save(); c.translate(x, y); c.rotate(b.angle); c.strokeStyle = '#d6ffe2'; c.lineWidth = 1.5; c.beginPath(); for (let i = -24; i <= 24; i += 8) { c.moveTo(i, -3); c.lineTo(i + 4, 3); } c.stroke(); c.restore(); }
+  if (k === 'conveyor') {
+    const dir = b.plugin.dir, off = ((t || 0) * 2.6 * dir) % 12;
+    c.save(); poly(c, b); c.clip(); c.strokeStyle = '#f2c14e'; c.lineWidth = 2;
+    for (let i = -66; i < 66; i += 12) { const px = x + i + off; c.beginPath(); c.moveTo(px - 3 * dir, y - 4); c.lineTo(px + 2 * dir, y); c.lineTo(px - 3 * dir, y + 4); c.stroke(); }
+    c.restore();
+    c.fillStyle = '#9aa5b1'; for (const ex of [-52, 52]) { c.beginPath(); c.arc(x + ex, y, 5, 0, 7); c.fill(); }
+  }
+  if (k === 'fan') {
+    const d = b.plugin.dir, fx = Math.cos(d), fy = Math.sin(d);
+    c.fillStyle = '#2b3138'; c.beginPath(); c.arc(x, y, 9, 0, 7); c.fill();
+    const spin = (t || 0) * .5;
+    c.fillStyle = '#cfd8e0'; for (let i = 0; i < 3; i++) { const a = spin + i * 2.09; c.beginPath(); c.ellipse(x + Math.cos(a) * 4, y + Math.sin(a) * 4, 5, 2.2, a, 0, 7); c.fill(); }
+    // the stream
+    c.strokeStyle = 'rgba(190,230,255,.35)'; c.lineWidth = 1.5;
+    for (const across of [-14, 0, 14]) for (let along = 30; along < 180; along += 38) {
+      const a2 = along + ((t || 0) * 2) % 38, px = x + fx * a2 - fy * across, py = y + fy * a2 + fx * across;
+      c.beginPath(); c.moveTo(px - fx * 8, py - fy * 8); c.lineTo(px, py); c.lineTo(px - fx * 4 - fy * 3, py - fy * 4 + fx * 3); c.stroke();
+    }
+    c.fillStyle = '#cfd8e0'; c.fillRect(x + fx * 11 - Math.abs(fy) * 13 - Math.abs(fx) * 2, y + fy * 11 - Math.abs(fx) * 13 - Math.abs(fy) * 2, Math.abs(fy) * 26 + Math.abs(fx) * 4, Math.abs(fx) * 26 + Math.abs(fy) * 4);
+  }
+  if (k === 'crate' || (isTarget && b.vertices.length === 4)) {
+    c.save(); c.translate(x, y); c.rotate(b.angle); c.strokeStyle = 'rgba(60,30,5,.6)'; c.lineWidth = 2; c.strokeRect(-13, -13, 26, 26);
+    c.beginPath(); c.moveTo(-13, -13); c.lineTo(13, 13); c.moveTo(13, -13); c.lineTo(-13, 13); c.stroke(); c.restore();
+  }
+}
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16), ch = s => Math.max(0, Math.min(255, Math.round(((n >> s) & 255) * (1 + f))));
+  return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+}
+function icon(c, t) {   // a tiny picture of a part for the tray
+  c.save(); c.translate(17, 17);
+  const o = { t, x: 0, y: 0, a: t === 'plank' || t === 'short' || t === 'bouncer' || t === 'seesaw' ? -20 : 0 };
+  const w = T.build({ fixed: [], goal: { x: 0, y: 0, w: 1, h: 1 } }, [o]);
+  const bs = w.partBodies[0], bb = bs.reduce((a, b) => ({ x0: Math.min(a.x0, b.bounds.min.x), x1: Math.max(a.x1, b.bounds.max.x), y0: Math.min(a.y0, b.bounds.min.y), y1: Math.max(a.y1, b.bounds.max.y) }), { x0: 1e9, x1: -1e9, y0: 1e9, y1: -1e9 });
+  const s = Math.min(1.4, 30 / Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0));
+  c.scale(s, s); c.translate(-(bb.x0 + bb.x1) / 2, -(bb.y0 + bb.y1) / 2);
+  for (const b of bs) body(c, b, 0);
+  c.restore();
+}
+function draw() {
+  const c = cx; grid(c);
+  const t = world ? world.t : 0;
+  // golden goal zone
+  const G = world.goal;
+  c.fillStyle = 'rgba(242,193,78,.28)'; c.fillRect(G.x, G.y, G.w, G.h);
+  c.strokeStyle = '#f2c14e'; c.setLineDash([5, 4]); c.lineWidth = 1.5; c.strokeRect(G.x + .5, G.y + .5, G.w - 1, G.h - 1); c.setLineDash([]);
+  if (!running && !result) for (const z of level.nobuild || []) hatch(c, z, 'rgba(255,120,100,.35)');
+  // hint ghosts
+  if (hints && !running && level.sol) {
+    const gw = T.build(level, level.sol.slice(0, hints));
+    c.save(); c.globalAlpha = .35; c.setLineDash([4, 3]);
+    for (const bs of gw.partBodies) for (const b of bs) { if (b.circleRadius) { c.beginPath(); c.arc(b.position.x, b.position.y, b.circleRadius, 0, 7); } else poly(c, b); c.strokeStyle = '#fff'; c.lineWidth = 2; c.stroke(); c.fillStyle = '#fff'; c.fill(); }
+    c.restore();
+  }
+  // everything else, static first
+  const bodies = world.bodies.filter(b => !b.plugin.frame);
+  for (const b of bodies) if (b.isStatic) body(c, b, t);
+  for (const b of bodies) if (!b.isStatic) body(c, b, t);
+  // highlight the player's parts in edit mode
+  if (!running) world.partBodies.forEach((bs, i) => {
+    const p = placed[i]; if (!p) return;
+    if (!p.bad && i !== sel) return;
+    c.save(); c.lineWidth = 2.5; c.strokeStyle = p.bad ? '#ff4d3d' : '#ffe27a'; if (i === sel && !p.bad) c.setLineDash([5, 3]);
+    for (const b of bs) { if (b.circleRadius) { c.beginPath(); c.arc(b.position.x, b.position.y, b.circleRadius + 3, 0, 7); } else { c.beginPath(); c.rect(b.bounds.min.x - 3, b.bounds.min.y - 3, b.bounds.max.x - b.bounds.min.x + 6, b.bounds.max.y - b.bounds.min.y + 6); } c.stroke(); }
+    c.restore();
+  });
+  // timer bar while running
+  if (running || result) { c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(0, 0, W * Math.min(1, t / 900), 3); }
+}
+
+// pause when hidden (the app also sends sp-pause)
+const pause = () => { if (running) { stop(); result = 'stopped'; controls(); } };
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+window.addEventListener('sp-pause', pause);
+
+menu();
+</script>
+</body>
+</html>

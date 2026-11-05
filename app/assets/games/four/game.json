@@ -1,0 +1,13 @@
+{
+  "id": "four",
+  "title": "Four in a Row",
+  "description": "Drop discs to line up four. Play the computer (3 levels) or a friend.",
+  "players": "1–2",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "vs Computer: Easy"
+  ]
+}

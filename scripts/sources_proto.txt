@@ -1,0 +1,4 @@
+$LIVE wikipedia wikipedia_en_medicine_maxi
+$LIVE wikipedia wikipedia_zh_medicine_maxi
+$LIVE wikipedia wikipedia_ja_medicine_maxi
+$LIVE other mdwiki_en_all_maxi

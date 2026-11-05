@@ -1,0 +1,517 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>Chat · Bothy</title><link rel="stylesheet" href="/style.css">
+<style>
+html, body { height:100%; }
+body { display:flex; flex-direction:column; }
+main.chat { flex:1; min-height:0; width:100%; max-width:760px; padding:0; display:flex; flex-direction:column; }
+.convs { display:flex; gap:6px; overflow-x:auto; padding:10px 12px 8px; scrollbar-width:none; flex-shrink:0; }
+.convs::-webkit-scrollbar { display:none; }
+.chip { flex-shrink:0; font:inherit; font-size:14px; font-weight:500; padding:6px 12px; border-radius:999px; border:1px solid var(--border);
+  background:var(--surface); color:var(--fg); cursor:pointer; display:flex; align-items:center; gap:6px; }
+.chip.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+.chip.on .dot { box-shadow:0 0 0 2px #fff; }
+@media (prefers-color-scheme: dark) { .chip.on { color:#0E1A14; } }
+.chip .dot { flex-shrink:0; width:8px; height:8px; border-radius:50%; background:var(--border); }
+.chip .dot.live { background:#3FA66B; }
+.chip .n { background:#C2453A; color:#fff; font-size:12px; font-weight:700; border-radius:999px; padding:0 7px; }
+.info { padding:0 16px 6px; color:var(--muted); font-size:13px; flex-shrink:0; }
+.log { flex:1; min-height:0; overflow-y:auto; padding:8px 12px 12px; display:flex; flex-direction:column; gap:6px; }
+.m { max-width:82%; align-self:flex-start; background:var(--surface); border:1px solid var(--border); border-radius:16px 16px 16px 4px;
+  padding:7px 12px 6px; box-shadow:var(--shadow); white-space:pre-wrap; overflow-wrap:anywhere; }
+.m.me { align-self:flex-end; background:var(--accent-soft); border-color:transparent; border-radius:16px 16px 4px 16px; }
+.m .who { font-size:13px; font-weight:600; color:var(--accent); }
+.m .when { font-size:11px; color:var(--muted); text-align:right; margin-top:1px; }
+.m.priv .who::after { content:"\00a0· private"; color:var(--muted); font-weight:500; }
+.notice { align-self:center; color:var(--muted); font-size:13px; padding:2px 0; }
+.day { align-self:center; font-size:12px; font-weight:600; color:var(--muted); background:var(--surface); border:1px solid var(--border);
+  border-radius:999px; padding:1px 10px; margin:6px 0; }
+.empty { margin:auto; text-align:center; color:var(--muted); padding:20px; }
+form.send { display:flex; gap:8px; padding:8px 12px calc(10px + env(safe-area-inset-bottom)); border-top:1px solid var(--border);
+  background:var(--bg); flex-shrink:0; align-items:flex-end; }
+form.send textarea { flex:1; font:inherit; font-family:Inter, system-ui, -apple-system, sans-serif; resize:none; max-height:140px; padding:9px 14px; border-radius:20px; border:1px solid var(--border);
+  background:var(--surface); color:var(--fg); outline:none; }
+form.send textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+.joincard { margin:8vh auto 0; max-width:420px; padding:22px; }
+.joincard h1 { margin:0 0 4px; font-size:26px; letter-spacing:-.02em; }
+.joincard input { width:100%; font:inherit; padding:10px 16px; margin:14px 0 10px; border-radius:999px; border:1px solid var(--border);
+  background:var(--surface); color:var(--fg); }
+.joincard .btn { width:100%; }
+.status { position:fixed; left:50%; transform:translateX(-50%); top:64px; background:var(--fg); color:var(--bg); font-size:13px;
+  padding:4px 12px; border-radius:999px; display:none; z-index:9; }
+a.tel { font-weight:600; }
+.tool { flex-shrink:0; width:42px; height:42px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--accent);
+  display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
+.tool svg { width:22px; height:22px; fill:currentColor; }
+.m img.ph { display:block; max-width:min(260px, 100%); max-height:320px; border-radius:10px; margin:4px 0 2px; cursor:zoom-in; background:var(--border); }
+.m audio { display:block; width:240px; max-width:100%; margin:4px 0 2px; }
+.m .gone { color:var(--muted); font-style:italic; font-size:14px; }
+.m .place { display:flex; gap:10px; align-items:center; margin:4px 0 2px; }
+.m .place svg { width:30px; height:30px; fill:#C2453A; flex-shrink:0; }
+.m .place .c { font-size:13px; color:var(--muted); }
+.m .place a { font-size:14px; font-weight:600; margin-right:10px; }
+.lb { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:20; display:flex; align-items:center; justify-content:center; }
+.lb img { max-width:100%; max-height:100%; }
+.sheet { position:fixed; left:0; right:0; bottom:0; z-index:21; background:var(--surface); border-radius:18px 18px 0 0;
+  box-shadow:0 -4px 20px rgba(0,0,0,.2); padding:10px 8px calc(14px + env(safe-area-inset-bottom)); }
+.sheet > button { display:flex; width:100%; gap:14px; align-items:center; font:inherit; text-align:left; padding:12px 14px; border:0;
+  background:none; color:var(--fg); border-radius:12px; cursor:pointer; }
+.sheet > button:hover { background:var(--accent-soft); }
+.sheet > button svg { width:24px; height:24px; fill:var(--accent); flex-shrink:0; }
+.rec { display:flex; align-items:center; gap:10px; flex:1; font-variant-numeric:tabular-nums; }
+.rec .dot { width:12px; height:12px; border-radius:50%; background:#C2453A; animation:blink 1s infinite; }
+@keyframes blink { 50% { opacity:.25; } }
+.rec .bar { flex:1; height:6px; border-radius:3px; background:var(--border); overflow:hidden; }
+.rec .bar i { display:block; height:100%; width:0; background:#C2453A; }
+.btn.ghost { background:none; color:var(--fg); border:1px solid var(--border); }
+.sheet .say { padding:6px 14px 10px; }
+.sheet .say h2 { font-size:18px; margin:4px 0 8px; }
+.sheet .say p { margin:0 0 8px; font-size:15px; line-height:1.45; }
+.sheet .say ol { margin:0 0 6px; padding-left:20px; font-size:15px; line-height:1.5; }
+.sheet .row { display:flex; gap:8px; padding:4px 14px 0; flex-wrap:wrap; }
+.sheet .row .btn { flex:1; justify-content:center; text-align:center; }
+.sheet small { display:block; color:var(--muted); font-size:13px; }
+</style></head><body>
+<header><a class="brand" href="/">Bothy</a><nav><a href="/chat" aria-current="page">Chat</a></nav>
+  <span style="flex:1"></span><a href="#" id="me" style="font-size:14px;display:none"></a></header>
+<div class="status" id="status">Reconnecting…</div>
+<main class="chat" id="main"></main>
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+const main = $("#main");
+let me = null, then = null;
+const HTTPS_PORT = 0; // filled in by the server when it has an https address (tls.rs)
+try { me = JSON.parse(localStorage.getItem("sp-chat") || "null"); } catch (e) {}
+// the app passes its identity in the hash: #id=…&token=…&name=…
+if (location.hash.length > 1) {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("id") && h.get("token")) {
+    me = { id: h.get("id"), token: h.get("token"), name: h.get("name") || "" };
+    then = h.get("then");
+    history.replaceState(null, "", location.pathname);
+  }
+}
+let msgs = [], people = [], seq = 0, view = "all", unread = {}, polling = false;
+
+function rand(n) {
+  const a = new Uint8Array(n);
+  (window.crypto || window.msCrypto).getRandomValues(a);
+  return Array.from(a, (b) => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[b % 62]).join("");
+}
+function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+function linkify(s) {
+  return esc(s).replace(/\+?\(?\d[\d \-.()]{5,}\d/g, (t) =>
+    t.replace(/\D/g, "").length >= 7 ? `<a class="tel" href="tel:${t.replace(/[^\d+]/g, "")}">${t}</a>` : t);
+}
+function hhmm(ts) { const d = new Date(ts); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
+function dayOf(ts) {
+  const d = new Date(ts), t = new Date();
+  const k = (x) => x.getFullYear() + "-" + x.getMonth() + "-" + x.getDate();
+  if (k(d) === k(t)) return "Today";
+  t.setDate(t.getDate() - 1);
+  if (k(d) === k(t)) return "Yesterday";
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+function convOf(m) { return m.to ? (m.from === me.id ? m.to : m.from) : "all"; }
+function nameOf(id) { const p = people.find((p) => p.id === id); return p ? p.name : "someone"; }
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.error || r.status); e.status = r.status; throw e; }
+  return j;
+}
+
+function joinForm(rename) {
+  $("#me").style.display = "none";
+  main.innerHTML = `<form class="joincard card" id="jf"><h1>${rename ? "Change your name" : "Chat"}</h1>
+    <div class="meta">${rename ? "Everyone will see the new name." :
+      "Talk with everyone on this Wi-Fi, or privately with one person. No internet needed."}</div>
+    <input id="nm" maxlength="32" placeholder="Your name" autocomplete="nickname" required value="${esc(me && me.name || "")}">
+    <button class="btn">${rename ? "Save" : "Join"}</button>
+    <p class="meta" style="margin-top:14px">Messages are kept on this hub so people who join later can catch up.
+    Private messages are only shown to the two of you, but whoever runs this hub can read them.</p></form>`;
+  $("#nm").focus();
+  $("#jf").onsubmit = async (e) => {
+    e.preventDefault();
+    const name = $("#nm").value.trim();
+    if (!name) return;
+    const m = me || { id: rand(16), token: rand(32) };
+    m.name = name;
+    try {
+      await api("/api/chat/join", m);
+      me = m;
+      localStorage.setItem("sp-chat", JSON.stringify(me));
+      start();
+    } catch (err) {
+      if (err.status === 403) { me = null; localStorage.removeItem("sp-chat"); }
+      alert("Could not join: " + err.message);
+    }
+  };
+}
+
+const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+const ICON = {
+  add: svg("M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"),
+  photo: svg("M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"),
+  mic: svg("M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"),
+  place: svg("M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"),
+  gps: svg("M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"),
+};
+let hasMaps = false;
+fetch("/api/maps").then((r) => r.ok ? r.json() : []).then((j) => { hasMaps = Array.isArray(j) ? j.length > 0 : !!(j && (j.regions || []).length); }).catch(() => {});
+const toParam = () => (view === "all" ? null : view);
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+function sheet(items) {
+  const back = document.createElement("div");
+  back.className = "lb"; back.style.background = "rgba(0,0,0,.35)";
+  const s = document.createElement("div");
+  s.className = "sheet";
+  s.innerHTML = items.map((it, i) => `<button data-i="${i}">${it.icon}<span>${esc(it.label)}<small>${esc(it.sub || "")}</small></span></button>`).join("");
+  const close = () => { back.remove(); s.remove(); };
+  back.onclick = close;
+  s.querySelectorAll("button").forEach((b) => b.onclick = () => { close(); items[b.dataset.i].go(); });
+  document.body.append(back, s);
+}
+
+// Browsers allow the microphone and GPS only on a secure (https) page. The server has an https
+// address with its own home-made certificate (no internet to get a real one), so the browser warns
+// once. Say so first, then go there with this identity in the hash (each address keeps its own storage).
+function goSecure(what) {
+  const ios = isIOS;
+  const back = document.createElement("div");
+  back.className = "lb"; back.style.background = "rgba(0,0,0,.35)";
+  const s = document.createElement("div");
+  s.className = "sheet";
+  s.innerHTML = `<div class="say"><h2>${what === "voice" ? "Voice messages use" : "Sharing your location uses"} the secure address</h2>
+    <p>Browsers only allow ${what === "voice" ? "the microphone" : "GPS"} on a secure (https) address. This one has its own
+    certificate, as there is no internet to get one from, so your browser will warn you once. That is expected here:
+    you are connected straight to it.</p>
+    ${ios ? `<ol><li>Tap <b>Show Details</b></li><li>Tap <b>visit this website</b>, then <b>Visit Website</b></li></ol>`
+          : `<ol><li>Tap <b>Advanced</b> (or <b>Show details</b>)</li><li>Tap <b>Proceed</b> (or <b>Continue</b>)</li></ol>`}
+    <p>Your name and messages come with you.</p></div>
+    <div class="row"><button type="button" class="btn ghost" id="gsNo">Not now</button><button type="button" class="btn" id="gsGo">Continue</button></div>
+    ${what === "voice" ? `<button type="button" id="gsRec">${ICON.mic}<span>Use my recorder app instead<small>Record, then send the file</small></span></button>` : ""}`;
+  const close = () => { back.remove(); s.remove(); };
+  back.onclick = close;
+  document.body.append(back, s);
+  $("#gsNo").onclick = close;
+  if ($("#gsRec")) $("#gsRec").onclick = () => { close(); $("#sound").click(); };
+  $("#gsGo").onclick = () => {
+    const h = new URLSearchParams({ id: me.id, token: me.token, name: me.name, then: what });
+    location.href = `https://${location.hostname}:${HTTPS_PORT}/chat#${h}`;
+  };
+}
+
+function attachMenu() {
+  const items = [{ icon: ICON.photo, label: "Photo", sub: "Take one or choose from your phone", go: () => $("#photo").click() }];
+  const upgrade = HTTPS_PORT && !window.isSecureContext;
+  if (canRecord()) {
+    items.push({ icon: ICON.mic, label: "Voice message", sub: "Up to a minute", go: record });
+  } else if (upgrade) {
+    items.push({ icon: ICON.mic, label: "Voice message", sub: "Up to a minute", go: () => goSecure("voice") });
+  } else {
+    items.push({ icon: ICON.mic, label: "Voice message", sub: "Record with your phone's recorder, then send it", go: () => $("#sound").click() });
+  }
+  if (window.isSecureContext && navigator.geolocation) {
+    items.push({ icon: ICON.gps, label: "My location", sub: "From this phone's GPS (works without signal)", go: sendGps });
+  } else if (upgrade) {
+    items.push({ icon: ICON.gps, label: "My location", sub: "From this phone's GPS (works without signal)", go: () => goSecure("gps") });
+  }
+  if (hasMaps) items.push({ icon: ICON.place, label: "Pick a place on the map", sub: "Where you are, or where to meet", go: pickPlace });
+  sheet(items);
+}
+
+function busy(t) { const s = $("#status"); s.textContent = t; s.style.display = t ? "block" : "none"; }
+
+// Photos are made smaller here before sending: about 1280 px, a few hundred KB
+async function shrink(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const k = Math.min(1, 1280 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return await new Promise((r) => c.toBlob(r, "image/jpeg", 0.82));
+  } finally { URL.revokeObjectURL(url); }
+}
+
+async function upload(kind, blob) {
+  const tx = $("#tx"), text = tx.value.trim();
+  const q = new URLSearchParams({ id: me.id, token: me.token, kind, text });
+  if (toParam()) q.set("to", toParam());
+  const r = await fetch("/api/chat/upload?" + q, { method: "POST", body: blob });
+  if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || r.status); }
+  tx.value = ""; tx.oninput();
+}
+
+async function sendPhoto(file) {
+  busy("Sending photo…");
+  try {
+    let blob;
+    try { blob = await shrink(file); } catch (e) { throw new Error("this photo can't be opened here"); }
+    await upload("image", blob);
+  } catch (e) { alert("Photo not sent: " + e.message); }
+  busy("");
+}
+
+const MAX_REC = 60;
+function canRecord() {
+  return window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder;
+}
+
+async function sendSound(file) {
+  if (file.size > 3 << 20) { alert("Voice message not sent: it is too long. Keep it under about a minute."); return; }
+  busy("Sending voice message…");
+  try { await upload("audio", file); } catch (e) { alert("Voice message not sent: " + e.message); }
+  busy("");
+}
+
+// Records in the page; the composer turns into a recording bar until Send or Cancel
+async function record() {
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch (e) { alert("No microphone: " + (e.name === "NotAllowedError" ? "permission was refused" : e.message)); return; }
+  const type = ["audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus"].find((t) => MediaRecorder.isTypeSupported(t));
+  const rec = new MediaRecorder(stream, type ? { mimeType: type, audioBitsPerSecond: 32000 } : undefined);
+  const parts = [];
+  let keep = false;
+  rec.ondataavailable = (e) => { if (e.data.size) parts.push(e.data); };
+  const form = $("#sf"), saved = [...form.children];
+  saved.forEach((el) => el.style.display = "none");
+  const bar = document.createElement("div");
+  bar.className = "rec";
+  bar.innerHTML = `<span class="dot"></span><span id="rt">0:00</span><span class="bar"><i id="rb"></i></span>
+    <button type="button" class="btn ghost" id="rcx">Cancel</button><button type="button" class="btn" id="rgo">Send</button>`;
+  form.appendChild(bar);
+  const t0 = Date.now();
+  const tick = setInterval(() => {
+    const s = Math.min(MAX_REC, (Date.now() - t0) / 1000);
+    $("#rt").textContent = `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+    $("#rb").style.width = (s / MAX_REC * 100) + "%";
+    if (s >= MAX_REC) stop(true);
+  }, 200);
+  function stop(send) {
+    if (rec.state === "inactive") return;
+    keep = send;
+    clearInterval(tick);
+    rec.stop();
+  }
+  rec.onstop = async () => {
+    stream.getTracks().forEach((t) => t.stop());
+    bar.remove();
+    saved.forEach((el) => el.style.display = "");
+    if (!keep || Date.now() - t0 < 700) return;
+    const blob = new Blob(parts, { type: rec.mimeType || type || "audio/webm" });
+    busy("Sending voice message…");
+    try { await upload("audio", blob); } catch (e) { alert("Voice message not sent: " + e.message); }
+    busy("");
+  };
+  $("#rcx").onclick = () => stop(false);
+  $("#rgo").onclick = () => stop(true);
+  rec.start(1000);
+}
+
+async function sendPlace(lat, lon) {
+  const text = $("#tx").value.trim();
+  try {
+    await api("/api/chat/send", { id: me.id, token: me.token, to: toParam(), text, lat, lon });
+    $("#tx").value = ""; $("#tx").oninput();
+  } catch (e) { alert("Place not sent: " + e.message); }
+}
+
+function sendGps() {
+  busy("Finding your location…");
+  navigator.geolocation.getCurrentPosition(
+    (p) => { busy(""); sendPlace(+p.coords.latitude.toFixed(6), +p.coords.longitude.toFixed(6)); },
+    (e) => { busy(""); alert("No location: " + (e.code === 1 ? "permission was refused" : "GPS could not find you. Try outdoors, or pick on the map.")); },
+    { enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 });
+}
+
+function pickPlace() {
+  sessionStorage.setItem("sp-pick-view", view);
+  location.href = "/map?pick=1";
+}
+
+// back from the map with a place picked
+function pickedPlace() {
+  const p = sessionStorage.getItem("sp-pick");
+  if (!p || !me) return;
+  sessionStorage.removeItem("sp-pick");
+  const v = sessionStorage.getItem("sp-pick-view");
+  if (v) view = v;
+  try { const { lat, lon } = JSON.parse(p); sendPlace(lat, lon); } catch (e) {}
+}
+window.addEventListener("pageshow", () => { if ($("#log")) pickedPlace(); });
+
+function fileUrl(f) { return `/api/chat/file/${encodeURIComponent(f)}?id=${encodeURIComponent(me.id)}&token=${encodeURIComponent(me.token)}`; }
+
+function body(m) {
+  const cap = m.text ? linkify(m.text) : "";
+  if (m.kind === "image") {
+    return `<img class="ph" src="${fileUrl(m.file)}" alt="Photo" loading="lazy" onerror="this.outerHTML='<div class=gone>Photo removed to save space</div>'">${cap}`;
+  }
+  if (m.kind === "audio") {
+    return `<audio controls preload="metadata" src="${fileUrl(m.file)}"></audio>${cap}`;
+  }
+  if (m.kind === "location") {
+    const ll = `${m.lat},${m.lon}`, label = encodeURIComponent(m.name + "'s place");
+    const ext = isIOS ? `https://maps.apple.com/?ll=${ll}&q=${label}` : `geo:${ll}?q=${ll}(${label})`;
+    return `<div class="place">${ICON.place}<div>${hasMaps ? `<a href="/map?pin=${ll}&label=${label}">Show on map</a>` : ""}<a href="${ext}">Maps app</a>
+      <div class="c">${Math.abs(m.lat).toFixed(5)}°${m.lat >= 0 ? "N" : "S"}, ${Math.abs(m.lon).toFixed(5)}°${m.lon >= 0 ? "E" : "W"}</div></div></div>${cap}`;
+  }
+  return cap;
+}
+
+function start() {
+  $("#me").style.display = "";
+  $("#me").textContent = me.name + " ✎";
+  $("#me").onclick = (e) => { e.preventDefault(); joinForm(true); };
+  main.innerHTML = `<div class="convs" id="convs"></div><div class="info" id="info"></div><div class="log" id="log"></div>
+    <form class="send" id="sf"><button type="button" class="tool" id="addBtn" aria-label="Photo or place">${ICON.add}</button>
+    <textarea id="tx" rows="1" maxlength="2000" placeholder="Message everyone"></textarea>
+    <button class="btn">Send</button></form><input type="file" id="photo" accept="image/*" hidden><input type="file" id="sound" accept="audio/*" capture hidden>`;
+  $("#sound").onchange = () => { const f = $("#sound").files[0]; $("#sound").value = ""; if (f) sendSound(f); };
+  $("#addBtn").onclick = attachMenu;
+  $("#photo").onchange = () => { const f = $("#photo").files[0]; $("#photo").value = ""; if (f) sendPhoto(f); };
+  const tx = $("#tx");
+  tx.oninput = () => { tx.style.height = "auto"; tx.style.height = tx.scrollHeight + 2 + "px"; };
+  tx.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey && !("ontouchstart" in window)) { e.preventDefault(); $("#sf").requestSubmit(); } };
+  $("#sf").onsubmit = async (e) => {
+    e.preventDefault();
+    const text = tx.value.trim();
+    if (!text) return;
+    tx.value = ""; tx.oninput();
+    try {
+      await api("/api/chat/send", { id: me.id, token: me.token, to: view === "all" ? null : view, text });
+    } catch (err) {
+      tx.value = text;
+      alert(err.status === 429 ? "Too many messages at once. Wait a few seconds." : "Not sent: " + err.message);
+    }
+  };
+  render();
+  if (!polling) poll();
+  pickedPlace();
+  // arrived from the http address to record or share a place: offer it straight away
+  if (then) { const t = then; then = null; if (t === "gps" && navigator.geolocation) sendGps(); else attachMenu(); }
+}
+
+function render() {
+  if (!$("#log")) return;
+  const others = people.filter((p) => p.id !== me.id);
+  const talked = new Set(msgs.filter((m) => m.to).map(convOf));
+  // conversations: everyone, then people online or already talked to
+  const chips = [["all", "Everyone", null]].concat(
+    others.filter((p) => p.online || talked.has(p.id)).sort((a, b) => (b.online - a.online)).map((p) => [p.id, p.name, p.online]));
+  if (view !== "all" && !chips.some((c) => c[0] === view)) chips.push([view, nameOf(view), false]);
+  $("#convs").innerHTML = chips.map(([id, label, live]) =>
+    `<button class="chip${id === view ? " on" : ""}" data-id="${esc(id)}">${live === null ? "" : `<span class="dot${live ? " live" : ""}"></span>`}${esc(label)}${unread[id] ? `<span class="n">${unread[id]}</span>` : ""}</button>`).join("");
+  $("#convs").querySelectorAll(".chip").forEach((b) => b.onclick = () => { view = b.dataset.id; unread[view] = 0; render(); scrollDown(true); $("#tx").focus(); });
+  const online = people.filter((p) => p.online).length;
+  $("#info").textContent = view === "all"
+    ? `${online} here now · ${people.length} ${people.length === 1 ? "person has" : "people have"} joined · tap a name for a private chat`
+    : `Private with ${nameOf(view)} · only the two of you see these`;
+  $("#tx").placeholder = view === "all" ? "Message everyone" : "Message " + nameOf(view);
+  const log = $("#log");
+  const near = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+  let html = "", lastDay = "";
+  const shown = msgs.filter((m) => view === "all" ? !m.to : (m.to && convOf(m) === view));
+  for (const m of shown) {
+    const d = dayOf(m.ts);
+    if (d !== lastDay) { html += `<div class="day">${d}</div>`; lastDay = d; }
+    if (!m.from) { html += `<div class="notice">${esc(m.text)} · ${hhmm(m.ts)}</div>`; continue; }
+    const mine = m.from === me.id;
+    html += `<div class="m${mine ? " me" : ""}${m.to ? " priv" : ""}">${mine ? "" : `<div class="who">${esc(m.name)}</div>`}${body(m)}<div class="when">${hhmm(m.ts)}</div></div>`;
+  }
+  // keep the photo and voice elements already on screen: no flicker, and a voice message keeps playing
+  const old = new Map();
+  log.querySelectorAll("img.ph, audio").forEach((el) => old.set(el.getAttribute("src"), el));
+  log.innerHTML = html || `<div class="empty">${view === "all" ? "No messages yet. Say hello, or share news everyone should know." : "Start a private chat with " + esc(nameOf(view)) + "."}</div>`;
+  log.querySelectorAll("img.ph, audio").forEach((el) => {
+    const o = old.get(el.getAttribute("src"));
+    if (o) el.replaceWith(o);
+  });
+  if (near) scrollDown(true);
+  // photos arrive after the layout: keep following the bottom while they load
+  if (!log.dataset.watch) {
+    log.dataset.watch = 1;
+    log.addEventListener("load", () => { if (log.dataset.stick === "1") scrollDown(); }, true);
+    log.addEventListener("scroll", () => { log.dataset.stick = log.scrollHeight - log.scrollTop - log.clientHeight < 80 ? "1" : ""; });
+  }
+  log.dataset.stick = near ? "1" : "";
+  const total = Object.values(unread).reduce((a, b) => a + b, 0);
+  document.title = (total ? `(${total}) ` : "") + "Chat · Bothy";
+}
+function scrollDown() { const l = $("#log"); if (l) l.scrollTop = l.scrollHeight; }
+
+async function poll() {
+  polling = true;
+  let first = true;
+  for (;;) {
+    try {
+      const j = await api(`/api/chat/poll?id=${encodeURIComponent(me.id)}&token=${encodeURIComponent(me.token)}&since=${seq}&wait=${first ? 0 : 1}`);
+      $("#status").style.display = "none";
+      people = j.people;
+      for (const m of j.messages) {
+        if (m.seq <= seq) continue;
+        msgs.push(m);
+        const c = convOf(m);
+        if (!first && m.from !== me.id && (c !== view || document.hidden)) unread[c] = (unread[c] || 0) + 1;
+        if (!first && m.to && m.from !== me.id && navigator.vibrate) navigator.vibrate(120);
+      }
+      seq = Math.max(seq, j.seq);
+      render();
+      if (first) scrollDown();
+      first = false;
+    } catch (err) {
+      if (err.status === 403 && me.name) {
+        // the server lost us (new hub, cleared data): join again under the same name
+        try { await api("/api/chat/join", me); continue; } catch (e) { me = null; localStorage.removeItem("sp-chat"); polling = false; joinForm(false); return; }
+      }
+      $("#status").style.display = "block";
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+}
+// Chrome's recordings don't say how long they are: seek to the end once to find out
+document.addEventListener("loadedmetadata", (e) => {
+  const a = e.target;
+  if (a.tagName !== "AUDIO" || a.duration !== Infinity || a.dataset.fix) return;
+  a.dataset.fix = 1;
+  a.addEventListener("timeupdate", function back() { a.removeEventListener("timeupdate", back); a.currentTime = 0; });
+  a.currentTime = 1e7;
+}, true);
+// tapping play on one voice message pauses the one already playing
+document.addEventListener("play", (e) => {
+  document.querySelectorAll("audio").forEach((a) => { if (a !== e.target) a.pause(); });
+}, true);
+document.addEventListener("click", (e) => {
+  const img = e.target.closest && e.target.closest("img.ph");
+  if (!img) return;
+  const lb = document.createElement("div");
+  lb.className = "lb";
+  lb.innerHTML = `<img src="${img.src}" alt="Photo">`;
+  lb.onclick = () => lb.remove();
+  document.body.appendChild(lb);
+});
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { unread[view] = 0; render(); } });
+
+if (me && me.name) {
+  api("/api/chat/join", me).then(() => { localStorage.setItem("sp-chat", JSON.stringify(me)); start(); }).catch((e) => {
+    if (e.status === 403) { me = null; localStorage.removeItem("sp-chat"); }
+    joinForm(false);
+  });
+} else if (me) {
+  // an identity without a name (from the app): already joined? then use the name the server knows
+  api(`/api/chat/poll?id=${encodeURIComponent(me.id)}&token=${encodeURIComponent(me.token)}&since=0`).then((j) => {
+    const p = j.people.find((p) => p.id === me.id);
+    if (p) { me.name = p.name; localStorage.setItem("sp-chat", JSON.stringify(me)); start(); } else joinForm(false);
+  }).catch(() => joinForm(false));
+} else {
+  joinForm(false);
+}
+</script></body></html>

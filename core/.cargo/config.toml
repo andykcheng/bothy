@@ -1,0 +1,10 @@
+# Build for the host CPU (GB10: Cortex-X925/A725 with dotprod/i8mm). Android builds set their own target.
+[target.aarch64-unknown-linux-gnu]
+rustflags = ["-C", "target-cpu=native"]
+
+# llama.cpp (ggml) on the host: GCC 11 doesn't know the GB10's cores, so its -mcpu=native means plain
+# Armv8 (no dotprod/i8mm: several times slower), and it rejects the native+feature flags ggml probes
+# with. Clang accepts them. Host target only; Android uses the NDK toolchain.
+[env]
+CC_aarch64_unknown_linux_gnu = "clang"
+CXX_aarch64_unknown_linux_gnu = "clang++"

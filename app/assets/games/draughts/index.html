@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Draughts</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #1a1410; color: #f3ece2; font: 16px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 520px; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; }
+  button { font: inherit; color: inherit; background: #ffffff1a; border: 0; border-radius: 10px; padding: 9px 14px; }
+  #status { font-weight: 600; min-height: 24px; margin: 4px 0 10px; text-align: center; }
+  #board { display: grid; grid-template-columns: repeat(8, 1fr); width: min(96vw, 520px); border: 6px solid #4a3020; border-radius: 6px; }
+  .s { aspect-ratio: 1; position: relative; display: flex; align-items: center; justify-content: center; }
+  .s.l { background: #e8d2a8; } .s.d { background: #7a5232; }
+  .s.sel { background: #9c7a2a; } .s.tgt::after { content: ''; width: 30%; height: 30%; border-radius: 50%; background: #ffffffaa; position: absolute; }
+  .s.last { box-shadow: inset 0 0 0 3px #ffd75e88; }
+  .p { width: 80%; height: 80%; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 4.5vmin; box-shadow: 0 3px 0 #0007; }
+  .p.w { background: radial-gradient(circle at 35% 30%, #fff, #d9cdb8); color: #8a6a2a; } .p.b { background: radial-gradient(circle at 35% 30%, #c0392b, #6e1a12); color: #ffd75e; }
+  .s.must .p { box-shadow: 0 0 0 3px #ffd75e, 0 3px 0 #0007; }
+  #menu { position: fixed; inset: 0; background: #1a1410f2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 20px; }
+  .opts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; } .hidden { display: none !important; }
+  #info { font-size: 14px; color: #bba; margin-top: 10px; }
+</style>
+</head>
+<body>
+<header><button id="menuBtn">☰</button><b>Draughts</b><button id="undo">↶</button></header>
+<div id="status"></div>
+<div id="board"></div>
+<div id="info"></div>
+<div id="menu">
+  <h1 style="margin:0">⚪ Draughts 🔴</h1>
+  <div style="max-width:340px;color:#cbb">English draughts. Move diagonally forward; jump to capture — captures are compulsory, and a jump must continue if it can. Reach the far side to crown a king, which moves both ways.</div>
+  <div class="opts" id="mode"><button data-v="1">vs Computer: Easy</button><button data-v="3">Medium</button><button data-v="6">Hard</button><button data-v="2p">2 players</button></div>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+// board: 64 squares; 0 empty; 1 white man, 2 red man, 3 white king, 4 red king. White (you) at the bottom, moves up.
+let B, turn, mode, sel = -1, hist = [], last = [], over = false;
+const own = (v, p) => v && ((v - 1) % 2) + 1 === p, isKing = v => v > 2;
+const sq = [];
+for (let i = 0; i < 64; i++) { const d = document.createElement('div'); const r = i >> 3, c = i & 7; d.className = 's ' + ((r + c) % 2 ? 'd' : 'l'); d.onclick = () => tap(i); $('board').appendChild(d); sq.push(d); }
+function start(m) {
+  mode = m; B = Array(64).fill(0);
+  for (let i = 0; i < 64; i++) { const r = i >> 3, c = i & 7; if ((r + c) % 2) { if (r < 3) B[i] = 2; else if (r > 4) B[i] = 1; } }
+  turn = 1; hist = []; last = []; sel = -1; over = false; $('menu').classList.add('hidden'); draw();
+}
+const dirs = (v) => isKing(v) ? [[-1, -1], [-1, 1], [1, -1], [1, 1]] : own(v, 1) ? [[-1, -1], [-1, 1]] : [[1, -1], [1, 1]];
+const at = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
+// moves: {path:[from, ..., to], caps:[...]}; captures are compulsory
+function jumps(b, i, v, caps, path, out) {
+  const r = i >> 3, c = i & 7; let found = false;
+  for (const [dr, dc] of dirs(v)) {
+    const mr = r + dr, mc = c + dc, tr = r + 2 * dr, tc = c + 2 * dc;
+    if (!at(tr, tc)) continue;
+    const m = mr * 8 + mc, t = tr * 8 + tc;
+    if (b[m] && !own(b[m], ((v - 1) % 2) + 1) && !caps.includes(m) && !b[t]) {
+      found = true;
+      const crowned = !isKing(v) && (tr === 0 || tr === 7);
+      const save = b[i]; b[i] = 0; b[t] = v;
+      if (crowned) out.push({ path: [...path, t], caps: [...caps, m] });   // crowning ends the move
+      else jumps(b, t, v, [...caps, m], [...path, t], out);
+      b[t] = 0; b[i] = save;
+    }
+  }
+  if (!found && caps.length) out.push({ path, caps });
+}
+function moves(b, p) {
+  const caps = [], plain = [];
+  for (let i = 0; i < 64; i++) {
+    if (!own(b[i], p)) continue;
+    jumps(b, i, b[i], [], [i], caps);
+    const r = i >> 3, c = i & 7;
+    for (const [dr, dc] of dirs(b[i])) if (at(r + dr, c + dc) && !b[(r + dr) * 8 + c + dc]) plain.push({ path: [i, (r + dr) * 8 + c + dc], caps: [] });
+  }
+  return caps.length ? caps : plain;
+}
+function apply(b, m) {
+  const f = m.path[0], t = m.path[m.path.length - 1]; let v = b[f]; b[f] = 0;
+  for (const c of m.caps) b[c] = 0;
+  if (!isKing(v) && ((own(v, 1) && t < 8) || (own(v, 2) && t >= 56))) v += 2;
+  b[t] = v;
+}
+function evalB(b) {  // red (computer) positive
+  let s = 0;
+  for (let i = 0; i < 64; i++) {
+    const v = b[i]; if (!v) continue;
+    const r = i >> 3, c = i & 7, sign = own(v, 2) ? 1 : -1;
+    let val = isKing(v) ? 175 : 100 + (own(v, 2) ? r : 7 - r) * 4;
+    if (c === 0 || c === 7) val -= 3; if (!isKing(v) && ((own(v, 2) && r === 0) || (own(v, 1) && r === 7))) val += 6;   // back row guard
+    s += sign * val;
+  }
+  return s;
+}
+function negamax(b, d, a, beta, p) {
+  const ms = moves(b, p);
+  if (!ms.length) return -100000 - d;
+  if (!d) return (p === 2 ? 1 : -1) * evalB(b);
+  let best = -Infinity;
+  for (const m of ms) {
+    const nb = b.slice(); apply(nb, m);
+    const v = -negamax(nb, d - 1, -beta, -a, 3 - p);
+    if (v > best) best = v; if (v > a) a = v; if (a >= beta) break;
+  }
+  return best;
+}
+function cpu() {
+  const ms = moves(B, 2), depth = +mode; let best = -Infinity, pickM = [];
+  for (const m of ms) {
+    const nb = B.slice(); apply(nb, m);
+    let v = -negamax(nb, depth - 1, -Infinity, Infinity, 1) + (depth === 1 ? Math.random() * 40 : Math.random());
+    if (v > best) { best = v; pickM = [m]; } else if (v === best) pickM.push(m);
+  }
+  doMove(pickM[Math.floor(Math.random() * pickM.length)]);
+}
+function doMove(m) {
+  hist.push({ b: B.slice(), turn, last }); apply(B, m); last = m.path; sel = -1; turn = 3 - turn;
+  if (!moves(B, turn).length) over = true;
+  draw();
+  if (!over && mode !== '2p' && turn === 2) { $('status').textContent = 'Thinking…'; setTimeout(cpu, 350); }
+}
+function tap(i) {
+  if (over || (mode !== '2p' && turn === 2)) return;
+  const ms = moves(B, turn);
+  if (sel >= 0) { const m = ms.find(m => m.path[0] === sel && m.path[m.path.length - 1] === i); if (m) return doMove(m); }
+  sel = ms.some(m => m.path[0] === i) ? i : -1; draw();
+}
+function draw() {
+  const ms = over ? [] : moves(B, turn), tg = ms.filter(m => m.path[0] === sel).map(m => m.path[m.path.length - 1]);
+  const must = ms.length && ms[0].caps.length ? new Set(ms.map(m => m.path[0])) : new Set();
+  for (let i = 0; i < 64; i++) {
+    const v = B[i], r = i >> 3, c = i & 7;
+    sq[i].className = 's ' + ((r + c) % 2 ? 'd' : 'l') + (i === sel ? ' sel' : '') + (tg.includes(i) ? ' tgt' : '') + (last.includes(i) ? ' last' : '') + (must.has(i) && (mode === '2p' || turn === 1) ? ' must' : '');
+    sq[i].innerHTML = v ? `<div class="p ${own(v, 1) ? 'w' : 'b'}">${isKing(v) ? '♛' : ''}</div>` : '';
+  }
+  const name = p => mode === '2p' ? (p === 1 ? 'White' : 'Red') : (p === 1 ? 'You' : 'The computer');
+  const count = p => B.filter(v => own(v, p)).length;
+  $('status').textContent = over ? `${name(3 - turn)} win${name(3 - turn) === 'You' ? '' : 's'}! ${3 - turn === 1 && mode !== '2p' ? '🎉' : ''}` : `${name(turn)}${mode === '2p' ? '’s turn' : turn === 1 ? ' to move' : ''}${must.size ? ' — must capture' : ''}`;
+  $('info').textContent = `⚪ ${count(1)} pieces · 🔴 ${count(2)} pieces`;
+}
+$('mode').onclick = e => { const b = e.target.closest('button'); if (b) start(b.dataset.v); };
+$('menuBtn').onclick = () => $('menu').classList.remove('hidden');
+$('undo').onclick = () => {
+  if (mode !== '2p' && turn === 2 && !over) return;
+  let h; do { h = hist.pop(); } while (h && mode !== '2p' && h.turn !== 1 && hist.length);
+  if (!h) return; B = h.b; turn = h.turn; last = h.last; over = false; sel = -1; draw();
+};
+</script>
+</body>
+</html>

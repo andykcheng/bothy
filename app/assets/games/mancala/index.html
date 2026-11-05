@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Mancala</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #20140c; color: #f6ead8; font: 16px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 560px; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; }
+  button { font: inherit; color: inherit; background: #ffffff1a; border: 0; border-radius: 10px; padding: 9px 14px; }
+  #status { font-weight: 600; min-height: 24px; margin: 8px 0 14px; text-align: center; }
+  #board { background: linear-gradient(#8a5a2b, #6b4220); border-radius: 40px; padding: 12px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 6fr) minmax(0, 1fr); gap: 6px; width: min(97vw, 560px); box-shadow: 0 6px 0 #3b230f; }
+  .store { background: #3b230f; border-radius: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; }
+  .rows { display: grid; grid-template-rows: 1fr 1fr; gap: 10px; }
+  .row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+  .pit { aspect-ratio: 1; border-radius: 50%; background: #3b230f; border: 0; padding: 0; position: relative; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 1px; color: #f6ead8; }
+  .pit.can { box-shadow: 0 0 0 3px #f2c94c; } .pit.last { box-shadow: 0 0 0 3px #7fd1ff; }
+  .pit i { width: 22%; height: 22%; border-radius: 50%; display: block; }
+  .pit .n { position: absolute; bottom: -2px; right: 0; font-size: 12px; background: #000a; border-radius: 8px; padding: 0 5px; }
+  .lbl { font-size: 13px; color: #cba; text-align: center; margin: 8px; }
+  #menu { position: fixed; inset: 0; background: #20140cf2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 20px; }
+  .opts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; } .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header><button id="menuBtn">☰</button><b>Mancala</b><button id="undo">↶</button></header>
+<div class="lbl" id="topName"></div>
+<div id="board">
+  <div class="store" id="s1"></div>
+  <div class="rows"><div class="row" id="r1"></div><div class="row" id="r0"></div></div>
+  <div class="store" id="s0"></div>
+</div>
+<div class="lbl" id="botName"></div>
+<div id="status"></div>
+<div id="menu">
+  <h1 style="margin:0">Mancala</h1>
+  <div style="max-width:350px;color:#dcb">Pick up all the seeds in one of your pits and sow them one by one anticlockwise, into your store too (not your opponent’s). Last seed in your store: go again. Last seed in an empty pit of yours: capture it and the seeds opposite. Most seeds in the store wins.</div>
+  <div class="opts" id="mode"><button data-v="1">vs Computer: Easy</button><button data-v="4">Medium</button><button data-v="8">Hard</button><button data-v="2p">2 players</button></div>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+// b[0..5] player 0's pits (bottom, left→right), b[6] store 0, b[7..12] player 1's pits (top, right→left), b[13] store 1
+let B, turn, mode, hist = [], last = -1, over = false;
+const COLS = ['#e8d7a8', '#c9473c', '#5aa469', '#e0b24a', '#7a9ccf', '#d9824a'];
+function start(m) { mode = m; B = [4, 4, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 0]; turn = 0; hist = []; last = -1; over = false; $('menu').classList.add('hidden'); draw(); }
+const myPits = p => p === 0 ? [0, 1, 2, 3, 4, 5] : [7, 8, 9, 10, 11, 12], store = p => p === 0 ? 6 : 13;
+function sow(b, i, p) {  // returns {again, last}
+  let n = b[i]; b[i] = 0; let j = i;
+  while (n) { j = (j + 1) % 14; if (j === store(1 - p)) continue; b[j]++; n--; }
+  if (j !== store(p) && myPits(p).includes(j) && b[j] === 1 && b[12 - j] > 0) { b[store(p)] += b[12 - j] + 1; b[12 - j] = 0; b[j] = 0; }
+  if (myPits(0).every(k => !b[k]) || myPits(1).every(k => !b[k])) { for (const q of [0, 1]) for (const k of myPits(q)) { b[store(q)] += b[k]; b[k] = 0; } }
+  return { again: j === store(p), last: j };
+}
+const done = b => myPits(0).every(k => !b[k]) && myPits(1).every(k => !b[k]);
+function search(b, p, d, a, beta) {  // value for player 1 (computer)
+  if (done(b) || !d) return b[13] - b[6];
+  const ms = myPits(p).filter(k => b[k]);
+  let best = p === 1 ? -Infinity : Infinity;
+  for (const m of ms) {
+    const nb = b.slice(), r = sow(nb, m, p), np = r.again && !done(nb) ? p : 1 - p;
+    const v = search(nb, np, d - 1, a, beta);
+    if (p === 1) { best = Math.max(best, v); a = Math.max(a, v); } else { best = Math.min(best, v); beta = Math.min(beta, v); }
+    if (a >= beta) break;
+  }
+  return best;
+}
+function cpu() {
+  const ms = myPits(1).filter(k => B[k]); let best = -Infinity, pk = [];
+  for (const m of ms) { const nb = B.slice(), r = sow(nb, m, 1); const v = search(nb, r.again && !done(nb) ? 1 : 0, +mode - 1, -Infinity, Infinity) + (mode === '1' ? Math.random() * 6 : 0); if (v > best) { best = v; pk = [m]; } else if (v === best) pk.push(m); }
+  play(pk[Math.floor(Math.random() * pk.length)]);
+}
+function play(i) {
+  hist.push({ b: B.slice(), turn, last }); const r = sow(B, i, turn); last = r.last;
+  if (done(B)) over = true; else if (!r.again) turn = 1 - turn;
+  draw(r.again && !over ? (turn === 0 || mode === '2p' ? 'Extra turn!' : '') : '');
+  if (!over && mode !== '2p' && turn === 1) setTimeout(cpu, 700);
+}
+function pitHtml(k) {
+  const n = B[k]; let seeds = ''; for (let s = 0; s < Math.min(n, 16); s++) seeds += `<i style="background:${COLS[(k * 7 + s) % 6]}"></i>`;
+  const can = !over && myPits(turn).includes(k) && n && (mode === '2p' || turn === 0);
+  return `<button class="pit ${can ? 'can' : ''} ${k === last ? 'last' : ''}" data-k="${k}">${seeds}<span class="n">${n}</span></button>`;
+}
+function draw(note = '') {
+  $('r0').innerHTML = [0, 1, 2, 3, 4, 5].map(pitHtml).join('');
+  $('r1').innerHTML = [12, 11, 10, 9, 8, 7].map(pitHtml).join('');
+  $('s0').textContent = B[6]; $('s1').textContent = B[13];
+  const nm = p => mode === '2p' ? `Player ${p + 1}` : p === 0 ? 'You' : 'Computer';
+  $('botName').textContent = `${nm(0)} (store on the right)`; $('topName').textContent = `${nm(1)} (store on the left)`;
+  $('status').textContent = over ? (B[6] === B[13] ? 'Draw!' : B[6] > B[13] ? `${nm(0)} win${mode === '2p' ? 's' : ''}! ${B[6]}–${B[13]} 🎉` : `${nm(1)} wins ${B[13]}–${B[6]}`) : `${note} ${mode !== '2p' && turn === 1 ? 'Computer is thinking…' : nm(turn) + (mode === '2p' ? '’s turn' : ' to move')}`;
+}
+document.addEventListener('click', e => { const b = e.target.closest('.pit'); if (!b || over) return; const k = +b.dataset.k; if ((mode !== '2p' && turn === 1) || !myPits(turn).includes(k) || !B[k]) return; play(k); });
+$('mode').onclick = e => { const b = e.target.closest('button'); if (b) start(b.dataset.v); };
+$('menuBtn').onclick = () => $('menu').classList.remove('hidden');
+$('undo').onclick = () => { if (mode !== '2p' && turn === 1 && !over) return; let h; do { h = hist.pop(); } while (h && mode !== '2p' && h.turn !== 0 && hist.length); if (!h) return; B = h.b; turn = h.turn; last = h.last; over = false; draw(); };
+</script>
+</body>
+</html>

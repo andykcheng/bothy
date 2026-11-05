@@ -1,0 +1,13 @@
+{
+  "id": "morris",
+  "title": "Nine Men’s Morris",
+  "description": "The ancient game of mills: place, slide and fly your pieces. Computer or 2 players.",
+  "players": "1–2",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "vs Computer: Easy"
+  ]
+}

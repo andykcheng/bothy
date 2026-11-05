@@ -1,0 +1,10 @@
+{
+  "id": "freecell",
+  "title": "FreeCell",
+  "description": "Patience where nearly every deal can be solved: use the four free cells wisely.",
+  "players": "1",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg"
+}

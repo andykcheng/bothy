@@ -1,0 +1,1063 @@
+{
+  "version": 1,
+  "updated": "2026-11-04",
+  "basis": "Bothy's own wording, following published first-aid guidance: Resuscitation Council UK and European Resuscitation Council guidelines (2021), NHS, British Red Cross and St John Ambulance.",
+  "reviewed": false,
+  "disclaimer": "First aid only, not a substitute for training or a doctor. If you can, call the emergency number first. These cards have not yet been checked by a medical professional.",
+  "call": "Call the emergency number: 112 works from most mobile phones (also 999 in the UK, 911 in North America, 000 in Australia).",
+  "match": "A query shows a card if it contains one of its keywords, or one of its weak words together with one of its with words (a different word); never if it contains one of its not words. Words and phrases match whole words, case-insensitive, apostrophes removed (wont, isnt).",
+  "cards": [
+    {
+      "id": "cpr",
+      "title": "Not breathing: CPR",
+      "when": "They don't respond and aren't breathing normally (gasping is not normal breathing).",
+      "steps": [
+        "Make sure it is safe. Shout to them and gently shake their shoulders.",
+        "No response: tilt the head back, lift the chin, and look, listen and feel for normal breathing for up to 10 seconds.",
+        "Not breathing normally: call the emergency number and put the phone on speaker. Send someone for a defibrillator (AED) if there is one nearby.",
+        "Kneel beside them. Put the heel of one hand in the centre of the chest, the other hand on top, arms straight.",
+        "Push down hard, 5 to 6 cm, then let the chest come back up. Go fast: 100 to 120 pushes a minute, about 2 a second.",
+        "If you are trained and willing, give 2 rescue breaths after every 30 pushes: tilt the head, pinch the nose, seal your mouth over theirs and blow for 1 second until the chest rises. Otherwise just keep pushing.",
+        "When the AED arrives, switch it on and do what it says.",
+        "Don't stop until help takes over, they start breathing normally, or you are too exhausted to go on. Swap with someone every 2 minutes if you can."
+      ],
+      "children": [
+        "Child (1 year to puberty): give 5 rescue breaths first, then 30 pushes to 2 breaths. Push one third of the chest depth (about 5 cm) with one or two hands.",
+        "Baby (under 1 year): head level, not tipped back. Cover the mouth and nose with your mouth and give 5 gentle breaths, then 30 pushes with two fingers in the centre of the chest (about 4 cm), then 2 breaths, and repeat.",
+        "Call on speaker straight away if you can. If you have to leave to get help, give CPR for about 1 minute first.",
+        "Drowning: give 5 rescue breaths first, then CPR."
+      ],
+      "dont": [
+        "Don't stop to check again unless they wake up, move, open their eyes or breathe normally."
+      ],
+      "call_if": "Always.",
+      "keywords": [
+        "cpr",
+        "not breathing",
+        "stopped breathing",
+        "isnt breathing",
+        "no pulse",
+        "heart stopped",
+        "cardiac arrest",
+        "resuscitation",
+        "resuscitate",
+        "drowning",
+        "drowned",
+        "nearly drowned",
+        "defibrillator",
+        "aed",
+        "chest compressions",
+        "kiss of life",
+        "rescue breaths"
+      ],
+      "more": [
+        "Cardiopulmonary resuscitation",
+        "Automated external defibrillator",
+        "Drowning"
+      ],
+      "weak": [
+        "collapsed",
+        "collapse",
+        "unconscious",
+        "unresponsive"
+      ],
+      "with": [
+        "someone",
+        "person",
+        "man",
+        "woman",
+        "he",
+        "she",
+        "child",
+        "baby",
+        "suddenly",
+        "street",
+        "floor",
+        "dad",
+        "mum",
+        "mom",
+        "not",
+        "breathing"
+      ],
+      "not": [
+        "lung",
+        "tunnel",
+        "building",
+        "bridge",
+        "roof",
+        "economy",
+        "wave",
+        "function"
+      ]
+    },
+    {
+      "id": "choking",
+      "title": "Choking",
+      "when": "They can't speak, breathe or cough, and may clutch at their throat.",
+      "steps": [
+        "If they can cough, tell them to keep coughing.",
+        "If coughing doesn't clear it: lean them forward, support their chest with one hand, and give up to 5 sharp blows between the shoulder blades with the heel of your other hand. Check after each one.",
+        "Still choking: stand behind them, put your fist just above the belly button, grab it with your other hand and pull sharply in and up. Up to 5 times.",
+        "Repeat 5 back blows and 5 abdominal thrusts. If it hasn't cleared, call the emergency number and keep going.",
+        "If they become unresponsive, call the emergency number and start CPR.",
+        "Anyone who has had abdominal thrusts should see a doctor afterwards."
+      ],
+      "children": [
+        "Child over 1: as for adults; kneel or sit behind a small child.",
+        "Baby under 1: lay the baby face down along your thigh, head lower than the bottom, supporting the head. Give up to 5 back blows.",
+        "Still choking: turn the baby face up on your thigh and give up to 5 chest thrusts with two fingers in the centre of the chest.",
+        "Never give abdominal thrusts to a baby. Keep repeating, and call the emergency number if it doesn't clear."
+      ],
+      "dont": [
+        "Don't feel blindly in the mouth: you can push the object further in. Only remove it if you can see it and pick it out easily."
+      ],
+      "call_if": "The blockage doesn't clear, they become unresponsive, or abdominal thrusts were used.",
+      "keywords": [
+        "choking",
+        "choked",
+        "heimlich",
+        "back blows",
+        "abdominal thrusts",
+        "airway blocked",
+        "blocked airway"
+      ],
+      "more": [
+        "Choking",
+        "Abdominal thrusts"
+      ],
+      "weak": [
+        "choke",
+        "chokes",
+        "stuck",
+        "lodged"
+      ],
+      "with": [
+        "throat",
+        "windpipe",
+        "food",
+        "coin",
+        "baby",
+        "child",
+        "toddler",
+        "someone",
+        "breathe",
+        "swallowed"
+      ],
+      "not": [
+        "engine",
+        "cable",
+        "carburettor",
+        "carburetor",
+        "valve",
+        "chain",
+        "hazard",
+        "hazards",
+        "plant",
+        "plants",
+        "weeds",
+        "weed"
+      ]
+    },
+    {
+      "id": "bleeding",
+      "title": "Severe bleeding",
+      "when": "Blood is spurting, pouring or soaking through clothes.",
+      "steps": [
+        "Call the emergency number, or get someone else to. Protect your hands with gloves or a plastic bag if you can.",
+        "Press hard on the wound with a clean pad or cloth, or your hand. Keep pressing for at least 10 minutes without lifting to look.",
+        "If blood soaks through, put another pad on top and keep pressing. Don't take the first one off.",
+        "When the bleeding slows, bandage the pad firmly in place. Check that the fingers or toes beyond it stay warm and pink.",
+        "Life-threatening bleeding from an arm or leg that pressure can't stop: put a tourniquet (or a wide strap twisted tight with a stick) 5 to 7 cm above the wound, not on a joint. Tighten until the bleeding stops and note the time. Don't loosen it.",
+        "If something is stuck in the wound, leave it in and press on either side of it.",
+        "Lay them down and keep them warm (see Shock)."
+      ],
+      "dont": [
+        "Don't pull out anything stuck in the wound.",
+        "Don't use thin string or wire as a tourniquet."
+      ],
+      "call_if": "Bleeding is heavy, won't stop, or comes from a deep or large wound.",
+      "keywords": [
+        "severe bleeding",
+        "heavy bleeding",
+        "bleeding heavily",
+        "bleeding badly",
+        "stop bleeding",
+        "stop the bleeding",
+        "bleeding wont stop",
+        "wont stop bleeding",
+        "losing blood",
+        "lot of blood",
+        "blood everywhere",
+        "tourniquet",
+        "haemorrhage",
+        "hemorrhage",
+        "stabbed",
+        "stab wound",
+        "gunshot",
+        "deep cut",
+        "bad cut",
+        "cut myself",
+        "cut himself",
+        "cut herself",
+        "cut my finger",
+        "cut my hand",
+        "cut my arm",
+        "cut my leg",
+        "cut my foot",
+        "cut my head",
+        "cut his",
+        "cut her",
+        "severed",
+        "amputated",
+        "spurting"
+      ],
+      "more": [
+        "Bleeding",
+        "Tourniquet",
+        "Wound"
+      ],
+      "weak": [
+        "bleeding",
+        "bleed",
+        "bleeds",
+        "gash",
+        "laceration",
+        "wound",
+        "blood"
+      ],
+      "with": [
+        "hand",
+        "finger",
+        "arm",
+        "leg",
+        "head",
+        "foot",
+        "child",
+        "someone",
+        "deep",
+        "badly",
+        "heavily",
+        "stop",
+        "wont",
+        "wound",
+        "bandage",
+        "first",
+        "aid",
+        "emergency"
+      ],
+      "not": [
+        "brake",
+        "brakes",
+        "radiator",
+        "radiators",
+        "hydraulic",
+        "heart",
+        "hearts",
+        "type",
+        "types",
+        "sausage",
+        "test",
+        "blood pressure",
+        "bleed valve",
+        "cut flowers",
+        "haircut",
+        "hair",
+        "nosebleed",
+        "nose bleed",
+        "nose bleeding",
+        "edge",
+        "sugar",
+        "test",
+        "tests",
+        "donation",
+        "donor",
+        "type"
+      ]
+    },
+    {
+      "id": "shock",
+      "title": "Shock",
+      "when": "After an injury, bleeding, burns or severe illness: pale, cold, clammy skin; fast weak pulse; fast breathing; dizzy, confused or drowsy.",
+      "steps": [
+        "Call the emergency number.",
+        "Treat the cause if you can, such as bleeding.",
+        "Lay them down. Raise their legs and support them, unless a leg is injured.",
+        "Keep them warm with a coat or blanket, under and over them if they are on cold ground.",
+        "Loosen tight clothing and reassure them.",
+        "Keep checking their breathing. If it stops, start CPR."
+      ],
+      "dont": [
+        "Don't give them anything to eat or drink.",
+        "Don't leave them alone."
+      ],
+      "call_if": "Always.",
+      "keywords": [
+        "going into shock",
+        "in shock",
+        "signs of shock",
+        "treat shock",
+        "treating shock",
+        "pale and clammy",
+        "cold and clammy",
+        "clammy skin"
+      ],
+      "more": [
+        "Shock (circulatory)"
+      ],
+      "weak": [
+        "shock"
+      ],
+      "with": [
+        "injury",
+        "injured",
+        "pale",
+        "clammy",
+        "faint",
+        "bleeding",
+        "accident",
+        "first",
+        "aid",
+        "symptoms"
+      ],
+      "not": [
+        "electric",
+        "electrical",
+        "absorber",
+        "absorbers",
+        "culture",
+        "shell",
+        "toxic",
+        "wave",
+        "therapy",
+        "collar"
+      ]
+    },
+    {
+      "id": "burns",
+      "title": "Burns and scalds",
+      "when": "Skin burnt by heat, hot liquid, chemicals, electricity or the sun.",
+      "steps": [
+        "Stop the burning: move away from the heat. Clothes on fire: stop, drop and roll. Electricity: switch it off before you touch them.",
+        "Cool the burn under cool or lukewarm running water for 20 minutes. Start as soon as you can.",
+        "Take off clothing and jewellery near the burn, unless it is stuck to the skin.",
+        "Keep the rest of them warm while you cool the burn, especially a child.",
+        "After cooling, cover loosely with cling film laid on lengthways (not wrapped round) or a clean plastic bag.",
+        "Chemical burn: brush off any dry chemical, then rinse with plenty of running water for at least 20 minutes.",
+        "Paracetamol or ibuprofen can help the pain (follow the packet)."
+      ],
+      "dont": [
+        "No ice, iced water, butter, creams, oils or toothpaste.",
+        "Don't burst blisters or peel off stuck clothing.",
+        "Don't use fluffy dressings or cotton wool."
+      ],
+      "call_if": "The burn is bigger than the person's hand; on the face, hands, feet, joints or genitals; deep (white, brown or charred); from chemicals or electricity; they breathed in smoke; or they are a child, elderly or pregnant.",
+      "keywords": [
+        "scald",
+        "scalded",
+        "scalds",
+        "electric shock",
+        "electrocuted",
+        "electrocution",
+        "chemical burn",
+        "acid burn",
+        "burn injury",
+        "burn blister",
+        "on fire"
+      ],
+      "more": [
+        "Burn",
+        "Electrical injury"
+      ],
+      "weak": [
+        "burn",
+        "burns",
+        "burned",
+        "burnt",
+        "burning",
+        "sunburn",
+        "sunburnt"
+      ],
+      "with": [
+        "skin",
+        "hand",
+        "hands",
+        "arm",
+        "leg",
+        "face",
+        "finger",
+        "fingers",
+        "child",
+        "baby",
+        "toddler",
+        "treat",
+        "treatment",
+        "treating",
+        "blister",
+        "blisters",
+        "aid",
+        "boiling",
+        "hot",
+        "oil",
+        "kettle",
+        "iron",
+        "pan",
+        "severe",
+        "bad",
+        "badly",
+        "degree"
+      ],
+      "not": [
+        "calories",
+        "fat",
+        "wood",
+        "rate",
+        "cd",
+        "dvd",
+        "disc",
+        "toast",
+        "pit",
+        "ban",
+        "barrel",
+        "stove",
+        "fuel",
+        "coal",
+        "candle",
+        "incense"
+      ]
+    },
+    {
+      "id": "stroke",
+      "title": "Stroke: FAST",
+      "when": "Sudden weakness, numbness or confusion, often on one side of the body.",
+      "steps": [
+        "Face: has their face drooped on one side? Can they smile?",
+        "Arms: can they lift both arms and keep them up?",
+        "Speech: is their speech slurred, or are they confused?",
+        "Time: call the emergency number straight away if you see any one of these.",
+        "Note the time the symptoms started: doctors need it.",
+        "Keep them comfortable and reassure them. If they become unresponsive but are breathing, put them in the recovery position."
+      ],
+      "dont": [
+        "Don't give them food, drink or medicine, including aspirin."
+      ],
+      "call_if": "Always, even if the symptoms go away.",
+      "keywords": [
+        "stroke",
+        "strokes",
+        "face drooping",
+        "drooping face",
+        "slurred speech",
+        "fast test",
+        "mini stroke",
+        "tia"
+      ],
+      "more": [
+        "Stroke",
+        "Transient ischemic attack"
+      ],
+      "weak": [
+        "numb",
+        "numbness",
+        "weakness",
+        "droop",
+        "drooping",
+        "slurred",
+        "slurring"
+      ],
+      "with": [
+        "face",
+        "arm",
+        "side",
+        "speech",
+        "sudden",
+        "suddenly",
+        "one"
+      ],
+      "not": [
+        "heat",
+        "sun",
+        "swimming",
+        "swim",
+        "breast",
+        "back",
+        "engine",
+        "engines",
+        "two",
+        "four",
+        "piston",
+        "brush",
+        "paint",
+        "oil",
+        "master",
+        "golf",
+        "tennis",
+        "rowing",
+        "luck",
+        "genius",
+        "2",
+        "4",
+        "cat",
+        "dog",
+        "pet"
+      ]
+    },
+    {
+      "id": "heart-attack",
+      "title": "Heart attack",
+      "when": "Chest pain or pressure (tight, heavy, squeezing) that may spread to the arms, neck, jaw, back or stomach; breathless, sweating, sick or dizzy. It can be mild, especially in women, older people and people with diabetes.",
+      "steps": [
+        "Call the emergency number straight away.",
+        "Sit them down, leaning back with knees bent, and keep them calm.",
+        "If they are an adult and not allergic to it, give one 300 mg aspirin to chew slowly.",
+        "If they have their own medicine for angina (such as a spray under the tongue), help them take it.",
+        "Loosen tight clothing and stay with them.",
+        "If they become unresponsive and stop breathing normally, start CPR and send for a defibrillator (AED)."
+      ],
+      "dont": [
+        "Don't let them walk about or exert themselves.",
+        "Don't give aspirin to children under 16 or anyone allergic to it."
+      ],
+      "call_if": "Always.",
+      "keywords": [
+        "heart attack",
+        "chest pain",
+        "chest pains",
+        "chest pressure",
+        "tight chest",
+        "chest tightness",
+        "crushing chest pain",
+        "myocardial infarction",
+        "angina"
+      ],
+      "more": [
+        "Myocardial infarction",
+        "Angina"
+      ],
+      "weak": [],
+      "with": [],
+      "not": []
+    },
+    {
+      "id": "poisoning",
+      "title": "Poisoning",
+      "when": "They have swallowed, breathed in or touched something harmful: bleach, cleaners, medicines, alcohol, plants, mushrooms, chemicals, antifreeze.",
+      "steps": [
+        "Call the emergency number or a poison centre now, even if they seem fine. Some poisons, like a paracetamol overdose, only cause harm hours later.",
+        "Find out what it was, how much and when. Keep the container, packet or plant to show.",
+        "Bleach or another corrosive swallowed: rinse the mouth with water and spit it out. If they are awake and can swallow, small sips of water or milk while you get advice.",
+        "On the skin or in the eyes: rinse with plenty of running water for 20 minutes, and take off contaminated clothing.",
+        "Fumes: get them into fresh air without putting yourself at risk.",
+        "Unresponsive but breathing: recovery position. Not breathing: CPR (if the poison is on their lips, do chest pushes only).",
+        "Swallowed a button battery or magnets: go to hospital at once, even with no symptoms."
+      ],
+      "dont": [
+        "Don't make them sick: no fingers down the throat, no salt water.",
+        "Don't give anything else to eat or drink unless the poison centre or a doctor tells you to."
+      ],
+      "call_if": "Always.",
+      "keywords": [
+        "poisoning",
+        "poisoned",
+        "overdose",
+        "overdosed",
+        "poison centre",
+        "poison center",
+        "poison control",
+        "drank bleach",
+        "drunk bleach",
+        "swallowed bleach",
+        "ate bleach",
+        "too many pills",
+        "too many tablets",
+        "laundry pod",
+        "laundry capsule",
+        "button battery",
+        "carbon monoxide",
+        "antifreeze",
+        "swallowed poison"
+      ],
+      "more": [
+        "Poisoning",
+        "Paracetamol poisoning",
+        "Carbon monoxide poisoning"
+      ],
+      "weak": [
+        "poison",
+        "bleach",
+        "drank",
+        "drunk",
+        "swallowed",
+        "swallow",
+        "ate",
+        "eaten",
+        "pills",
+        "tablets",
+        "detergent",
+        "cleaner",
+        "chemical",
+        "chemicals",
+        "paracetamol",
+        "ibuprofen",
+        "mushroom",
+        "mushrooms",
+        "berries",
+        "fumes",
+        "battery",
+        "magnet",
+        "magnets",
+        "weedkiller",
+        "pesticide",
+        "fertiliser",
+        "fertilizer",
+        "dishwasher",
+        "washing"
+      ],
+      "with": [
+        "child",
+        "kid",
+        "kids",
+        "toddler",
+        "baby",
+        "son",
+        "daughter",
+        "someone",
+        "accidentally",
+        "drank",
+        "drunk",
+        "swallowed",
+        "ate",
+        "eaten",
+        "sick",
+        "vomiting",
+        "ill",
+        "eye",
+        "eyes"
+      ],
+      "not": [
+        "food poisoning",
+        "ivy",
+        "oak",
+        "sumac",
+        "dart",
+        "darts",
+        "frog",
+        "dog",
+        "dogs",
+        "cat",
+        "cats",
+        "pet",
+        "pets",
+        "horse",
+        "water purification",
+        "purify",
+        "disinfect",
+        "disinfecting",
+        "drunk driving",
+        "lead poisoning"
+      ]
+    },
+    {
+      "id": "recovery",
+      "title": "Unresponsive but breathing",
+      "when": "They don't respond but are breathing normally: put them in the recovery position so they can't choke.",
+      "steps": [
+        "Call the emergency number.",
+        "Kneel beside them. Put the arm nearest you at a right angle to their body, palm up.",
+        "Bring their far arm across their chest and hold the back of that hand against their near cheek.",
+        "With your other hand, pull their far knee up so the foot is flat on the ground.",
+        "Pull on the knee to roll them towards you onto their side.",
+        "Tilt the head back and lift the chin so they can breathe easily. Bend the top leg so hip and knee are at right angles.",
+        "Keep checking their breathing until help comes. If it stops, start CPR."
+      ],
+      "children": [
+        "Baby: hold them in your arms, face down, head lower than the body, supporting the head."
+      ],
+      "dont": [
+        "If you think they hurt their neck or back, only move them if you must, keeping head, neck and body in line."
+      ],
+      "call_if": "Always.",
+      "keywords": [
+        "recovery position",
+        "unconscious",
+        "unresponsive",
+        "passed out",
+        "wont wake up",
+        "knocked out",
+        "fainted",
+        "fainting",
+        "blacked out"
+      ],
+      "more": [
+        "Recovery position",
+        "Unconsciousness"
+      ],
+      "weak": [],
+      "with": [],
+      "not": [
+        "mind",
+        "bias",
+        "biases",
+        "collective",
+        "state",
+        "freud",
+        "jung"
+      ]
+    },
+    {
+      "id": "hypothermia",
+      "title": "Hypothermia (too cold)",
+      "when": "Shivering, cold pale skin, slurred speech, confusion, clumsiness, drowsiness. When shivering stops, it is getting severe.",
+      "steps": [
+        "Get them out of the cold, wet and wind: indoors or into shelter, and off the cold ground.",
+        "Take off wet clothes and put on dry layers. Cover the head.",
+        "Warm them gradually: blankets, a sleeping bag, or skin-to-skin contact with another person under the covers.",
+        "Warm (not hot) packs or bottles wrapped in cloth can go on the armpits, chest and groin.",
+        "If they are fully awake and can swallow, give warm sweet drinks and high-energy food.",
+        "Handle them gently. If they are drowsy or confused, keep them lying down.",
+        "If they stop breathing normally, start CPR."
+      ],
+      "dont": [
+        "Don't rub or massage their arms and legs.",
+        "No alcohol, no hot bath or shower, and no direct heat such as a fire or hot water bottle on the skin.",
+        "No drinks if they are drowsy or can't swallow properly."
+      ],
+      "call_if": "They are confused, drowsy, unresponsive, have stopped shivering, or are a baby or elderly.",
+      "keywords": [
+        "hypothermia",
+        "hypothermic",
+        "frostbite",
+        "frostbitten",
+        "fell through ice",
+        "fell in cold water",
+        "cold water immersion",
+        "shivering uncontrollably"
+      ],
+      "more": [
+        "Hypothermia",
+        "Frostbite"
+      ],
+      "weak": [
+        "cold",
+        "freezing",
+        "shivering",
+        "frozen"
+      ],
+      "with": [
+        "someone",
+        "person",
+        "child",
+        "baby",
+        "he",
+        "she",
+        "wet",
+        "confused",
+        "drowsy",
+        "warm up",
+        "exposure",
+        "mountain",
+        "hiking"
+      ],
+      "not": [
+        "food",
+        "freezer",
+        "pipe",
+        "pipes",
+        "meat",
+        "fridge",
+        "cold war",
+        "common cold",
+        "weather",
+        "frame",
+        "cream",
+        "medicine",
+        "medicines",
+        "insulin",
+        "power",
+        "storage",
+        "store",
+        "keep"
+      ]
+    },
+    {
+      "id": "heat",
+      "title": "Heat exhaustion and heatstroke",
+      "when": "In heat or after exertion: headache, dizziness, heavy sweating, cramps, feeling sick, fast pulse. Heatstroke is worse: hot skin, confusion, fits or collapse, and they may stop sweating.",
+      "steps": [
+        "Move them to a cool, shady place. Lie them down and raise their feet a little.",
+        "If they are awake, give plenty of water, or a rehydration or sports drink.",
+        "Cool the skin: spray or sponge with cool water and fan them. Cold packs wrapped in cloth on the armpits and neck help.",
+        "They should feel better within 30 minutes.",
+        "Heatstroke (confused, fitting, collapsed, or hot and not sweating): call the emergency number and cool them fast, ideally in cool water up to the neck, or by soaking and fanning the whole body.",
+        "Unresponsive but breathing: recovery position."
+      ],
+      "dont": [
+        "Don't give drinks to someone who is confused or drowsy."
+      ],
+      "call_if": "They don't improve within 30 minutes, are confused, have a fit, collapse, or have hot dry skin.",
+      "keywords": [
+        "heatstroke",
+        "heat stroke",
+        "heat exhaustion",
+        "sunstroke",
+        "heat illness"
+      ],
+      "more": [
+        "Heat stroke",
+        "Heat exhaustion",
+        "Dehydration"
+      ],
+      "weak": [
+        "overheating",
+        "overheated",
+        "dehydration",
+        "dehydrated",
+        "too hot"
+      ],
+      "with": [
+        "person",
+        "child",
+        "baby",
+        "someone",
+        "sun",
+        "dizzy",
+        "weather",
+        "runner",
+        "sick",
+        "confused",
+        "headache",
+        "heatwave",
+        "he",
+        "she"
+      ],
+      "not": [
+        "engine",
+        "car",
+        "laptop",
+        "computer",
+        "phone",
+        "cpu",
+        "food",
+        "fruit",
+        "vegetables",
+        "meat",
+        "dehydrator",
+        "pc",
+        "motor"
+      ]
+    },
+    {
+      "id": "seizure",
+      "title": "Seizure (fit)",
+      "when": "Sudden jerking or stiffening, collapse, loss of awareness.",
+      "steps": [
+        "Stay with them and note the time it started.",
+        "Protect them: move hard or sharp things away and cushion their head.",
+        "Loosen anything tight around the neck.",
+        "When the jerking stops, put them in the recovery position and check their breathing.",
+        "Stay with them, calm and reassuring, until they are fully awake."
+      ],
+      "dont": [
+        "Don't hold them down or try to stop the movements.",
+        "Don't put anything in their mouth.",
+        "Don't give food or drink until they are fully awake."
+      ],
+      "call_if": "It's their first seizure, it lasts more than 5 minutes, another follows, they are injured, have trouble breathing, don't wake up, or it happened in water.",
+      "keywords": [
+        "seizure",
+        "seizures",
+        "convulsion",
+        "convulsions",
+        "convulsing",
+        "epileptic fit",
+        "having a fit",
+        "febrile seizure",
+        "epilepsy",
+        "epileptic"
+      ],
+      "more": [
+        "Epileptic seizure",
+        "Febrile seizure"
+      ],
+      "weak": [
+        "fit",
+        "fitting",
+        "fits",
+        "shaking"
+      ],
+      "with": [
+        "having",
+        "child",
+        "baby",
+        "someone",
+        "shaking",
+        "jerking",
+        "uncontrollably",
+        "collapsed"
+      ],
+      "not": [
+        "pipe",
+        "pipes",
+        "fitting room",
+        "asset",
+        "assets",
+        "property",
+        "drug seizure",
+        "tight fit",
+        "fit together",
+        "fit in",
+        "keep fit"
+      ]
+    },
+    {
+      "id": "anaphylaxis",
+      "title": "Severe allergic reaction",
+      "when": "Swelling of the lips, tongue or throat; trouble breathing or swallowing; wheezing; hoarse voice; feeling faint; often after a food, sting or medicine.",
+      "steps": [
+        "Use their adrenaline auto-injector (such as an EpiPen) straight away: into the outer thigh, through clothing if needed.",
+        "Call the emergency number and say \"anaphylaxis\".",
+        "Lie them down with their legs raised. If breathing is hard, let them sit up instead.",
+        "If they are no better after 5 minutes, give a second auto-injector if there is one.",
+        "If they stop breathing normally, start CPR."
+      ],
+      "dont": [
+        "Don't let them stand up or walk, even if they feel better."
+      ],
+      "call_if": "Always, even if the injector has worked.",
+      "keywords": [
+        "anaphylaxis",
+        "anaphylactic",
+        "epipen",
+        "epi pen",
+        "auto injector",
+        "autoinjector",
+        "allergic reaction",
+        "throat swelling",
+        "swollen throat",
+        "swollen tongue",
+        "throat closing",
+        "tongue swelling",
+        "face is swelling",
+        "face swelling",
+        "lips swelling",
+        "lips are swelling"
+      ],
+      "more": [
+        "Anaphylaxis",
+        "Epinephrine autoinjector"
+      ],
+      "weak": [
+        "allergy",
+        "allergic",
+        "swelling",
+        "swollen"
+      ],
+      "with": [
+        "sting",
+        "stung",
+        "bee",
+        "wasp",
+        "nut",
+        "nuts",
+        "peanut",
+        "lips",
+        "tongue",
+        "throat",
+        "face",
+        "breathe",
+        "breathing",
+        "hives"
+      ],
+      "not": [
+        "pollen",
+        "hay fever",
+        "hayfever",
+        "dust",
+        "cat",
+        "dog"
+      ]
+    },
+    {
+      "id": "asthma",
+      "title": "Asthma attack",
+      "when": "Wheezing, coughing, tight chest, too breathless to speak or eat.",
+      "steps": [
+        "Help them sit up straight and stay calm. Loosen tight clothing.",
+        "One puff of their reliever inhaler (usually blue) every 30 to 60 seconds, up to 10 puffs. A spacer helps if they have one.",
+        "If they feel worse, or are no better after 10 puffs, call the emergency number.",
+        "If help takes more than 15 minutes, give up to 10 more puffs the same way."
+      ],
+      "dont": [
+        "Don't make them lie down."
+      ],
+      "call_if": "No better after 10 puffs, getting worse, too breathless to speak, lips turning blue, or very tired.",
+      "keywords": [
+        "asthma attack",
+        "asthma",
+        "inhaler",
+        "wheezing",
+        "cant breathe",
+        "cannot breathe",
+        "struggling to breathe",
+        "short of breath",
+        "breathless"
+      ],
+      "more": [
+        "Asthma"
+      ],
+      "weak": [],
+      "with": [],
+      "not": []
+    },
+    {
+      "id": "low-sugar",
+      "title": "Low blood sugar (diabetes)",
+      "when": "Someone with diabetes is shaky, sweaty, pale, hungry, confused or irritable.",
+      "steps": [
+        "If they are awake and can swallow: give fast sugar, such as a glass of fruit juice or a non-diet fizzy drink, 4 to 5 glucose tablets, or a handful of sweets.",
+        "Check again after 10 to 15 minutes. If they are no better, give fast sugar again.",
+        "Once they feel better, give some starchy food, such as a sandwich or biscuits.",
+        "Unresponsive: put them in the recovery position and call the emergency number."
+      ],
+      "dont": [
+        "Don't give food or drink to someone who is drowsy or can't swallow."
+      ],
+      "call_if": "They are unresponsive, have a fit, or don't improve after two lots of sugar.",
+      "keywords": [
+        "low blood sugar",
+        "hypoglycaemia",
+        "hypoglycemia",
+        "hypo",
+        "having a hypo",
+        "diabetic emergency",
+        "diabetic coma",
+        "sugar low",
+        "blood sugar low"
+      ],
+      "more": [
+        "Hypoglycemia",
+        "Diabetes"
+      ],
+      "weak": [
+        "diabetic",
+        "diabetes",
+        "insulin",
+        "sugar"
+      ],
+      "with": [
+        "shaky",
+        "shaking",
+        "sweaty",
+        "sweating",
+        "confused",
+        "faint",
+        "dizzy",
+        "low",
+        "collapsed",
+        "unconscious",
+        "unresponsive",
+        "drowsy"
+      ],
+      "not": []
+    }
+  ]
+}

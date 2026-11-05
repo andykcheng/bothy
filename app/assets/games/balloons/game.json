@@ -1,0 +1,13 @@
+{
+  "id": "balloons",
+  "title": "Balloon Words",
+  "description": "Guess the word before the balloons pop. Word lists by category, or a friend picks the word.",
+  "players": "1+",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "Animals 🐾"
+  ]
+}

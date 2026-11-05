@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run a Bothy hub: setup guide for Windows, Mac, Linux and Raspberry Pi</title>
+<meta name="description" content="Turn a spare computer, Raspberry Pi or NAS into a Bothy hub: offline knowledge, first aid, maps, games and chat for everyone on your Wi-Fi. One command with Docker, 3 to 13 GB of space.">
+<link rel="canonical" href="https://www.pocketbothy.com/hub">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#2F6B4F"/><path d="M6 16 16 7l10 9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 14.5V25h14V14.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/><rect x="14" y="18" width="4" height="7" rx="1" fill="#fff"/></svg>Bothy</a>
+  <nav><a class="opt" href="#install">Install</a><a class="opt" href="#ready">Be ready</a><a class="opt" href="#help">Help</a><a href="/">Home</a></nav>
+</div></header>
+
+<main class="wrap"><div class="prose guide">
+<h1>Run a Bothy hub</h1>
+<p class="lead">A hub is a computer that stays on and shares Bothy with everyone on its Wi-Fi: the library, first aid, AI answers, maps, games and a local chat, in any phone's browser, with no app and no internet. Phones with the app can also fill up from it. If you can spare a few gigabytes and a computer that can stay switched on, you can run one for your household, your street or your village hall.</p>
+
+<div class="card note"><b>How long it takes:</b> about 15 minutes of your time, plus the download (3 to 13 GB, so roughly 10 minutes to a few hours depending on your connection). After that the hub needs no internet at all.</div>
+
+<h2 id="need">What you need</h2>
+<ul>
+  <li><b>A computer that can stay on.</b> Any of these works:
+    <ul>
+      <li>a Raspberry Pi 4 or 5 with at least 4 GB of memory, running 64-bit Raspberry Pi OS</li>
+      <li>an old laptop or desktop (Windows 10 or 11, macOS, or Linux), 64-bit, with at least 4 GB of memory</li>
+      <li>a mini PC (such as an Intel N100) or a home server or NAS that runs Docker (Synology, Unraid, TrueNAS, CasaOS)</li>
+    </ul>
+  </li>
+  <li><b>Free space</b> for the content you choose (below), plus a little room to spare.</li>
+  <li><b>A Wi-Fi network</b> that people can join: your router, or a cheap travel router next to the hub.</li>
+  <li><b>Internet once</b>, for the download.</li>
+</ul>
+
+<h3>Choose how much to keep</h3>
+<table class="credits">
+  <tr><th>Choice</th><th>Size</th><th>What's in it</th></tr>
+  <tr><td><b>small</b></td><td>2.6 GB</td><td>All 440,000 articles, guides and answers, search by meaning, first aid, 23 games, a world map. No pictures.</td></tr>
+  <tr><td><b>standard</b> (recommended)</td><td>7.6 GB</td><td>Everything in small, plus pictures for Wikipedia, the survival guides and Appropedia, AI answers, and the detailed UK map.</td></tr>
+  <tr><td><b>everything</b></td><td>13.2 GB</td><td>Everything in standard, plus all the wikiHow and iFixit photos, and compact indexes for phones that copy from the hub.</td></tr>
+</table>
+<p class="muted">AI answers need about 3 GB of free memory and a reasonably fast processor. They work on a mini PC or laptop; on a Raspberry Pi they're slow, so you may want to leave them out (see <a href="#options">options</a>). Everything else runs well on a Pi.</p>
+
+<h2 id="install">Step 1: Install Docker</h2>
+<p>Docker runs the hub in a sealed box, the same way on every computer, and keeps it running. It's free for personal use.</p>
+
+<details class="os" open><summary>Windows 10 or 11</summary>
+<ol>
+  <li>Download <a href="https://docs.docker.com/desktop/setup/install/windows-install/">Docker Desktop for Windows</a> and run the installer. Keep the default "Use WSL 2" option.</li>
+  <li>Restart the computer when it asks, then open Docker Desktop and wait until it says the engine is running. You don't need to sign in.</li>
+  <li>In Docker Desktop's Settings → General, turn on <b>Start Docker Desktop when you sign in to your computer</b>.</li>
+  <li>Open <b>PowerShell</b> (Start menu → type PowerShell) for the next step.</li>
+</ol>
+</details>
+
+<details class="os"><summary>Mac</summary>
+<ol>
+  <li>Download <a href="https://docs.docker.com/desktop/setup/install/mac-install/">Docker Desktop for Mac</a>: choose Apple silicon (M1 and later) or Intel to match your Mac (Apple menu → About This Mac).</li>
+  <li>Open the downloaded file, drag Docker to Applications, open it and wait until it says the engine is running. You don't need to sign in.</li>
+  <li>In Docker Desktop's Settings → General, turn on <b>Start Docker Desktop when you sign in to your computer</b>.</li>
+  <li>Open <b>Terminal</b> (Applications → Utilities) for the next step.</li>
+</ol>
+</details>
+
+<details class="os"><summary>Linux and Raspberry Pi</summary>
+<ol>
+  <li>On a Raspberry Pi, make sure you're running the <b>64-bit</b> Raspberry Pi OS (<code>uname -m</code> should print <code>aarch64</code>).</li>
+  <li>Install Docker with its official script, and let your user run it:
+<pre><code>curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER</code></pre></li>
+  <li>Log out and back in (or reboot), then check it works: <code>docker run --rm hello-world</code></li>
+</ol>
+<p class="muted">Docker starts by itself when the computer boots.</p>
+</details>
+
+<details class="os"><summary>NAS or home server (Synology, Unraid, TrueNAS, CasaOS)</summary>
+<p>Use your system's container app (Synology: Container Manager) and create a container from the image <code>andykcheng/bothy</code> with:</p>
+<ul>
+  <li>ports <b>8080</b> → 8080 and <b>8443</b> → 8443</li>
+  <li>a volume or folder mounted at <b>/data</b>, on a disk with enough space</li>
+  <li>restart policy <b>unless stopped</b> (or "always")</li>
+  <li>optional environment variable <b>BOTHY_PRESET</b> = small, standard or everything</li>
+</ul>
+<p>Then skip to step 3.</p>
+</details>
+
+<h2 id="start">Step 2: Start the hub</h2>
+<p>Copy this into PowerShell or Terminal and press Enter. It's the same on every system:</p>
+<pre><code>docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data -e BOTHY_PRESET=standard andykcheng/bothy</code></pre>
+<p>Change <code>standard</code> to <code>small</code> or <code>everything</code> if you prefer. Docker picks the right version for your computer (Intel/AMD or ARM) by itself.</p>
+<p>On the first start the hub downloads its library into the <code>bothy-data</code> volume. Watch it with:</p>
+<pre><code>docker logs -f bothy</code></pre>
+<p>You'll see the progress, and at the end <b>"Bothy hub is running"</b> with a list of what it holds. Press Ctrl+C to stop watching; the hub keeps running. If the download is interrupted, it carries on from where it stopped next time the hub starts.</p>
+
+<h2 id="open">Step 3: Open it</h2>
+<ul>
+  <li>On the hub computer itself: <a href="http://localhost:8080">http://localhost:8080</a></li>
+  <li>On a phone or another computer on the <b>same Wi-Fi</b>: <code>http://</code><i>the hub's address</i><code>:8080</code></li>
+</ul>
+<p>To find the hub's address:</p>
+<ul>
+  <li><b>Windows:</b> in PowerShell, run <code>ipconfig</code> and look for "IPv4 Address" under your Wi-Fi or Ethernet adapter, e.g. <code>192.168.1.23</code>.</li>
+  <li><b>Mac:</b> System Settings → Wi-Fi (or Network) → Details → IP address.</li>
+  <li><b>Linux and Raspberry Pi:</b> run <code>hostname -I</code> and take the first address.</li>
+</ul>
+<p>So a phone would open something like <code>http://192.168.1.23:8080</code>. If the computer asks whether to allow Docker to accept incoming connections, allow it on <b>private</b> networks.</p>
+<p class="muted">Tip: in your router's settings, give the hub a fixed (reserved) address, so the link never changes. Then print it on a card or turn it into a QR code and stick it on the wall.</p>
+
+<h2 id="ready">Step 4: Make sure it's ready</h2>
+<p>A hub you've never tested is a hub you can't count on. Work through this once:</p>
+<ol class="steps">
+  <li><b>Check every file.</b> Run <code>docker exec bothy bothy-hub check</code>. It checks the download is complete and ends with <b>"Ready."</b> Add <code>--full</code> to re-check every file's fingerprint (slower).</li>
+  <li><b>Test without the internet.</b> Unplug the internet cable from your router (or switch off its mobile data), keep the Wi-Fi on, and on a phone open the hub, search for "how to purify water", open a first aid card, and send a message in the chat. Everything should work.</li>
+  <li><b>Test a restart.</b> Restart the hub computer and check the hub comes back by itself. On Windows and Mac, Docker Desktop must start when you sign in (step 1), and the computer must sign in by itself or stay signed in.</li>
+  <li><b>Stop it sleeping.</b> Set the computer never to sleep when plugged in (Windows: Settings → System → Power; Mac: System Settings → Energy; a laptop can keep running with its lid closed if you set "When I close the lid: Do nothing").</li>
+  <li><b>Plan for a power cut.</b> The hub and the Wi-Fi router both need power. A laptop has its own battery; a Raspberry Pi or a small router runs for hours from a USB power bank; a small UPS keeps a router and mini PC going. Test it: unplug the mains and see how long it lasts.</li>
+  <li><b>Tell people.</b> Put the address (or a QR code) where people will find it: the fridge, the noticeboard, the family group chat. In an emergency nobody will remember a number.</li>
+</ol>
+
+<h2 id="update">Keeping it up to date</h2>
+<p>Content changes now and then. To fetch whatever's new or changed (only the differences are downloaded):</p>
+<pre><code>docker exec -it bothy bothy-hub get</code></pre>
+<p>To switch to a bigger or smaller choice later: <code>docker exec -it bothy bothy-hub get --preset everything</code></p>
+<p>To update the hub program itself (your downloaded library is kept):</p>
+<pre><code>docker pull andykcheng/bothy
+docker rm -f bothy
+docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data andykcheng/bothy</code></pre>
+
+<h2 id="options">Options</h2>
+<p>Add any of these to the <code>docker run</code> command, before the image name:</p>
+<table class="credits">
+  <tr><th>Option</th><th>What it does</th></tr>
+  <tr><td><code>-e BOTHY_PRESET=small</code></td><td>small, standard or everything (used on the first start)</td></tr>
+  <tr><td><code>-e BOTHY_SKIP=llm</code></td><td>leave things out, separated by commas: <code>llm</code> (AI answers), <code>map:uk</code>, <code>col:ifixit:images</code>…</td></tr>
+  <tr><td><code>-e BOTHY_ADD=map:uk</code></td><td>add things to a smaller choice</td></tr>
+  <tr><td><code>-p 8090:8080</code></td><td>use another port if 8080 is taken (then open <code>:8090</code>)</td></tr>
+  <tr><td><code>-v /path/on/disk:/data</code></td><td>keep the library in a folder you choose, e.g. on a bigger disk, instead of the <code>bothy-data</code> volume</td></tr>
+</table>
+<p>With Docker Compose, save this as <code>compose.yaml</code> and run <code>docker compose up -d</code>:</p>
+<pre><code>services:
+  bothy:
+    image: andykcheng/bothy
+    restart: unless-stopped
+    ports: ["8080:8080", "8443:8443"]
+    volumes: ["bothy-data:/data"]
+    environment:
+      BOTHY_PRESET: standard
+volumes:
+  bothy-data:</code></pre>
+
+<h2 id="help">If something goes wrong</h2>
+<details class="faq-q"><summary>Phones can't open the hub</summary>
+<p>Check the phone is on the <b>same</b> Wi-Fi as the hub, not a guest network (guest networks usually stop devices seeing each other) and not mobile data. Check the address with the steps above. On Windows, open "Allow an app through Windows Firewall" and make sure Docker Desktop is allowed on private networks. On Linux with a firewall: <code>sudo ufw allow 8080,8443/tcp</code>.</p></details>
+<details class="faq-q"><summary>"Port is already allocated"</summary>
+<p>Something else uses port 8080. Remove the half-made container with <code>docker rm -f bothy</code> and start again with <code>-p 8090:8080</code>.</p></details>
+<details class="faq-q"><summary>"Not enough free space"</summary>
+<p>The hub checks before downloading. Free some space, choose a smaller preset, or keep the library on another disk with <code>-v /path/on/disk:/data</code>. On Docker Desktop you can also move its disk image in Settings → Resources.</p></details>
+<details class="faq-q"><summary>The download stopped</summary>
+<p>Restart the hub (<code>docker restart bothy</code>) or run <code>docker exec -it bothy bothy-hub get</code>. It resumes where it stopped and checks every file.</p></details>
+<details class="faq-q"><summary>AI answers are very slow</summary>
+<p>They need a fast processor; a Raspberry Pi takes a long time. Search, first aid and everything else don't use them. To remove them, start the hub with <code>-e BOTHY_SKIP=llm</code> and run <code>docker exec -it bothy bothy-hub get --skip llm</code>.</p></details>
+<details class="faq-q"><summary>Voice messages or "My location" don't work in the chat</summary>
+<p>Browsers only allow the microphone and GPS on secure pages, so the chat sends people to the hub's https address on port 8443 for those. The browser warns once about the hub's own certificate; that's expected on a local network, and the chat explains how to continue.</p></details>
+
+<h2 id="source">Without Docker</h2>
+<p>The hub is one program, <code>bothy-hub</code>, with three commands: <code>get</code> (download or update), <code>check</code> (is it ready?) and <code>start</code>. Ready-made downloads for Windows, Mac and Linux are planned. Until then you can build it from the source code, which will be published under the GNU AGPL-3.0: install <a href="https://rustup.rs">Rust</a>, CMake and Clang, then run <code>cargo build --release -p sp-server --bin bothy-hub</code> in the <code>core</code> folder.</p>
+</div></main>
+
+<footer class="bottom"><div class="wrap">
+  <span>Bothy, by <a href="https://penpaper.tech">Pen &amp; Paper</a></span>
+  <span><a href="/">Home</a> · <a href="privacy.html">Privacy</a></span>
+</div></footer>
+</body>
+</html>

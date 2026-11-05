@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Balloon Words</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: linear-gradient(#bfe6ff, #eaf7ff); color: #1d2b3a; font: 16px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 560px; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; }
+  button { font: inherit; color: inherit; background: #ffffffaa; border: 0; border-radius: 10px; padding: 9px 14px; }
+  button.go { background: #2b7de0; color: #fff; }
+  #sky { width: min(96vw, 420px); height: 210px; position: relative; }
+  .bal { position: absolute; width: 46px; height: 58px; border-radius: 50% 50% 48% 48%; top: 10px; transition: transform .4s, opacity .4s; }
+  .bal::after { content: ''; position: absolute; left: 22px; top: 58px; width: 1px; height: var(--len); background: #6b7b8c; transform-origin: top; transform: rotate(var(--rot)); }
+  .bal.pop { transform: scale(1.6); opacity: 0; }
+  #basket { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); font-size: 44px; transition: transform .8s ease-in, opacity .8s; }
+  #basket.fall { transform: translate(-50%, 120px) rotate(40deg); opacity: 0; }
+  #sky { overflow: hidden; }
+  #cat { color: #4a6a8a; font-size: 14px; margin-top: 4px; }
+  #word { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin: 10px 8px; min-height: 48px; }
+  .l { width: 30px; height: 42px; border-bottom: 3px solid #1d2b3a; font-size: 28px; font-weight: 700; text-align: center; }
+  .l.sp { border: 0; width: 14px; } .l.miss { color: #d33; }
+  #keys { display: grid; grid-template-columns: repeat(9, 1fr); gap: 5px; width: min(98vw, 520px); padding: 6px; }
+  #keys button { padding: 12px 0; font-weight: 700; background: #fff; }
+  #keys button.hit { background: #7fd18b; } #keys button.no { background: #c9d2dc; color: #8896a5; }
+  #msg { font-weight: 700; min-height: 26px; margin: 4px; text-align: center; }
+  #menu { position: fixed; inset: 0; background: #eaf7fff5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 20px; overflow: auto; }
+  .cats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 420px; }
+  #secret { font: inherit; font-size: 20px; padding: 10px; border-radius: 10px; border: 2px solid #9bb; width: 260px; text-transform: uppercase; -webkit-text-security: disc; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header><button id="menuBtn">☰</button><b>🎈 Balloon Words</b><span id="streak" style="font-size:14px"></span></header>
+<div id="sky"><div id="basket">🧺</div></div>
+<div id="cat"></div>
+<div id="word"></div>
+<div id="msg"></div>
+<div id="keys"></div>
+<div id="menu">
+  <h1 style="margin:0">🎈 Balloon Words</h1>
+  <div style="max-width:340px;color:#456">Guess the word one letter at a time. Every wrong letter pops a balloon — lose all seven and the basket falls!</div>
+  <b>The phone picks a word:</b>
+  <div class="cats" id="cats"></div>
+  <b style="margin-top:10px">Or a friend types one:</b>
+  <input id="secret" placeholder="secret word" maxlength="24" autocomplete="off" autocapitalize="characters">
+  <input id="hintIn" placeholder="hint (optional)" maxlength="30" style="font:inherit;padding:8px;border-radius:10px;border:2px solid #9bb;width:260px">
+  <button id="friend" class="go">Start with this word</button>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const WORDS = {
+  'Animals 🐾': 'badger hedgehog squirrel rabbit otter beaver fox wolf bear deer moose horse donkey goat sheep cow pig chicken duck goose swan owl eagle falcon robin sparrow pigeon parrot penguin dolphin whale shark octopus jellyfish crab lobster turtle tortoise frog toad newt snake lizard crocodile elephant giraffe zebra lion tiger leopard cheetah monkey gorilla kangaroo koala panda camel hippo rhino mouse hamster guinea pig bat mole weasel stoat ferret badger butterfly ladybird beetle spider bee wasp ant snail worm',
+  'Food 🍎': 'apple banana orange lemon grape cherry strawberry raspberry blueberry pear plum peach melon pineapple mango coconut potato carrot onion garlic leek cabbage broccoli cauliflower pea bean tomato cucumber lettuce pepper mushroom pumpkin bread butter cheese yoghurt milk egg honey jam porridge pancake sandwich biscuit cake muffin crumpet scone soup stew pasta rice noodles pizza curry sausage bacon fish chips custard trifle crumble toffee chocolate',
+  'Around the house 🏠': 'kitchen bedroom bathroom garden attic cellar window door staircase chimney fireplace curtain carpet cushion pillow blanket duvet wardrobe drawer cupboard shelf table chair sofa armchair lamp candle mirror clock kettle teapot saucepan frying pan oven fridge freezer toaster cooker sink tap bucket broom mop hoover spoon fork knife plate bowl mug glass jug towel soap toothbrush hairbrush umbrella doormat letterbox',
+  'Outdoors & camping 🏕️': 'tent sleeping bag rucksack compass map torch lantern campfire firewood kindling matches rope knot hammock canoe paddle river stream waterfall lake pond forest woodland meadow valley mountain hill cliff cave beach island harbour lighthouse bridge footpath stile hedge orchard wildflower mushroom acorn conker pinecone puddle rainbow thunder lightning sunshine snowflake frost blizzard breeze',
+  'Jobs 👩‍🚒': 'farmer baker butcher fisherman teacher doctor nurse dentist vet pilot sailor soldier firefighter police officer postman builder plumber electrician carpenter blacksmith mechanic engineer scientist astronaut artist painter musician singer dancer actor writer poet librarian shopkeeper chef waiter gardener shepherd beekeeper miner driver',
+  'Sports & games 🏅': 'football rugby cricket tennis badminton netball hockey golf swimming running cycling rowing sailing climbing skiing skating boxing judo karate archery fencing darts snooker chess draughts dominoes marbles hopscotch skipping conkers rounders frisbee kite yoyo jigsaw puzzle cards dice',
+  'UK places 🇬🇧': 'london edinburgh cardiff belfast manchester liverpool birmingham glasgow bristol leeds sheffield newcastle york oxford cambridge bath brighton norwich exeter plymouth cornwall devon dorset kent yorkshire lancashire snowdonia lake district peak district cotswolds highlands thames severn stonehenge hadrians wall loch ness isle of skye',
+  'Things that go 🚂': 'train tram bus coach lorry tractor van car taxi bicycle tandem scooter motorbike skateboard ambulance fire engine police car helicopter aeroplane glider hot air balloon rocket submarine ship ferry yacht canoe kayak rowing boat narrowboat hovercraft sledge cable car',
+};
+let stats = JSON.parse(localStorage.getItem('balloons.stats') || '{"streak":0,"best":0}');
+let word, guessed, wrong, cat, over;
+const N = 7, COLORS = ['#ff5a5f', '#ffb400', '#00a699', '#7b61ff', '#ff7eb6', '#3fa9f5', '#8ac926'];
+$('cats').innerHTML = Object.keys(WORDS).map(k => `<button data-c="${k}">${k}</button>`).join('') + `<button data-c="*">🎲 Anything</button>`;
+$('cats').onclick = e => { const b = e.target.closest('button'); if (!b) return; let c = b.dataset.c; if (c === '*') c = Object.keys(WORDS)[Math.floor(Math.random() * Object.keys(WORDS).length)]; start(pickWord(c), c, true); };
+function pickWord(c) {  // the lists are space-separated, so multi-word entries are listed here
+  const raw = WORDS[c], twos = ['guinea pig', 'frying pan', 'sleeping bag', 'police officer', 'lake district', 'peak district', 'hadrians wall', 'loch ness', 'isle of skye', 'fire engine', 'police car', 'hot air balloon', 'rowing boat', 'cable car'];
+  let s = raw; const keep = []; for (const t of twos) if (s.includes(t)) { keep.push(t); s = s.split(t).join(' '); }
+  const all = s.split(/\s+/).filter(w => w.length > 2).concat(keep);
+  return all[Math.floor(Math.random() * all.length)];
+}
+$('friend').onclick = () => { const w = $('secret').value.trim().toLowerCase().replace(/[^a-z ]/g, ''); if (w.replace(/ /g, '').length < 2) { $('secret').focus(); return; } $('secret').value = ''; start(w, $('hintIn').value.trim() || 'A friend’s word', false); $('hintIn').value = ''; };
+$('menuBtn').onclick = () => $('menu').classList.remove('hidden');
+function start(w, c, counts) {
+  word = w; cat = c; guessed = new Set(); wrong = 0; over = false; $('menu').classList.add('hidden'); $('msg').textContent = ''; start.counts = counts;
+  // each string runs from the bottom of its balloon to the top of the basket
+  const W = $('sky').clientWidth, bx = W / 2, by = 160; let sky = '';
+  for (let i = 0; i < N; i++) {
+    const x = W * (.08 + i * .84 / (N - 1)), top = 10 + Math.abs(i - 3) * 8, dx = bx - x, dy = by - (top + 58);
+    sky += `<div class="bal" id="b${i}" style="left:${x - 23}px;top:${top}px;background:${COLORS[i]};--len:${Math.hypot(dx, dy)}px;--rot:${-Math.atan2(dx, dy) * 180 / Math.PI}deg"></div>`;
+  }
+  $('sky').innerHTML = sky + '<div id="basket">🧺</div>';
+  $('keys').innerHTML = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(k => `<button data-k="${k.toLowerCase()}">${k}</button>`).join('');
+  draw();
+}
+function guess(k) {
+  if (over || guessed.has(k)) return; guessed.add(k);
+  if (!word.includes(k)) { $('b' + wrong).classList.add('pop'); wrong++; }
+  const won = [...word].every(ch => ch === ' ' || guessed.has(ch));
+  if (won) { over = true; if (start.counts) { stats.streak++; stats.best = Math.max(stats.best, stats.streak); } $('msg').textContent = ['🎉 Brilliant!', '🎉 Well done!', '🌟 You got it!'][Math.floor(Math.random() * 3)] + ' Tap ☰ for another.'; }
+  else if (wrong >= N) { over = true; if (start.counts) stats.streak = 0; $('basket').classList.add('fall'); $('msg').textContent = `The word was “${word.toUpperCase()}”. Tap ☰ to try again.`; }
+  localStorage.setItem('balloons.stats', JSON.stringify(stats)); draw();
+}
+function draw() {
+  $('word').innerHTML = [...word].map(ch => ch === ' ' ? '<div class="l sp"></div>' : `<div class="l ${over && !guessed.has(ch) ? 'miss' : ''}">${guessed.has(ch) || over ? ch.toUpperCase() : ''}</div>`).join('');
+  $('cat').textContent = `${cat} · ${N - wrong} balloon${N - wrong === 1 ? '' : 's'} left`;
+  for (const b of $('keys').children) { const k = b.dataset.k; b.className = guessed.has(k) ? (word.includes(k) ? 'hit' : 'no') : ''; }
+  $('streak').textContent = `🔥 ${stats.streak} (best ${stats.best})`;
+}
+$('keys').onclick = e => { const b = e.target.closest('button'); if (b) guess(b.dataset.k); };
+addEventListener('keydown', e => { if (/^[a-z]$/i.test(e.key) && $('menu').classList.contains('hidden')) guess(e.key.toLowerCase()); });
+</script>
+</body>
+</html>

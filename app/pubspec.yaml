@@ -1,0 +1,64 @@
+name: survivalpedia
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  archive: ^4.6.0
+  ffi: ^2.2.0
+  flutter:
+    sdk: flutter
+  http: ^1.6.0
+  path_provider: ^2.1.6
+  qr_flutter: ^4.1.0
+  shared_preferences: ^2.5.5
+  webview_flutter: ^4.14.1
+  webview_flutter_android: ^4.12.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  # our own games are all bundled in the APK (games.dart, ~300 KB); third-party ones come from a hub
+  assets:
+    - assets/games/balloons/
+    - assets/games/chess/
+    - assets/games/dots/
+    - assets/games/draughts/
+    - assets/games/estates/
+    - assets/games/four/
+    - assets/games/freecell/
+    - assets/games/emberdeep/
+    - assets/games/greenhollow/
+    - assets/games/leap/
+    - assets/games/mancala/
+    - assets/games/morris/
+    - assets/games/party/
+    - assets/games/reversi/
+    - assets/games/seabattle/
+    - assets/games/snake/
+    - assets/games/solitaire/
+    - assets/games/sudoku/
+    - assets/games/tinkerworks/
+    - assets/games/yacht/
+  # the ebook reader (books.dart): epub.js + JSZip, see assets/reader/LICENSES.txt
+    - assets/reader/
+  # first-aid cards (emergency.dart), also served by the hub at /emergency
+    - assets/emergency/
+  # Inter (SIL OFL 1.1, assets/fonts/Inter-OFL.txt), Latin subset
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700

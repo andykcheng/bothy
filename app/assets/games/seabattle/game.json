@@ -1,0 +1,10 @@
+{
+  "id": "seabattle",
+  "title": "Sea Battle",
+  "description": "Find and sink the computer’s hidden fleet before it sinks yours.",
+  "players": "1",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg"
+}

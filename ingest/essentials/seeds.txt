@@ -1,0 +1,701 @@
+# Hand-picked seed articles for the essentials selection (English Wikipedia titles; redirects are fine).
+# "## topic" starts a topic (names as in DESIGN §6). Seeds spread their weight along links (personalised
+# PageRank), so list the hubs of a subject; articles they link to are found automatically.
+
+## medicine
+First aid
+Cardiopulmonary resuscitation
+Automated external defibrillator
+Recovery position
+Choking
+Heimlich maneuver
+Bleeding
+Tourniquet
+Hemostasis
+Wound
+Wound healing
+Laceration
+Abrasion (medicine)
+Puncture wound
+Burn
+Chemical burn
+Electrical injury
+Frostbite
+Hypothermia
+Hyperthermia
+Heat stroke
+Heat exhaustion
+Dehydration
+Oral rehydration therapy
+Shock (circulatory)
+Anaphylaxis
+Epinephrine autoinjector
+Asthma
+Allergy
+Fracture
+Splint (medicine)
+Sprain
+Dislocation
+Concussion
+Traumatic brain injury
+Spinal cord injury
+Head injury
+Drowning
+Near drowning
+Carbon monoxide poisoning
+Poisoning
+Snakebite
+Vipera berus
+Insect bites and stings
+Bee sting
+Tick
+Lyme disease
+Rabies
+Tetanus
+Sepsis
+Infection
+Abscess
+Cellulitis
+Gangrene
+Antibiotic
+Penicillin
+Amoxicillin
+Paracetamol
+Ibuprofen
+Aspirin
+Antiseptic
+Disinfectant
+Iodine
+Hydrogen peroxide
+Wound dressing
+Bandage
+Surgical suture
+Myocardial infarction
+Angina
+Stroke
+FAST (stroke)
+Seizure
+Epilepsy
+Diabetes
+Hypoglycemia
+Diabetic ketoacidosis
+Insulin
+Hypertension
+Fever
+Pain management
+Diarrhea
+Vomiting
+Gastroenteritis
+Food poisoning
+Cholera
+Typhoid fever
+Dysentery
+Hepatitis A
+Influenza
+Common cold
+COVID-19
+Pneumonia
+Tuberculosis
+Measles
+Chickenpox
+Meningitis
+Malaria
+Scabies
+Head louse
+Urinary tract infection
+Appendicitis
+Childbirth
+Pregnancy
+Prenatal care
+Postpartum bleeding
+Breastfeeding
+Infant
+Neonatal jaundice
+Infant formula
+Vaccination
+Vaccination schedule
+Contraception
+Sexually transmitted infection
+Mental health
+Depression (mood)
+Anxiety
+Panic attack
+Post-traumatic stress disorder
+Grief
+Suicide prevention
+Psychological first aid
+Triage
+Vital signs
+Pulse
+Blood pressure
+Respiratory rate
+Medical thermometer
+Sterilization (microbiology)
+Hand washing
+Personal protective equipment
+Dentistry
+Toothache
+Dental abscess
+Eye injury
+Conjunctivitis
+Nosebleed
+Malnutrition
+Starvation
+Refeeding syndrome
+Scurvy
+Vitamin
+Essential medicines
+WHO Model List of Essential Medicines
+Opioid overdose
+Naloxone
+Alcohol withdrawal
+
+## water
+Drinking water
+Water purification
+Boiling
+Water filter
+Slow sand filter
+Solar water disinfection
+Water chlorination
+Sodium hypochlorite
+Chlorine dioxide
+Ceramic water filter
+Rainwater harvesting
+Well
+Water well
+Spring (hydrology)
+Water storage
+Waterborne diseases
+Distillation
+Solar still
+Desalination
+Water tank
+Hand pump
+Sanitation
+Latrine
+Pit latrine
+Composting toilet
+Urine-diverting dry toilet
+Septic tank
+Sewage treatment
+Greywater
+Open defecation
+Hygiene
+Soap
+Waste management
+Waste incineration
+
+## food
+Food preservation
+Canning
+Home canning
+Botulism
+Pickling
+Fermentation in food processing
+Lacto-fermentation
+Sauerkraut
+Smoking (cooking)
+Drying (food)
+Food drying
+Salting (food)
+Curing (food preservation)
+Jerky
+Root cellar
+Refrigeration
+Pemmican
+Hardtack
+Food storage
+Food safety
+Nutrition
+Dietary energy
+Protein (nutrient)
+Carbohydrate
+Fat
+Dietary fiber
+Calorie
+Bread
+Sourdough
+Baking
+Flour
+Milling (grinding)
+Quern-stone
+Butter
+Cheese
+Yogurt
+Cooking
+Cooking oil
+Rocket stove
+Haybox
+Butchery
+Slaughter
+Fishing
+Angling
+Fish trap
+Trapping
+Snare
+Hunting
+Food security
+Rationing
+
+## agriculture
+Agriculture
+Vegetable farming
+Gardening
+Kitchen garden
+Allotment (gardening)
+Crop rotation
+Companion planting
+Compost
+Manure
+Soil
+Soil fertility
+Fertilizer
+Green manure
+Mulch
+Irrigation
+Drip irrigation
+Seed saving
+Seed
+Germination
+Plant propagation
+Grafting
+Pruning
+Pest control
+Integrated pest management
+Plant disease
+Weed
+Greenhouse
+Polytunnel
+Cold frame
+Hydroponics
+Permaculture
+Potato
+Wheat
+Barley
+Oat
+Maize
+Rice
+Bean
+Pea
+Cabbage
+Carrot
+Onion
+Tomato
+Squash (plant)
+Kale
+Apple
+Orchard
+Beekeeping
+Honey
+Silage
+Hay
+Livestock
+Chicken
+Poultry farming
+Egg as food
+Goat
+Sheep
+Cattle
+Pig
+Rabbit
+Dairy
+Milking
+Animal husbandry
+Veterinary medicine
+Foot-and-mouth disease
+Avian influenza
+Horse
+Draft horse
+Plough
+Scythe
+Sickle
+
+## foraging
+Foraging
+Edible plants
+Wild edible plants
+Edible mushroom
+Mushroom poisoning
+Amanita phalloides
+Amanita virosa
+Amanita muscaria
+Cortinarius rubellus
+Poisonous plant
+Hemlock
+Conium maculatum
+Oenanthe crocata
+Atropa belladonna
+Digitalis purpurea
+Taxus baccata
+Arum maculatum
+Urtica dioica
+Taraxacum officinale
+Rubus fruticosus
+Sambucus nigra
+Allium ursinum
+Rosa canina
+Corylus avellana
+Castanea sativa
+Fagus sylvatica
+Quercus robur
+Acorn
+Plantago major
+Chenopodium album
+Stellaria media
+Cantharellus cibarius
+Boletus edulis
+Laetiporus sulphureus
+Seaweed
+Shellfish poisoning
+Mussel
+Limpet
+Medicinal plants
+Herbalism
+
+## shelter
+Survival skills
+Wilderness survival
+Survival kit
+Bug-out bag
+Emergency
+Emergency management
+Emergency preparedness
+Shelter
+Emergency shelter
+Bivouac shelter
+Tarpaulin
+Tent
+Sleeping bag
+Clothing
+Layered clothing
+Wool
+Fire
+Fire making
+Firelighter
+Ferrocerium
+Fire striker
+Bow drill
+Tinder
+Campfire
+Stove
+Wood fuel
+Firewood
+Charcoal
+Insulation (thermal)
+Thermal insulation
+Ventilation (architecture)
+Construction
+Timber framing
+Log cabin
+Cob (material)
+Adobe
+Rammed earth
+Wattle and daub
+Thatching
+Dry stone
+Brick
+Mortar (masonry)
+Concrete
+Lime (material)
+Roof
+Foundation (engineering)
+Knot
+Bowline
+Clove hitch
+Rope
+Cordage
+Lashing (ropework)
+
+## hazards
+Natural disaster
+Flood
+Flood warning
+Storm
+Tropical cyclone
+Lightning
+Heat wave
+Cold wave
+Drought
+Wildfire
+Earthquake
+Tsunami
+Landslide
+Avalanche
+Volcano
+Pandemic
+Epidemic
+Quarantine
+Contact tracing
+Nuclear fallout
+Radiation sickness
+Potassium iodide
+Ionizing radiation
+Fallout shelter
+Chemical weapon
+Gas mask
+CBRN defense
+Power outage
+Blackout (broadcasting)
+Evacuation
+Search and rescue
+Mountain rescue
+Lifeboat (rescue)
+Distress signal
+Mayday
+Signal mirror
+Personal locator beacon
+Emergency telephone number
+999 (emergency telephone number)
+Fire extinguisher
+Smoke detector
+Fire safety
+
+## energy
+Electricity
+Electric current
+Voltage
+Ohm's law
+Electrical resistance and conductance
+Electric power
+Electrical wiring
+Fuse (electrical)
+Circuit breaker
+Electric shock
+Electric battery
+Lead–acid battery
+Lithium-ion battery
+Rechargeable battery
+Battery charger
+Solar panel
+Photovoltaic system
+Solar charge controller
+Charge controller
+Power inverter
+Electric generator
+Engine-generator
+Dynamo
+Alternator
+Wind turbine
+Micro hydro
+Water wheel
+Biogas
+Biogas digester
+Wood gas
+Solar cooker
+Solar water heating
+Heat pump
+Energy storage
+Off-the-grid
+Direct current
+Alternating current
+Multimeter
+LED lamp
+Kerosene lamp
+Candle
+
+## tools
+Tool
+Hand tool
+Knife
+Axe
+Saw
+Hammer
+Chisel
+File (tool)
+Drill
+Screwdriver
+Spanner
+Pliers
+Sharpening
+Whetstone
+Blacksmith
+Forging
+Welding
+Soldering
+Brazing
+Casting (metalworking)
+Woodworking
+Carpentry
+Joinery
+Woodturning
+Leather
+Tanning (leather)
+Sewing
+Needle (sewing)
+Knitting
+Weaving
+Spinning (textiles)
+Loom
+Pottery
+Kiln
+Glass
+Rope making
+Bicycle
+Bicycle maintenance
+Puncture (tyre)
+Internal combustion engine
+Diesel engine
+Two-stroke engine
+Small engine
+Spark plug
+Carburetor
+Lubricant
+Repair
+Adhesive
+Epoxy
+Duct tape
+
+## radio
+Radio
+Amateur radio
+Amateur radio emergency communications
+Citizens band radio
+PMR446
+Walkie-talkie
+Crystal radio
+Antenna (radio)
+Dipole antenna
+Shortwave radio
+Radio propagation
+Morse code
+Phonetic alphabet
+NATO phonetic alphabet
+Telephone
+Mobile phone
+Mesh networking
+Satellite phone
+Semaphore
+Emergency broadcast system
+Q code
+
+## chemistry
+Chemistry
+Chemical element
+Periodic table
+Acid
+Base (chemistry)
+PH
+Sodium hydroxide
+Potassium hydroxide
+Calcium oxide
+Calcium hydroxide
+Soap making
+Saponification
+Ethanol
+Methanol
+Distillation
+Fermentation
+Yeast
+Vinegar
+Salt
+Sodium chloride
+Sodium bicarbonate
+Potassium nitrate
+Sulfur
+Charcoal
+Activated carbon
+Iron
+Steel
+Copper
+Aluminium
+Rust
+Corrosion
+Plastic
+Rubber
+Paper
+Paper making
+Ink
+Dye
+Glue
+Explosive
+Combustion
+
+## navigation
+Navigation
+Orienteering
+Compass
+Magnetic declination
+Map
+Topographic map
+Contour line
+Ordnance Survey
+Ordnance Survey National Grid
+Grid reference
+Latitude
+Longitude
+Global Positioning System
+Dead reckoning
+Celestial navigation
+Polaris
+Sun
+Moon
+Tide
+Weather
+Weather forecasting
+Cloud
+Barometer
+Wind
+Beaufort scale
+Hypothermia
+Geography of the United Kingdom
+Climate of the United Kingdom
+
+## science
+Mathematics
+Arithmetic
+Fraction (mathematics)
+Percentage
+Algebra
+Geometry
+Trigonometry
+Pythagorean theorem
+Area
+Volume
+Unit of measurement
+Metric system
+Imperial units
+International System of Units
+Physics
+Force
+Energy
+Heat
+Temperature
+Pressure
+Lever
+Pulley
+Simple machine
+Mechanical advantage
+Biology
+Cell (biology)
+Bacteria
+Virus
+Fungus
+Germ theory of disease
+Human body
+Human anatomy
+Ecology
+Photosynthesis
+Evolution
+Scientific method
+Literacy
+Reading
+Writing
+Teaching
+
+## society
+Law of the United Kingdom
+Human rights
+First aid kit
+Money
+Barter
+Trade
+Market
+Cooperative
+Local government
+Mutual aid (organization theory)
+Conflict resolution
+Negotiation
+Leadership
+Community
+Volunteering

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Reversi</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0f1a14; color: #eef; font: 16px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 520px; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; }
+  button { font: inherit; color: inherit; background: #ffffff1a; border: 0; border-radius: 10px; padding: 9px 14px; }
+  #status { font-weight: 600; min-height: 24px; margin: 4px 0 10px; text-align: center; }
+  #board { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; background: #0a3a22; padding: 4px; border-radius: 8px; width: min(96vw, 520px); }
+  .s { aspect-ratio: 1; background: #1f7a4a; display: flex; align-items: center; justify-content: center; position: relative; }
+  .d { width: 84%; height: 84%; border-radius: 50%; transition: background .25s; box-shadow: 0 2px 0 #0006; }
+  .d.b { background: radial-gradient(circle at 35% 30%, #555, #111); } .d.w { background: radial-gradient(circle at 35% 30%, #fff, #cfd4d0); }
+  .s.hint::after { content: ''; width: 22%; height: 22%; border-radius: 50%; background: #ffffff55; position: absolute; }
+  .s.last .d { box-shadow: 0 0 0 3px #ffcf4a; }
+  #count { margin-top: 10px; font-size: 18px; } #menu { position: fixed; inset: 0; background: #0f1a14f2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 20px; }
+  .opts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; } .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header><button id="menuBtn">☰</button><b>Reversi</b><button id="undo">↶</button></header>
+<div id="status"></div>
+<div id="board"></div>
+<div id="count"></div>
+<div id="menu">
+  <h1 style="margin:0">⚫ Reversi ⚪</h1>
+  <div style="max-width:340px;color:#bcb">Place a disc so it traps a line of your opponent’s discs between two of yours; they flip to your colour. If you can’t move, you pass. Most discs at the end wins.</div>
+  <div class="opts" id="mode"><button data-v="1">vs Computer: Easy</button><button data-v="3">Medium</button><button data-v="5">Hard</button><button data-v="2p">2 players</button></div>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+let B, turn, mode, hist = [], last = -1, over = false;
+const DIRS = [-9, -8, -7, -1, 1, 7, 8, 9];
+const W8 = [120, -20, 20, 5, 5, 20, -20, 120, -20, -40, -5, -5, -5, -5, -40, -20, 20, -5, 15, 3, 3, 15, -5, 20, 5, -5, 3, 3, 3, 3, -5, 5,
+  5, -5, 3, 3, 3, 3, -5, 5, 20, -5, 15, 3, 3, 15, -5, 20, -20, -40, -5, -5, -5, -5, -40, -20, 120, -20, 20, 5, 5, 20, -20, 120];
+const sq = [];
+for (let i = 0; i < 64; i++) { const d = document.createElement('div'); d.className = 's'; d.onclick = () => tap(i); $('board').appendChild(d); sq.push(d); }
+function start(m) { mode = m; B = Array(64).fill(0); B[27] = B[36] = 2; B[28] = B[35] = 1; turn = 1; hist = []; last = -1; over = false; $('menu').classList.add('hidden'); draw(); }
+function flips(b, i, p) {
+  if (b[i]) return [];
+  const out = [];
+  for (const d of DIRS) {
+    const line = []; let j = i;
+    while (true) {
+      const c = j % 8; j += d;
+      if (j < 0 || j >= 64 || Math.abs((j % 8) - c) > 1) { line.length = 0; break; }
+      if (b[j] === 3 - p) line.push(j); else { if (b[j] !== p) line.length = 0; break; }
+    }
+    out.push(...line);
+  }
+  return out;
+}
+const legal = (b, p) => { const m = []; for (let i = 0; i < 64; i++) if (!b[i] && flips(b, i, p).length) m.push(i); return m; };
+function put(b, i, p) { const f = flips(b, i, p); b[i] = p; for (const j of f) b[j] = p; }
+function evalB(b, p) {
+  let s = 0, n = 0; for (let i = 0; i < 64; i++) { if (b[i]) n++; if (b[i] === p) s += W8[i]; else if (b[i] === 3 - p) s -= W8[i]; }
+  const mob = legal(b, p).length - legal(b, 3 - p).length;
+  return s + mob * 6 + (n > 54 ? 4 * (b.filter(v => v === p).length - b.filter(v => v === 3 - p).length) : 0);
+}
+function negamax(b, d, a, beta, p, passed) {
+  const ms = legal(b, p);
+  if (!ms.length) {
+    if (passed) { const me = b.filter(v => v === p).length, op = b.filter(v => v === 3 - p).length; return (me - op) * 1000; }
+    return -negamax(b, d, -beta, -a, 3 - p, true);
+  }
+  if (!d) return evalB(b, p);
+  let best = -Infinity;
+  ms.sort((x, y) => W8[y] - W8[x]);
+  for (const m of ms) { const nb = b.slice(); put(nb, m, p); const v = -negamax(nb, d - 1, -beta, -a, 3 - p, false); if (v > best) best = v; if (v > a) a = v; if (a >= beta) break; }
+  return best;
+}
+function cpu() {
+  const ms = legal(B, 2); let best = -Infinity, pk = [];
+  for (const m of ms) { const nb = B.slice(); put(nb, m, 2); const v = -negamax(nb, +mode - 1, -Infinity, Infinity, 1, false) + (mode === '1' ? Math.random() * 60 : 0); if (v > best) { best = v; pk = [m]; } else if (v === best) pk.push(m); }
+  move(pk[Math.floor(Math.random() * pk.length)]);
+}
+function move(i) {
+  hist.push({ b: B.slice(), turn, last }); put(B, i, turn); last = i; turn = 3 - turn;
+  if (!legal(B, turn).length) { turn = 3 - turn; if (!legal(B, turn).length) over = true; else flash(`${name(3 - turn)} ${3 - turn === 1 && mode !== '2p' ? 'have' : 'has'} no move — pass.`); }
+  draw();
+  if (!over && mode !== '2p' && turn === 2) setTimeout(cpu, 450);
+}
+let flashT; function flash(t) { $('status').dataset.flash = t; clearTimeout(flashT); flashT = setTimeout(() => { delete $('status').dataset.flash; draw(); }, 1800); }
+const name = p => mode === '2p' ? (p === 1 ? 'Black' : 'White') : (p === 1 ? 'You' : 'The computer');
+function tap(i) { if (over || (mode !== '2p' && turn === 2)) return; if (flips(B, i, turn).length) move(i); }
+function draw() {
+  const hints = over || (mode !== '2p' && turn === 2) ? [] : legal(B, turn);
+  for (let i = 0; i < 64; i++) { sq[i].className = 's' + (hints.includes(i) ? ' hint' : '') + (i === last ? ' last' : ''); sq[i].innerHTML = B[i] ? `<div class="d ${B[i] === 1 ? 'b' : 'w'}"></div>` : ''; }
+  const nb = B.filter(v => v === 1).length, nw = B.filter(v => v === 2).length;
+  $('count').textContent = `⚫ ${nb}   ⚪ ${nw}`;
+  let t = over ? (nb === nw ? 'Draw!' : `${name(nb > nw ? 1 : 2)} win${nb > nw && mode !== '2p' ? '! 🎉' : 's!'}`) : mode !== '2p' && turn === 2 ? 'Thinking…' : `${name(turn)}${mode === '2p' ? '’s turn' : ' to move'} ${turn === 1 ? '⚫' : '⚪'}`;
+  $('status').textContent = $('status').dataset.flash || t;
+}
+$('mode').onclick = e => { const b = e.target.closest('button'); if (b) start(b.dataset.v); };
+$('menuBtn').onclick = () => $('menu').classList.remove('hidden');
+$('undo').onclick = () => { if (mode !== '2p' && turn === 2 && !over) return; let h; do { h = hist.pop(); } while (h && mode !== '2p' && h.turn !== 1 && hist.length); if (!h) return; B = h.b; turn = h.turn; last = h.last; over = false; draw(); };
+</script>
+</body>
+</html>

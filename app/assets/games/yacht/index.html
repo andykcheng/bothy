@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Yacht Dice</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0d2233; color: #eef6ff; font: 15px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 560px; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; }
+  button { font: inherit; color: inherit; background: #ffffff1a; border: 0; border-radius: 10px; padding: 9px 14px; }
+  button.go { background: #2b8ad9; } button:disabled { opacity: .35; }
+  #who { font-weight: 700; font-size: 17px; margin: 2px 0 8px; }
+  #dice { display: flex; gap: 8px; margin-bottom: 6px; }
+  .die { width: 56px; height: 56px; border-radius: 12px; background: #fff; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 7px; border: 0; box-shadow: 0 4px 0 #9ab; }
+  .die.held { background: #ffd65a; box-shadow: 0 4px 0 #b8941f; transform: translateY(-6px); }
+  .die.roll { animation: roll .35s; } @keyframes roll { 50% { transform: rotate(25deg) scale(.85); } }
+  .die i { width: 10px; height: 10px; border-radius: 50%; background: #123; place-self: center; visibility: hidden; }
+  .die i.on { visibility: visible; }
+  .hint { font-size: 12px; color: #9bc; margin-bottom: 6px; min-height: 16px; }
+  #sheet { width: min(98vw, 560px); overflow: auto; flex: 1; margin-top: 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  td, th { padding: 6px 6px; text-align: center; border-bottom: 1px solid #ffffff14; }
+  td:first-child, th:first-child { text-align: left; }
+  td.cur { background: #ffffff0d; } td.opt { color: #ffd65a; font-weight: 700; cursor: pointer; background: #ffd65a1c; }
+  tr.tot td { font-weight: 700; } th { position: sticky; top: 0; background: #0d2233; }
+  #menu { position: fixed; inset: 0; background: #0d2233f5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 20px; z-index: 5; overflow: auto; }
+  .seat { display: flex; gap: 6px; align-items: center; margin: 3px 0; } .seat input { width: 110px; font: inherit; padding: 7px; border-radius: 8px; border: 0; background: #ffffff1f; color: inherit; }
+  button.on { background: #2b8ad9; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header><button id="menuBtn">☰</button><b>🎲 Yacht Dice</b><button id="rules">?</button></header>
+<div id="who"></div>
+<div id="dice"></div>
+<div class="hint" id="hint"></div>
+<div><button id="roll" class="go">Roll</button></div>
+<div id="sheet"></div>
+<div id="menu">
+  <h1 style="margin:0">🎲 Yacht Dice</h1>
+  <div style="max-width:350px;color:#bcd">Roll five dice up to three times a turn, holding the ones you like, then score in one box. Thirteen turns each; highest total wins. Up to six players — pass the phone round.</div>
+  <div id="seats"></div>
+  <div><button id="addp">+ Player</button> <button id="addc">+ Computer</button></div>
+  <button id="go" class="go" style="padding:12px 30px">Play</button>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const CATS = [
+  ['ones', 'Ones', d => sumOf(d, 1)], ['twos', 'Twos', d => sumOf(d, 2)], ['threes', 'Threes', d => sumOf(d, 3)],
+  ['fours', 'Fours', d => sumOf(d, 4)], ['fives', 'Fives', d => sumOf(d, 5)], ['sixes', 'Sixes', d => sumOf(d, 6)],
+  ['three', '3 of a kind', d => maxCount(d) >= 3 ? total(d) : 0], ['four', '4 of a kind', d => maxCount(d) >= 4 ? total(d) : 0],
+  ['full', 'Full house', d => { const c = counts(d).filter(Boolean).sort(); return c.join() === '2,3' ? 25 : 0; }],
+  ['small', 'Small straight', d => run(d) >= 4 ? 30 : 0], ['large', 'Large straight', d => run(d) >= 5 ? 40 : 0],
+  ['yacht', 'Yacht (5 alike)', d => maxCount(d) === 5 ? 50 : 0], ['chance', 'Chance', d => total(d)],
+];
+const sumOf = (d, n) => d.filter(x => x === n).length * n, total = d => d.reduce((a, b) => a + b, 0);
+const counts = d => { const c = [0, 0, 0, 0, 0, 0, 0]; d.forEach(x => c[x]++); return c; };
+const maxCount = d => Math.max(...counts(d));
+const run = d => { const s = new Set(d); let best = 0, cur = 0; for (let i = 1; i <= 6; i++) { cur = s.has(i) ? cur + 1 : 0; best = Math.max(best, cur); } return best; };
+const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+let seats = JSON.parse(localStorage.getItem('yacht.seats') || '[{"n":"You","cpu":false},{"n":"Computer","cpu":true}]');
+let P, cur, dice, held, rolls, over, busy;
+function seatsUI() {
+  $('seats').innerHTML = seats.map((s, i) => `<div class="seat">${s.cpu ? '🤖' : '🧑'}<input data-i="${i}" value="${s.n.replace(/"/g, '&quot;')}" maxlength="12"><button data-x="${i}" ${seats.length < 2 ? 'disabled' : ''}>✕</button></div>`).join('');
+  $('addp').disabled = $('addc').disabled = seats.length >= 6;
+}
+$('seats').oninput = e => { const i = e.target.dataset.i; if (i !== undefined) seats[i].n = e.target.value || '?'; };
+$('seats').onclick = e => { const b = e.target.closest('button'); if (b) { seats.splice(+b.dataset.x, 1); seatsUI(); } };
+$('addp').onclick = () => { seats.push({ n: `Player ${seats.length + 1}`, cpu: false }); seatsUI(); };
+$('addc').onclick = () => { seats.push({ n: `Robot ${seats.filter(s => s.cpu).length + 1}`, cpu: true }); seatsUI(); };
+$('go').onclick = () => { localStorage.setItem('yacht.seats', JSON.stringify(seats)); start(); };
+$('menuBtn').onclick = () => { seatsUI(); $('menu').classList.remove('hidden'); };
+$('rules').onclick = () => alert('Score boxes:\n• Ones–Sixes: total of that number. 63+ in these six earns a 35 bonus.\n• 3 / 4 of a kind: total of all dice.\n• Full house (3 + 2): 25\n• Small straight (4 in a row): 30\n• Large straight (5 in a row): 40\n• Yacht (all five alike): 50\n• Chance: total of all dice.\nYou must fill a box every turn — score 0 if nothing fits.');
+function start() {
+  P = seats.map(s => ({ n: s.n, cpu: s.cpu, sc: {} })); cur = 0; over = false; newTurn(); $('menu').classList.add('hidden');
+}
+function newTurn() { dice = [1, 2, 3, 4, 5].map(() => 1 + Math.floor(Math.random() * 6)); held = [false, false, false, false, false]; rolls = 0; draw(); if (P[cur].cpu) cpuTurn(); }
+function roll() {
+  if (rolls >= 3 || over || busy) return;
+  dice = dice.map((d, i) => held[i] ? d : 1 + Math.floor(Math.random() * 6)); rolls++; draw(true);
+}
+const upper = p => CATS.slice(0, 6).reduce((a, [k]) => a + (P[p].sc[k] ?? 0), 0);
+const bonus = p => upper(p) >= 63 ? 35 : 0;
+const grand = p => CATS.reduce((a, [k]) => a + (P[p].sc[k] ?? 0), 0) + bonus(p);
+function score(k) {
+  if (!rolls || over || P[cur].sc[k] !== undefined) return;
+  P[cur].sc[k] = CATS.find(c => c[0] === k)[2](dice);
+  if (P.every(p => Object.keys(p.sc).length === CATS.length)) { over = true; draw(); return; }
+  cur = (cur + 1) % P.length; newTurn();
+}
+// computer: hold toward the best-looking box, then score the most valuable free box
+function cpuChooseHolds() {
+  const c = counts(dice), free = k => P[cur].sc[k] === undefined;
+  if ((free('large') || free('small')) && run(dice) >= 3) {
+    for (const seq of [[1, 2, 3, 4, 5], [2, 3, 4, 5, 6], [1, 2, 3, 4], [2, 3, 4, 5], [3, 4, 5, 6]]) {
+      const hit = seq.filter(x => dice.includes(x)); if (hit.length >= seq.length - 1) { const used = new Set(); return dice.map(x => { if (seq.includes(x) && !used.has(x)) { used.add(x); return true; } return false; }); }
+    }
+  }
+  let face = 6, best = -1; for (let f = 6; f >= 1; f--) { const v = c[f] * 10 + f + (free(['ones', 'twos', 'threes', 'fours', 'fives', 'sixes'][f - 1]) ? 4 : 0); if (v > best) { best = v; face = f; } }
+  return dice.map(x => x === face);
+}
+function cpuPick() {
+  const free = CATS.filter(c => P[cur].sc[c[0]] === undefined);
+  let bestK = free[0][0], bv = -Infinity;
+  for (const [k, , f] of free) {
+    let v = f(dice);
+    const i = CATS.findIndex(c => c[0] === k);
+    if (i < 6) v += v >= (i + 1) * 3 ? 8 : -4;          // keep pace for the bonus
+    if (k === 'chance') v -= 12; if (k === 'yacht' && !v) v -= 6; if (k === 'ones' && !f(dice)) v += 2;
+    if (v > bv) { bv = v; bestK = k; }
+  }
+  return bestK;
+}
+function cpuTurn() {
+  busy = true;
+  const stepFn = () => {
+    if (rolls < 3 && (rolls === 0 || !(CATS.some(([k, , f]) => P[cur].sc[k] === undefined && ['yacht', 'large', 'full'].includes(k) && f(dice))))) {
+      if (rolls) held = cpuChooseHolds();
+      busy = false; roll(); busy = true; setTimeout(stepFn, 900);
+    } else { busy = false; const k = cpuPick(); $('hint').textContent = `${P[cur].n} scores ${CATS.find(c => c[0] === k)[1]}`; setTimeout(() => score(k), 900); }
+  };
+  setTimeout(stepFn, 600);
+}
+function draw(anim) {
+  $('dice').innerHTML = dice.map((d, i) => `<button class="die ${held[i] ? 'held' : ''} ${anim && !held[i] ? 'roll' : ''}" data-i="${i}">${[...Array(9)].map((_, k) => `<i class="${rolls && PIPS[d].includes(k) ? 'on' : ''}"></i>`).join('')}</button>`).join('');
+  const me = P[cur];
+  $('who').textContent = over ? '' : `${me.cpu ? '🤖' : '🧑'} ${me.n}’s turn`;
+  $('roll').textContent = over ? 'New game' : rolls === 0 ? 'Roll' : rolls < 3 ? `Roll again (${3 - rolls} left)` : 'Pick a box below';
+  $('roll').disabled = !over && (rolls >= 3 || me.cpu);
+  $('hint').textContent = over ? '' : me.cpu ? '' : rolls === 0 ? 'Roll the dice' : rolls < 3 ? 'Tap dice to hold them, roll again, or score a box' : 'Choose a box to score';
+  let h = `<table><tr><th></th>${P.map((p, i) => `<th style="${i === cur && !over ? 'color:#ffd65a' : ''}">${p.n}</th>`).join('')}</tr>`;
+  CATS.forEach(([k, n, f], ci) => {
+    h += `<tr><td>${n}</td>${P.map((p, i) => { const v = p.sc[k]; if (v !== undefined) return `<td>${v}</td>`; if (i === cur && rolls && !over && !p.cpu) return `<td class="opt" data-k="${k}">${f(dice)}</td>`; return `<td class="${i === cur ? 'cur' : ''}"></td>`; }).join('')}</tr>`;
+    if (ci === 5) h += `<tr><td><small>Bonus (63+)</small></td>${P.map((p, i) => `<td><small>${bonus(i) ? '+35' : upper(i) + '/63'}</small></td>`).join('')}</tr>`;
+  });
+  h += `<tr class="tot"><td>Total</td>${P.map((p, i) => `<td>${grand(i)}</td>`).join('')}</tr></table>`;
+  if (over) { const top = Math.max(...P.map((p, i) => grand(i))); h = `<h2 style="text-align:center">🏆 ${P.filter((p, i) => grand(i) === top).map(p => p.n).join(' & ')} win${P.filter((p, i) => grand(i) === top).length > 1 ? '' : 's'} with ${top}!</h2>` + h; }
+  $('sheet').innerHTML = h;
+}
+$('dice').onclick = e => { const b = e.target.closest('.die'); if (!b || !rolls || rolls >= 3 || P[cur].cpu || over) return; held[b.dataset.i] = !held[b.dataset.i]; draw(); };
+$('sheet').onclick = e => { const t = e.target.closest('.opt'); if (t && !P[cur].cpu) score(t.dataset.k); };
+$('roll').onclick = () => { if (over) return start(); roll(); };
+seatsUI();
+</script>
+</body>
+</html>

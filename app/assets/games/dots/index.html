@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Dots and Boxes</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #f5f1e6; color: #222; font: 16px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 520px; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; }
+  button { font: inherit; color: inherit; background: #0000000f; border: 0; border-radius: 10px; padding: 9px 14px; }
+  button.on { background: #2b5fd9; color: #fff; }
+  #scores { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 4px 0 12px; }
+  .sc { padding: 6px 12px; border-radius: 16px; font-weight: 600; border: 3px solid transparent; }
+  .sc.turn { border-color: #222; }
+  #wrap { width: min(94vw, 500px); aspect-ratio: 1; position: relative; }
+  .dot { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #222; z-index: 2; pointer-events: none; }
+  .ln { position: absolute; border-radius: 4px; }
+  .ln::before { content: ''; position: absolute; background: #0000000c; border-radius: 4px; }
+  .ln.h { height: 34px; margin-top: -17px; } .ln.h::before { left: 0; right: 0; top: 14px; height: 6px; }
+  .ln.v { width: 34px; margin-left: -17px; } .ln.v::before { top: 0; bottom: 0; left: 14px; width: 6px; }
+  .ln.on::before { background: var(--c); } .ln.new::before { box-shadow: 0 0 0 3px #ffd54a; }
+  .box { position: absolute; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; color: #fff; border-radius: 4px; animation: pop .25s; }
+  @keyframes pop { from { transform: scale(.3); } }
+  #status { margin: 12px; font-weight: 600; text-align: center; min-height: 22px; }
+  #menu { position: fixed; inset: 0; background: #f5f1e6f5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 20px; z-index: 5; }
+  .seat { display: flex; gap: 6px; align-items: center; } .seat b { width: 80px; text-align: left; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header><button id="menuBtn">☰</button><b>Dots and Boxes</b><span style="width:44px"></span></header>
+<div id="scores"></div>
+<div id="wrap"></div>
+<div id="status"></div>
+<div id="menu">
+  <h1 style="margin:0">Dots and Boxes</h1>
+  <div style="max-width:340px;color:#555">Take turns drawing a line between two dots. Close a box to claim it — and take another turn. Most boxes wins.</div>
+  <div id="seats"></div>
+  <div class="seat"><b>Size</b><span id="size"><button data-v="3">3×3</button><button data-v="4">4×4</button><button data-v="5" class="on">5×5</button><button data-v="6">6×6</button></span></div>
+  <button id="go" style="background:#2b5fd9;color:#fff;padding:12px 30px">Play</button>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const COLORS = ['#e2453c', '#2b78e4', '#2a9d4b', '#c27c0e'], NAMES = ['Red', 'Blue', 'Green', 'Orange'];
+let seats = JSON.parse(localStorage.getItem('dots.seats') || '["human","cpu","off","off"]'), N = 5;
+let H, V, owner, turn, score, players, busy = false, lastLine = null;
+function seatsUI() {
+  $('seats').innerHTML = seats.map((s, i) => `<div class="seat" style="margin:4px 0"><b style="color:${COLORS[i]}">${NAMES[i]}</b>${['human', 'cpu', 'off'].map(k => (i < 2 && k === 'off') ? '' : `<button data-i="${i}" data-k="${k}" class="${s === k ? 'on' : ''}">${{ human: '🧑 Person', cpu: '🤖 Computer', off: '—' }[k]}</button>`).join('')}</div>`).join('');
+}
+$('seats').onclick = e => { const b = e.target.closest('button'); if (!b) return; seats[b.dataset.i] = b.dataset.k; seatsUI(); };
+$('size').onclick = e => { const b = e.target.closest('button'); if (!b) return; N = +b.dataset.v; [...$('size').children].forEach(x => x.classList.toggle('on', x === b)); };
+$('go').onclick = () => { localStorage.setItem('dots.seats', JSON.stringify(seats)); start(); };
+$('menuBtn').onclick = () => { seatsUI(); $('menu').classList.remove('hidden'); };
+function start() {
+  players = seats.map((s, i) => ({ i, k: s })).filter(p => p.k !== 'off');
+  H = Array.from({ length: N + 1 }, () => Array(N).fill(-1));  // horizontal lines: row r (0..N), col c (0..N-1)
+  V = Array.from({ length: N }, () => Array(N + 1).fill(-1));  // vertical: row r (0..N-1), col c (0..N)
+  owner = Array.from({ length: N }, () => Array(N).fill(-1)); score = players.map(() => 0); turn = 0; lastLine = null;
+  $('menu').classList.add('hidden'); build(); draw(); maybeCpu();
+}
+const pct = k => (4 + 92 * k / N) + '%';
+function build() {
+  const w = $('wrap'); w.innerHTML = '';
+  for (let r = 0; r <= N; r++) for (let c = 0; c < N; c++) { const d = document.createElement('div'); d.className = 'ln h'; Object.assign(d.style, { top: pct(r), left: pct(c), width: 92 / N + '%' }); d.onclick = () => human('h', r, c); d.id = `h${r}_${c}`; w.appendChild(d); }
+  for (let r = 0; r < N; r++) for (let c = 0; c <= N; c++) { const d = document.createElement('div'); d.className = 'ln v'; Object.assign(d.style, { top: pct(r), left: pct(c), height: 92 / N + '%' }); d.onclick = () => human('v', r, c); d.id = `v${r}_${c}`; w.appendChild(d); }
+  for (let r = 0; r <= N; r++) for (let c = 0; c <= N; c++) { const d = document.createElement('div'); d.className = 'dot'; Object.assign(d.style, { top: pct(r), left: pct(c) }); w.appendChild(d); }
+}
+const sides = (r, c) => (H[r][c] >= 0) + (H[r + 1][c] >= 0) + (V[r][c] >= 0) + (V[r][c + 1] >= 0);
+const boxesOf = (t, r, c) => t === 'h' ? [[r - 1, c], [r, c]].filter(([a]) => a >= 0 && a < N) : [[r, c - 1], [r, c]].filter(([, b]) => b >= 0 && b < N);
+function place(t, r, c, p) {  // returns boxes closed
+  (t === 'h' ? H : V)[r][c] = p; let n = 0;
+  for (const [a, b] of boxesOf(t, r, c)) if (sides(a, b) === 4 && owner[a][b] < 0) { owner[a][b] = p; n++; }
+  return n;
+}
+function unplace(t, r, c) { (t === 'h' ? H : V)[r][c] = -1; for (const [a, b] of boxesOf(t, r, c)) if (sides(a, b) < 4) owner[a][b] = -1; }
+function free() { const m = []; for (let r = 0; r <= N; r++) for (let c = 0; c < N; c++) if (H[r][c] < 0) m.push(['h', r, c]); for (let r = 0; r < N; r++) for (let c = 0; c <= N; c++) if (V[r][c] < 0) m.push(['v', r, c]); return m; }
+function move(t, r, c) {
+  const p = players[turn].i; const n = place(t, r, c, p); lastLine = `${t}${r}_${c}`;
+  score[turn] += n; if (!n) turn = (turn + 1) % players.length;
+  draw();
+  if (!free().length) return end();
+  maybeCpu();
+}
+function human(t, r, c) { if (busy || players[turn].k !== 'human' || (t === 'h' ? H : V)[r][c] >= 0) return; move(t, r, c); }
+function maybeCpu() { if (players[turn].k === 'cpu' && free().length) { busy = true; setTimeout(() => { busy = false; const m = cpuMove(); move(...m); }, 450); } }
+// Computer: take any box; otherwise a line that doesn't give one away; otherwise give away the fewest.
+function gives(m) { const [t, r, c] = m; return boxesOf(t, r, c).some(([a, b]) => sides(a, b) === 2); }
+function chainCost(m) {  // boxes the next player could take in a row after m
+  const done = []; place(...m, 9); done.push(m); let n = 0, more = true;
+  while (more) { more = false; for (const f of free()) { const k = place(...f, 9); if (k) { n += k; done.push(f); more = true; break; } else unplace(...f); } }
+  for (const d of done.reverse()) unplace(...d);
+  return n;
+}
+function cpuMove() {
+  const fs = free();
+  const take = fs.filter(m => boxesOf(m[0], m[1], m[2]).some(([a, b]) => sides(a, b) === 3));
+  if (take.length) return take[Math.floor(Math.random() * take.length)];
+  const safe = fs.filter(m => !gives(m));
+  if (safe.length) return safe[Math.floor(Math.random() * safe.length)];
+  let best = null, bc = Infinity; for (const m of fs) { const k = chainCost(m); if (k < bc) { bc = k; best = m; } }
+  return best;
+}
+function draw() {
+  for (let r = 0; r <= N; r++) for (let c = 0; c < N; c++) setLine(`h${r}_${c}`, H[r][c]);
+  for (let r = 0; r < N; r++) for (let c = 0; c <= N; c++) setLine(`v${r}_${c}`, V[r][c]);
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    const id = `b${r}_${c}`; let d = document.getElementById(id);
+    if (owner[r][c] >= 0 && !d) { d = document.createElement('div'); d.className = 'box'; d.id = id; Object.assign(d.style, { top: `calc(${pct(r)} + 6px)`, left: `calc(${pct(c)} + 6px)`, width: `calc(${92 / N}% - 12px)`, height: `calc(${92 / N}% - 12px)`, background: COLORS[owner[r][c]] }); d.textContent = NAMES[owner[r][c]][0]; $('wrap').appendChild(d); }
+  }
+  $('scores').innerHTML = players.map((p, k) => `<span class="sc ${k === turn ? 'turn' : ''}" style="background:${COLORS[p.i]}22;color:${COLORS[p.i]}">${p.k === 'cpu' ? '🤖' : '🧑'} ${NAMES[p.i]} ${score[k]}</span>`).join('');
+  const p = players[turn]; $('status').textContent = `${NAMES[p.i]}’s turn${p.k === 'cpu' ? ' (computer)' : ''}`;
+}
+function setLine(id, p) { const d = document.getElementById(id); d.className = d.className.replace(/ on| new/g, '') + (p >= 0 ? ' on' : '') + (id === lastLine ? ' new' : ''); if (p >= 0) d.style.setProperty('--c', COLORS[p]); }
+function end() {
+  const top = Math.max(...score), win = players.filter((p, k) => score[k] === top);
+  $('status').textContent = win.length > 1 ? `Draw between ${win.map(p => NAMES[p.i]).join(' and ')}!` : `🎉 ${NAMES[win[0].i]} wins with ${top} boxes! Tap ☰ to play again.`;
+}
+seatsUI();
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+[project]
+name = "sp-ingest"
+version = "0.1.0"
+description = "Survivalpedia ingest: ZIM -> cleaned docs, chunks, images, embeddings"
+requires-python = ">=3.12"
+dependencies = [
+  "libzim>=3.6",
+  "selectolax>=0.3",
+  "zstandard>=0.23",
+  "pillow>=11",
+  "numpy>=2",
+  "tqdm",
+  "orjson",
+  "torch",
+  "transformers>=4.51",
+  "scipy>=1.18.1",
+  "pymupdf>=2.0",
+  "accelerate>=1.15.0",
+  "markdown>=3.11.2",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu130" }

@@ -1,0 +1,32 @@
+{"lang": "en", "q": "how to stop severe bleeding from a leg wound", "expect": ["Bleeding", "Tourniquet", "Hemostasis", "Pressure point", "Major trauma"]}
+{"lang": "en", "q": "signs of dehydration in children", "expect": ["Dehydration"]}
+{"lang": "en", "q": "what to do after a snake bite", "expect": ["Snakebite", "Antivenom"]}
+{"lang": "en", "q": "treatment for hypothermia", "expect": ["Hypothermia"]}
+{"lang": "en", "q": "how to perform CPR on an adult", "expect": ["Cardiopulmonary resuscitation"]}
+{"lang": "en", "q": "symptoms of a heart attack", "expect": ["Myocardial infarction"]}
+{"lang": "en", "q": "oral rehydration solution recipe salt sugar", "expect": ["Oral rehydration therapy"]}
+{"lang": "en", "q": "how to treat a second degree burn", "expect": ["Burn"]}
+{"lang": "en", "q": "amoxicillin dose for ear infection", "expect": ["Amoxicillin", "Otitis media"]}
+{"lang": "en", "q": "early signs of sepsis", "expect": ["Sepsis"]}
+{"lang": "ja", "q": "熱中症の応急処置", "expect": ["熱中症", "Heat illness", "Heat stroke"]}
+{"lang": "ja", "q": "骨折したときの固定方法", "expect": ["骨折", "副子", "Splint (medicine)", "Bone fracture"]}
+{"lang": "ja", "q": "低体温症の症状", "expect": ["低体温症", "Hypothermia"]}
+{"lang": "ja", "q": "心肺蘇生のやり方", "expect": ["心肺蘇生", "心肺蘇生法", "Cardiopulmonary resuscitation"]}
+{"lang": "ja", "q": "食中毒の原因", "expect": ["食中毒", "Foodborne illness"]}
+{"lang": "ja", "q": "やけどの手当て", "expect": ["熱傷", "Burn"]}
+{"lang": "ja", "q": "子供の脱水症状", "expect": ["脱水症", "脱水症状", "Dehydration", "脱水 (医療)"]}
+{"lang": "ja", "q": "蜂に刺されたときの対処", "expect": ["蜂刺症", "アナフィラキシー", "Bee sting", "Anaphylaxis", "ハチ刺症"]}
+{"lang": "ja", "q": "破傷風の予防接種", "expect": ["破傷風", "破傷風ワクチン", "Tetanus", "Tetanus vaccine"]}
+{"lang": "ja", "q": "マラリアの治療薬", "expect": ["マラリア", "Malaria", "Antimalarial medication"]}
+{"lang": "zh", "q": "中暑怎么办", "expect": ["中暑", "熱射病", "热射病", "Heat stroke", "Heat illness"]}
+{"lang": "zh", "q": "如何止血", "expect": ["止血", "止血法", "Bleeding", "Hemostasis"]}
+{"lang": "zh", "q": "心肺复苏的步骤", "expect": ["心肺复苏术", "心肺復甦術", "Cardiopulmonary resuscitation", "心肺复苏"]}
+{"lang": "zh", "q": "骨折急救", "expect": ["骨折", "Bone fracture"]}
+{"lang": "zh", "q": "腹泻 补液", "expect": ["腹泻", "腹瀉", "口服补液疗法", "口服補液療法", "Oral rehydration therapy", "Diarrhea"]}
+{"lang": "zh", "q": "被狗咬伤 狂犬病", "expect": ["狂犬病", "Rabies"]}
+{"lang": "zh", "q": "烧伤怎么处理", "expect": ["烧伤", "燒傷", "Burn"]}
+{"lang": "zh", "q": "低血糖的症状", "expect": ["低血糖", "低血糖症", "Hypoglycemia"]}
+{"lang": "zh", "q": "食物中毒", "expect": ["食物中毒", "Foodborne illness", "食源性疾病", "食中毒"]}
+{"lang": "zh", "q": "疟疾的治疗", "expect": ["疟疾", "瘧疾", "Malaria"]}
+{"lang": "x", "q": "破伤风 vaccine schedule", "expect": ["Tetanus vaccine", "Tetanus", "破傷風", "破伤风"]}
+{"lang": "x", "q": "what is 熱中症", "expect": ["熱中症", "Heat stroke", "Heat illness"]}

@@ -1,0 +1,14 @@
+{
+  "id": "estates",
+  "title": "Estates",
+  "description": "Property trading around Britain for 2–4 players: buy towns, build, collect rent, trade. Pass the phone, or play the computer.",
+  "players": "2–4",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "Start",
+    "I'm Player 1"
+  ]
+}

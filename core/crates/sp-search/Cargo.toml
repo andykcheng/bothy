@@ -1,0 +1,14 @@
+[package]
+name = "sp-search"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+memmap2.workspace = true
+rayon.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sp-pack.workspace = true
+tantivy.workspace = true

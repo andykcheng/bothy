@@ -1,0 +1,14 @@
+{
+  "id": "emberdeep",
+  "title": "Emberdeep",
+  "description": "Fantasy dungeon RPG: six chapters and thirty floors beneath a mining town. Knight, rogue or wizard; rescue prisoners, solve riddles, beat six guardians and find out what sleeps at the bottom.",
+  "players": "1",
+  "version": 2,
+  "license": "Code: MIT OR Apache-2.0; art: CC0 (Kenney Tiny Dungeon)",
+  "author": "Bothy; art by Kenney",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "Play",
+    "Continue"
+  ]
+}

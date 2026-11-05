@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Party Cards</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #2b1340; color: #fff; font: 17px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; text-align: center; }
+  button { font: inherit; color: inherit; background: #ffffff22; border: 0; border-radius: 12px; padding: 12px 18px; margin: 4px; }
+  button.go { background: #22a35a; } button.no { background: #c0392b; } button.on { background: #8e44ad; }
+  h1 { margin: 0 0 6px; } .dim { color: #cbb6dd; font-size: 15px; max-width: 360px; }
+  #card { background: #fff; color: #2b1340; border-radius: 20px; padding: 30px 18px; width: min(90vw, 380px); min-height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 0 #0005; }
+  #card .w { font-size: 34px; font-weight: 800; } #card .k { font-size: 14px; color: #8a6aa8; margin-bottom: 10px; }
+  #timer { font-size: 54px; font-weight: 800; margin: 10px; font-variant-numeric: tabular-nums; }
+  #timer.low { color: #ff6b5b; }
+  .teams { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 10px; }
+  .team { background: #ffffff16; border-radius: 12px; padding: 8px 14px; } .team.cur { outline: 3px solid #ffd34a; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="setup">
+  <h1>🎭 Party Cards</h1>
+  <p class="dim">Split into teams. One player sees the card and gets their team to guess it before the timer runs out — no saying the word!</p>
+  <div><b>How to give clues</b></div>
+  <div id="kinds"><button data-k="act" class="on">🎭 Act it</button><button data-k="draw">✏️ Draw it</button><button data-k="talk">🗣️ Describe it</button><button data-k="mix">🎲 Mix</button></div>
+  <div style="margin-top:8px"><b>Teams</b></div>
+  <div id="nteams"><button data-n="2" class="on">2</button><button data-n="3">3</button><button data-n="4">4</button></div>
+  <div style="margin-top:8px"><b>Seconds per turn</b></div>
+  <div id="secs"><button data-s="45">45</button><button data-s="60" class="on">60</button><button data-s="90">90</button></div>
+  <div style="margin-top:8px"><b>Cards</b></div>
+  <div id="level"><button data-l="kids">🧒 Kids</button><button data-l="all" class="on">👪 Everyone</button></div>
+  <button class="go" id="play" style="margin-top:16px;padding:14px 40px">Play</button>
+</div>
+<div id="ready" class="hidden">
+  <div class="teams" id="scores1"></div>
+  <h1 id="readyTitle"></h1>
+  <p class="dim">Pass the phone to the clue-giver. Their team guesses; everyone else keeps quiet!</p>
+  <button class="go" id="go" style="padding:16px 44px">Start the timer</button>
+  <div><button id="endGame">Finish game</button></div>
+</div>
+<div id="turn" class="hidden">
+  <div id="timer"></div>
+  <div id="card"><div class="k" id="kind"></div><div class="w" id="word"></div></div>
+  <div style="margin-top:16px"><button class="go" id="got" style="padding:16px 34px">✔ Got it</button><button class="no" id="skip">Skip</button></div>
+  <div class="dim" id="tally"></div>
+</div>
+<div id="final" class="hidden">
+  <h1>🏆 Final scores</h1>
+  <div class="teams" id="scores2"></div>
+  <button class="go" id="again">New game</button>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const CARDS = {
+  kids: 'cat dog rabbit elephant monkey snake frog penguin kangaroo lion fish bird butterfly spider dinosaur crocodile owl bee horse pig cow duck chicken sheep giraffe shark octopus whale snowman rainbow sun moon star tree flower apple banana pizza ice cream cake sandwich toothbrush bath bed sleep yawn sneeze laugh cry swim run jump dance sing clap wave football bike skateboard kite balloon train car aeroplane boat rocket robot pirate princess king queen wizard dragon ghost teacher doctor builder chef firefighter farmer clown magician superhero brushing teeth eating spaghetti blowing bubbles walking the dog building a sandcastle riding a horse climbing a tree',
+  all: 'umbrella telescope parachute volcano earthquake lighthouse submarine helicopter wheelbarrow lawnmower vacuum cleaner washing machine microwave toaster kettle ironing board hairdryer typewriter piano violin drums guitar trumpet accordion bagpipes harmonica juggling knitting fishing gardening painting a fence changing a tyre making a cup of tea washing up hanging out the washing doing the ironing assembling furniture parallel parking ice skating skiing surfing rock climbing bowling archery boxing golf tennis yoga weightlifting tightrope walker lion tamer ventriloquist astronaut detective lifeguard referee conductor librarian beekeeper lumberjack blacksmith shepherd postman dentist hairdresser photographer sculptor tug of war musical chairs hide and seek camping thunderstorm snowball fight sunburn hiccups jet lag sleepwalking stage fright toothache traffic jam escalator revolving door roller coaster haunted house treasure map message in a bottle desert island time machine invisible man mermaid vampire werewolf unicorn zombie cowboy knight ninja caveman robot dance moonwalk opera singer stand up comedian',
+};
+const TWO = ['ice cream', 'brushing teeth', 'eating spaghetti', 'blowing bubbles', 'walking the dog', 'building a sandcastle', 'riding a horse', 'climbing a tree', 'vacuum cleaner', 'washing machine', 'ironing board', 'painting a fence', 'changing a tyre', 'making a cup of tea', 'washing up', 'hanging out the washing', 'doing the ironing', 'assembling furniture', 'parallel parking', 'ice skating', 'rock climbing', 'tightrope walker', 'lion tamer', 'tug of war', 'musical chairs', 'hide and seek', 'snowball fight', 'jet lag', 'stage fright', 'traffic jam', 'revolving door', 'roller coaster', 'haunted house', 'treasure map', 'message in a bottle', 'desert island', 'time machine', 'invisible man', 'robot dance', 'opera singer', 'stand up comedian'];
+function words(level) {
+  let s = level === 'kids' ? CARDS.kids : CARDS.kids + ' ' + CARDS.all; const out = [];
+  for (const t of TWO) if (s.includes(t)) { out.push(t); s = s.split(t).join(' '); }
+  return out.concat(s.split(/\s+/).filter(Boolean));
+}
+const KIND = { act: '🎭 Act it — no words, no sounds', draw: '✏️ Draw it — no letters or numbers', talk: '🗣️ Describe it — don’t say the word' };
+let opt = { kind: 'act', n: 2, secs: 60, level: 'all' }, teams, cur, deck, timer, left, got, skipped;
+function choose(id, attr, key, conv = x => x) { $(id).onclick = e => { const b = e.target.closest('button'); if (!b) return; opt[key] = conv(b.dataset[attr]); [...$(id).children].forEach(x => x.classList.toggle('on', x === b)); }; }
+choose('kinds', 'k', 'kind'); choose('nteams', 'n', 'n', Number); choose('secs', 's', 'secs', Number); choose('level', 'l', 'level');
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function show(id) { for (const s of ['setup', 'ready', 'turn', 'final']) $(s).classList.toggle('hidden', s !== id); }
+const teamHtml = () => teams.map((t, i) => `<div class="team ${i === cur ? 'cur' : ''}">${t.n}<br><b style="font-size:24px">${t.s}</b></div>`).join('');
+$('play').onclick = () => { teams = ['Team Red', 'Team Blue', 'Team Green', 'Team Gold'].slice(0, opt.n).map(n => ({ n, s: 0 })); cur = 0; deck = shuffle(words(opt.level)); ready(); };
+function ready() { $('scores1').innerHTML = teamHtml(); $('readyTitle').textContent = `${teams[cur].n}’s turn`; show('ready'); }
+function nextCard() {
+  if (!deck.length) deck = shuffle(words(opt.level));
+  const w = deck.pop(), k = opt.kind === 'mix' ? ['act', 'draw', 'talk'][Math.floor(Math.random() * 3)] : opt.kind;
+  $('word').textContent = w; $('kind').textContent = KIND[k];
+  $('tally').textContent = `Got ${got} · skipped ${skipped}`;
+}
+$('go').onclick = () => {
+  got = 0; skipped = 0; left = opt.secs; show('turn'); nextCard(); tick();
+  timer = setInterval(() => { left--; tick(); if (left <= 0) endTurn(); }, 1000);
+};
+function tick() { $('timer').textContent = left; $('timer').classList.toggle('low', left <= 10); if (left <= 5 && left > 0 && navigator.vibrate) navigator.vibrate(60); }
+$('got').onclick = () => { got++; teams[cur].s++; nextCard(); };
+$('skip').onclick = () => { skipped++; nextCard(); };
+function endTurn() { clearInterval(timer); timer = null; if (navigator.vibrate) navigator.vibrate([200, 100, 200]); cur = (cur + 1) % teams.length; ready(); }
+$('endGame').onclick = () => { $('scores2').innerHTML = teamHtml(); show('final'); };
+$('again').onclick = () => show('setup');
+// pause the clock when the app goes to the background
+const pause = () => { if (!$('turn').classList.contains('hidden') && timer) { clearInterval(timer); timer = null; $('timer').textContent = '⏸ ' + left; $('timer').onclick = resume; } };
+function resume() { if (timer) return; $('timer').onclick = null; timer = setInterval(() => { left--; tick(); if (left <= 0) endTurn(); }, 1000); tick(); }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+addEventListener('sp-pause', pause);
+</script>
+</body>
+</html>

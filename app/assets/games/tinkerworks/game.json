@@ -1,0 +1,13 @@
+{
+  "id": "tinkerworks",
+  "title": "Tinkerworks",
+  "description": "Physics contraption puzzles: place planks, bouncers, fans and conveyors, press Start, and get the red thing to the goal. 22 stages.",
+  "players": "1",
+  "version": 2,
+  "license": "Code: MIT OR Apache-2.0; physics: matter.js (MIT)",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "Downhill"
+  ]
+}

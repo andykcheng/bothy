@@ -1,0 +1,14 @@
+{
+  "id": "greenhollow",
+  "title": "Greenhollow",
+  "description": "Cosy farming RPG: grow crops through the seasons, fight the monsters that raid your fields, explore the deep woods, cook, level up and take village quests.",
+  "players": "1",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "New farm",
+    "Let’s farm!"
+  ]
+}

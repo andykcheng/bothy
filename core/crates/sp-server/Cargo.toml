@@ -1,0 +1,39 @@
+[package]
+name = "sp-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "sp-server"
+path = "src/main.rs"
+
+[[bin]]
+name = "bothy-hub"
+path = "src/bin/bothy-hub.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap = { workspace = true, features = ["env"] }
+serde.workspace = true
+serde_json.workspace = true
+sp-pack.workspace = true
+sp-search.workspace = true
+sp-embed.workspace = true
+sp-maps.workspace = true
+sp-rag.workspace = true
+futures-util = { version = "0.3", default-features = false }
+axum = "0.8"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "fs", "time", "sync"] }
+tower-http = { version = "0.6", features = ["fs"] }
+tower = { version = "0.5", default-features = false, features = ["util"] }
+# HTTPS for chat's microphone and GPS (a self-signed cert made on first use; ring, so Android builds stay simple)
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
+rcgen = { version = "0.13", default-features = false, features = ["ring"] }
+blake3.workspace = true
+# bothy-hub: downloads from the download server, free disk space
+ureq = "3"
+fs4 = "0.13"

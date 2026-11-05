@@ -1,0 +1,15 @@
+[package]
+name = "sp-rag"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+sp-embed.workspace = true
+
+[target.'cfg(not(target_os = "android"))'.dependencies]
+llama-cpp-2 = { version = "0.1.160", default-features = false, features = ["openmp"] }
+
+[target.'cfg(target_os = "android")'.dependencies]
+llama-cpp-2 = { version = "0.1.160", default-features = false }

@@ -1,0 +1,29 @@
+{
+ "_comment": "Downloadable map regions (DESIGN §16). bbox = min_lon, min_lat, max_lon, max_lat. Rectangles for now; country polygons later.",
+ "source": "https://build.protomaps.com/{build}.pmtiles",
+ "build": "20261030",
+ "regions": [
+  {
+   "id": "world",
+   "title": "World overview",
+   "bbox": [
+    -180,
+    -85.05,
+    180,
+    85.05
+   ],
+   "max_zoom": 6
+  },
+  {
+   "id": "uk",
+   "title": "United Kingdom",
+   "bbox": [
+    -8.65,
+    49.86,
+    1.77,
+    60.86
+   ],
+   "max_zoom": 15
+  }
+ ]
+}

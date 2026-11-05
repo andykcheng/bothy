@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Chess</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #16181d; color: #eee; font: 16px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 520px; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; }
+  button { font: inherit; color: inherit; background: #ffffff1a; border: 0; border-radius: 10px; padding: 9px 14px; }
+  #status { font-weight: 600; min-height: 24px; margin: 4px 0 8px; text-align: center; }
+  #board { display: grid; grid-template-columns: repeat(8, 1fr); width: min(96vw, 520px); border: 4px solid #3a2d22; }
+  .s { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: min(9.5vw, 54px); line-height: 1; position: relative; }
+  .s.l { background: #eed8b5; } .s.d { background: #b38862; }
+  .s.sel { background: #e6c35c; } .s.last { box-shadow: inset 0 0 0 100px #f6e05e44; } .s.chk { box-shadow: inset 0 0 18px 6px #e33; }
+  .s.tgt::after { content: ''; position: absolute; width: 28%; height: 28%; border-radius: 50%; background: #0004; }
+  .s.tgt.cap::after { width: 86%; height: 86%; background: none; border: 4px solid #0004; }
+  .pc { pointer-events: none; } .pc.w { color: #fff; text-shadow: 0 0 2px #000, 0 0 1px #000, 0 2px 2px #0008; } .pc.b { color: #111; text-shadow: 0 0 2px #fff8; }
+  #caps { font-size: 22px; min-height: 30px; margin-top: 8px; letter-spacing: -3px; text-align: center; }
+  #menu { position: fixed; inset: 0; background: #16181df2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 20px; }
+  .opts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; } .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header><button id="menuBtn">☰</button><b>Chess</b><button id="undo">↶</button></header>
+<div id="status"></div>
+<div id="board"></div>
+<div id="caps"></div>
+<div id="menu">
+  <h1 style="margin:0">♞ Chess</h1>
+  <div style="max-width:340px;color:#bbb">You play White. Tap a piece, then a square. Pawns promote to a queen.</div>
+  <div class="opts" id="mode"><button data-v="1">vs Computer: Beginner</button><button data-v="2">Club</button><button data-v="3">Strong</button><button data-v="2p">2 players</button></div>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const GLYPH = { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' };
+const VAL = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
+// piece-square tables (white's view, index 0 = a8)
+const PST = {
+  p: [0,0,0,0,0,0,0,0,50,50,50,50,50,50,50,50,10,10,20,30,30,20,10,10,5,5,10,25,25,10,5,5,0,0,0,20,20,0,0,0,5,-5,-10,0,0,-10,-5,5,5,10,10,-20,-20,10,10,5,0,0,0,0,0,0,0,0],
+  n: [-50,-40,-30,-30,-30,-30,-40,-50,-40,-20,0,0,0,0,-20,-40,-30,0,10,15,15,10,0,-30,-30,5,15,20,20,15,5,-30,-30,0,15,20,20,15,0,-30,-30,5,10,15,15,10,5,-30,-40,-20,0,5,5,0,-20,-40,-50,-40,-30,-30,-30,-30,-40,-50],
+  b: [-20,-10,-10,-10,-10,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,10,10,5,0,-10,-10,5,5,10,10,5,5,-10,-10,0,10,10,10,10,0,-10,-10,10,10,10,10,10,10,-10,-10,5,0,0,0,0,5,-10,-20,-10,-10,-10,-10,-10,-10,-20],
+  r: [0,0,0,0,0,0,0,0,5,10,10,10,10,10,10,5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,0,0,0,5,5,0,0,0],
+  q: [-20,-10,-10,-5,-5,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,5,5,5,0,-10,-5,0,5,5,5,5,0,-5,0,0,5,5,5,5,0,-5,-10,5,5,5,5,5,0,-10,-10,0,5,0,0,0,0,-10,-20,-10,-10,-5,-5,-10,-10,-20],
+  k: [-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-20,-30,-30,-40,-40,-30,-30,-20,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,30,10,0,0,10,30,20],
+};
+let G, mode, sel = -1, hist = [], over = '';
+const isW = c => c && c === c.toUpperCase(), side = c => !c ? 0 : isW(c) ? 'w' : 'b';
+function start(m) {
+  mode = m;
+  G = { b: 'rnbqkbnrpppppppp' + '.'.repeat(32) + 'PPPPPPPPRNBQKBNR', t: 'w', c: 'KQkq', ep: -1, hm: 0, last: [] };
+  G.b = G.b.split('').map(x => x === '.' ? '' : x);
+  hist = []; sel = -1; over = ''; $('menu').classList.add('hidden'); draw();
+}
+const R = i => i >> 3, C = i => i & 7, on = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
+function attacked(b, sq, by) {  // is sq attacked by side `by`
+  const r = R(sq), c = C(sq), P = x => by === 'w' ? x.toUpperCase() : x;
+  const pr = by === 'w' ? r + 1 : r - 1;
+  for (const dc of [-1, 1]) if (on(pr, c + dc) && b[pr * 8 + c + dc] === P('p')) return true;
+  for (const [dr, dc] of [[1, 2], [2, 1], [-1, 2], [-2, 1], [1, -2], [2, -1], [-1, -2], [-2, -1]]) if (on(r + dr, c + dc) && b[(r + dr) * 8 + c + dc] === P('n')) return true;
+  for (const [dr, dc] of [[1, 1], [1, -1], [-1, 1], [-1, -1], [1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    let rr = r + dr, cc = c + dc, k = 1;
+    while (on(rr, cc)) {
+      const x = b[rr * 8 + cc];
+      if (x) { if (side(x) === by) { const t = x.toLowerCase(); if (t === 'q' || (k === 1 && t === 'k') || (dr && dc ? t === 'b' : t === 'r')) return true; } break; }
+      rr += dr; cc += dc; k++;
+    }
+  }
+  return false;
+}
+function pseudo(g) {
+  const b = g.b, me = g.t, ms = [];
+  for (let i = 0; i < 64; i++) {
+    const x = b[i]; if (side(x) !== me) continue;
+    const t = x.toLowerCase(), r = R(i), c = C(i);
+    const addTo = (j) => { if (side(b[j]) !== me) ms.push({ f: i, to: j }); };
+    if (t === 'p') {
+      const d = me === 'w' ? -1 : 1, start = me === 'w' ? 6 : 1;
+      if (on(r + d, c) && !b[(r + d) * 8 + c]) { ms.push({ f: i, to: (r + d) * 8 + c }); if (r === start && !b[(r + 2 * d) * 8 + c]) ms.push({ f: i, to: (r + 2 * d) * 8 + c, dbl: 1 }); }
+      for (const dc of [-1, 1]) if (on(r + d, c + dc)) { const j = (r + d) * 8 + c + dc; if ((b[j] && side(b[j]) !== me) || j === g.ep) ms.push({ f: i, to: j, ep: j === g.ep && !b[j] }); }
+    } else if (t === 'n' || t === 'k') {
+      const D = t === 'n' ? [[1, 2], [2, 1], [-1, 2], [-2, 1], [1, -2], [2, -1], [-1, -2], [-2, -1]] : [[1, 1], [1, -1], [-1, 1], [-1, -1], [1, 0], [-1, 0], [0, 1], [0, -1]];
+      for (const [dr, dc] of D) if (on(r + dr, c + dc)) addTo((r + dr) * 8 + c + dc);
+      if (t === 'k') {
+        const opp = me === 'w' ? 'b' : 'w', row = me === 'w' ? 7 : 0, K = me === 'w' ? 'K' : 'k', Q = me === 'w' ? 'Q' : 'q';
+        if (i === row * 8 + 4 && !attacked(b, i, opp)) {
+          if (g.c.includes(K) && !b[row * 8 + 5] && !b[row * 8 + 6] && !attacked(b, row * 8 + 5, opp) && !attacked(b, row * 8 + 6, opp)) ms.push({ f: i, to: row * 8 + 6, castle: 1 });
+          if (g.c.includes(Q) && !b[row * 8 + 3] && !b[row * 8 + 2] && !b[row * 8 + 1] && !attacked(b, row * 8 + 3, opp) && !attacked(b, row * 8 + 2, opp)) ms.push({ f: i, to: row * 8 + 2, castle: 1 });
+        }
+      }
+    } else {
+      const D = t === 'b' ? [[1, 1], [1, -1], [-1, 1], [-1, -1]] : t === 'r' ? [[1, 0], [-1, 0], [0, 1], [0, -1]] : [[1, 1], [1, -1], [-1, 1], [-1, -1], [1, 0], [-1, 0], [0, 1], [0, -1]];
+      for (const [dr, dc] of D) { let rr = r + dr, cc = c + dc; while (on(rr, cc)) { const j = rr * 8 + cc; if (b[j]) { if (side(b[j]) !== me) ms.push({ f: i, to: j }); break; } ms.push({ f: i, to: j }); rr += dr; cc += dc; } }
+    }
+  }
+  return ms;
+}
+function make(g, m) {
+  const b = g.b.slice(), x = b[m.f], t = x.toLowerCase(), cap = b[m.to];
+  b[m.to] = x; b[m.f] = '';
+  if (m.ep) b[m.to + (g.t === 'w' ? 8 : -8)] = '';
+  if (t === 'p' && (R(m.to) === 0 || R(m.to) === 7)) b[m.to] = g.t === 'w' ? 'Q' : 'q';
+  if (m.castle) { const row = R(m.f); if (C(m.to) === 6) { b[row * 8 + 5] = b[row * 8 + 7]; b[row * 8 + 7] = ''; } else { b[row * 8 + 3] = b[row * 8]; b[row * 8] = ''; } }
+  let c = g.c;
+  if (t === 'k') c = c.replace(g.t === 'w' ? /[KQ]/g : /[kq]/g, '');
+  for (const [sq, f] of [[63, 'K'], [56, 'Q'], [7, 'k'], [0, 'q']]) if (m.f === sq || m.to === sq) c = c.replace(f, '');
+  return { b, t: g.t === 'w' ? 'b' : 'w', c, ep: m.dbl ? (m.f + m.to) / 2 : -1, hm: t === 'p' || cap || m.ep ? 0 : g.hm + 1, last: [m.f, m.to], cap: cap || (m.ep ? (g.t === 'w' ? 'p' : 'P') : '') };
+}
+const kingSq = (b, s) => b.indexOf(s === 'w' ? 'K' : 'k');
+const inCheck = g => attacked(g.b, kingSq(g.b, g.t), g.t === 'w' ? 'b' : 'w');
+function legal(g) { return pseudo(g).filter(m => { const n = make(g, m); return !attacked(n.b, kingSq(n.b, g.t), n.t); }); }
+function evalG(g) {  // from side-to-move's view
+  let s = 0;
+  for (let i = 0; i < 64; i++) { const x = g.b[i]; if (!x) continue; const t = x.toLowerCase(); const v = VAL[t] + PST[t][isW(x) ? i : (7 - R(i)) * 8 + C(i)]; s += isW(x) ? v : -v; }
+  return g.t === 'w' ? s : -s;
+}
+function order(g, ms) { return ms.map(m => ({ m, k: g.b[m.to] ? VAL[g.b[m.to].toLowerCase()] * 10 - VAL[g.b[m.f].toLowerCase()] : 0 })).sort((a, b) => b.k - a.k).map(x => x.m); }
+let nodes = 0;
+function quies(g, a, beta, d) {
+  const stand = evalG(g); if (stand >= beta) return stand; if (stand > a) a = stand; if (d > 4) return stand;
+  for (const m of order(g, pseudo(g).filter(m => g.b[m.to]))) {
+    const n = make(g, m); if (attacked(n.b, kingSq(n.b, g.t), n.t)) continue; nodes++;
+    const v = -quies(n, -beta, -a, d + 1); if (v >= beta) return v; if (v > a) a = v;
+  }
+  return a;
+}
+function search(g, d, a, beta) {
+  if (!d) return quies(g, a, beta, 0);
+  const ms = legal(g);
+  if (!ms.length) return inCheck(g) ? -100000 - d : 0;
+  let best = -Infinity;
+  for (const m of order(g, ms)) { nodes++; const v = -search(make(g, m), d - 1, -beta, -a); if (v > best) best = v; if (v > a) a = v; if (a >= beta) break; }
+  return best;
+}
+function cpu() {
+  const ms = order(G, legal(G)), d = +mode; let best = -Infinity, pk = [];
+  for (const m of ms) { const v = -search(make(G, m), d - 1, -Infinity, Infinity) + (d === 1 ? Math.random() * 90 : Math.random() * 6); if (v > best) { best = v; pk = [m]; } else if (Math.abs(v - best) < 1) pk.push(m); }
+  play(pk[Math.floor(Math.random() * pk.length)]);
+}
+function play(m) {
+  hist.push(G); G = make(G, m); sel = -1;
+  const ms = legal(G);
+  const pieces = G.b.filter(Boolean).map(x => x.toLowerCase()).sort().join('');
+  if (!ms.length) over = inCheck(G) ? 'mate' : 'stalemate';
+  else if (G.hm >= 100) over = '50 moves'; else if (pieces === 'kk' || pieces === 'bkk' || pieces === 'kkn') over = 'insufficient material';
+  draw();
+  if (!over && mode !== '2p' && G.t === 'b') { $('status').textContent = 'Thinking…'; setTimeout(cpu, 60); }
+}
+function tap(i) {
+  if (over || (mode !== '2p' && G.t === 'b')) return;
+  const ms = legal(G);
+  if (sel >= 0) { const m = ms.find(m => m.f === sel && m.to === i); if (m) return play(m); }
+  sel = ms.some(m => m.f === i) ? i : -1; draw();
+}
+const sq = [];
+for (let i = 0; i < 64; i++) { const d = document.createElement('div'); d.onclick = () => tap(i); $('board').appendChild(d); sq.push(d); }
+function draw() {
+  const ms = sel >= 0 ? legal(G).filter(m => m.f === sel) : [], chk = inCheck(G) ? kingSq(G.b, G.t) : -1;
+  for (let i = 0; i < 64; i++) {
+    const x = G.b[i], tg = ms.find(m => m.to === i);
+    sq[i].className = 's ' + ((R(i) + C(i)) % 2 ? 'd' : 'l') + (i === sel ? ' sel' : '') + (G.last.includes(i) ? ' last' : '') + (i === chk ? ' chk' : '') + (tg ? ' tgt' + (x || tg.ep ? ' cap' : '') : '');
+    sq[i].innerHTML = x ? `<span class="pc ${isW(x) ? 'w' : 'b'}">${GLYPH[x.toLowerCase()]}</span>` : '';
+  }
+  const nm = s => mode === '2p' ? (s === 'w' ? 'White' : 'Black') : (s === 'w' ? 'You' : 'The computer');
+  const winner = G.t === 'w' ? 'b' : 'w';
+  $('status').textContent = over === 'mate' ? `Checkmate — ${nm(winner)} win${nm(winner) === 'You' ? '! 🎉' : 's'}` : over ? `Draw (${over})` : `${nm(G.t)}${mode === '2p' ? ' to move' : G.t === 'w' ? ' to move' : ''}${chk >= 0 ? ' — check!' : ''}`;
+  const caps = hist.concat(G).map(g => g.cap).filter(Boolean);
+  $('caps').innerHTML = caps.filter(isW).map(x => GLYPH[x.toLowerCase()]).join('') + ' &nbsp; ' + caps.filter(x => !isW(x)).map(x => `<span style="color:#888">${GLYPH[x]}</span>`).join('');
+}
+$('mode').onclick = e => { const b = e.target.closest('button'); if (b) start(b.dataset.v); };
+$('menuBtn').onclick = () => $('menu').classList.remove('hidden');
+$('undo').onclick = () => { if (!hist.length || (mode !== '2p' && G.t === 'b' && !over)) return; G = hist.pop(); if (mode !== '2p' && G.t === 'b' && hist.length) G = hist.pop(); over = ''; sel = -1; draw(); };
+</script>
+</body>
+</html>

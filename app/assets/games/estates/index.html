@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Estates</title>
+<style>
+  :root { color-scheme: dark; --bg: #12161b; --fg: #eef2f6; --dim: #8b97a3; --card: #1d242c; --line: #33404c; --accent: #f2b33d; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 15px system-ui, sans-serif; user-select: none; -webkit-user-select: none; }
+  #app { max-width: 560px; margin: 0 auto; padding: 6px; }
+  button { background: #2d3843; color: var(--fg); border: 0; border-radius: 8px; padding: 9px 12px; font-size: 15px; }
+  button.go { background: var(--accent); color: #2b1d00; font-weight: 700; }
+  button:disabled { opacity: .35; }
+  input, select { background: #0e1216; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; font-size: 15px; }
+  #board { display: grid; grid-template-columns: minmax(0, 1.35fr) repeat(7, minmax(0, 1fr)) minmax(0, 1.35fr);
+    grid-template-rows: minmax(0, 1.35fr) repeat(7, minmax(0, 1fr)) minmax(0, 1.35fr);
+    height: min(calc(100vw - 12px), 548px); gap: 2px; background: var(--line); border: 2px solid var(--line); border-radius: 6px; }
+  .sq { background: #e9e4d6; color: #222; position: relative; overflow: hidden; text-align: center; font-size: min(1.85vw, 10px); line-height: 1.1;
+    hyphens: auto; -webkit-hyphens: auto; }
+  .sq .lbl { position: absolute; top: 24%; left: 1px; right: 1px; }
+  .sq .band { position: absolute; left: 0; right: 0; top: 0; height: 22%; }
+  .sq .nm { font-weight: 600; }
+  .sq .pr { color: #555; }
+  .sq.corner { background: #d8d0bb; font-weight: 700; font-size: min(2.3vw, 11px); }
+  .sq.corner .lbl { top: 50%; transform: translateY(-50%); }
+  .sq.mort { background: #a9a59b; }
+  .sq .own { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; }
+  .sq .houses { position: absolute; top: 1px; left: 0; right: 0; font-size: min(2vw, 9px); color: #fff; letter-spacing: -1px; }
+  .sq .toks { position: absolute; bottom: 5px; left: 0; right: 0; display: flex; gap: 1px; justify-content: center; }
+  .tok { width: min(2.6vw, 12px); height: min(2.6vw, 12px); border-radius: 50%; border: 1.5px solid #000; }
+  #center { grid-row: 2 / 9; grid-column: 2 / 9; background: #1a2027; padding: 8px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  #turn { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  #dice { font-size: 40px; line-height: 1; text-align: center; letter-spacing: 6px; }
+  #prompt { font-size: 14px; min-height: 2.6em; }
+  #actions { display: flex; flex-wrap: wrap; gap: 5px; }
+  #actions button { padding: 7px 9px; font-size: 14px; white-space: nowrap; }
+  #log { flex: 1; overflow: hidden; color: var(--dim); font-size: 12px; display: flex; flex-direction: column-reverse; }
+  #players { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+  .pl { background: var(--card); border-radius: 8px; padding: 8px; display: flex; align-items: center; gap: 8px; border: 2px solid transparent; }
+  .pl.cur { border-color: var(--accent); } .pl.out { opacity: .35; }
+  .pl .cash { margin-left: auto; font-weight: 700; }
+  .modal { position: fixed; inset: 0; background: #000b; display: flex; align-items: center; justify-content: center; padding: 12px; z-index: 5; }
+  .modal > div { background: var(--card); border-radius: 12px; padding: 16px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+  .modal h3 { margin: 0 0 10px; }
+  .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .row .sw { width: 12px; height: 28px; border-radius: 3px; flex: none; }
+  .row .grow { flex: 1; }
+  .btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }
+  table { width: 100%; border-collapse: collapse; } td { padding: 3px 0; } td:last-child { text-align: right; }
+  .setup p { color: var(--dim); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal" class="modal hidden"><div id="modalBody"></div></div>
+<script>
+'use strict';
+// ---- board -------------------------------------------------------------------------------
+const GROUPS = {
+  sw: { name: 'South West', color: '#8d5a3b', house: 50 },
+  wa: { name: 'Wales', color: '#4fb3e8', house: 50 },
+  mi: { name: 'Midlands', color: '#d6489b', house: 100 },
+  no: { name: 'The North', color: '#f08a24', house: 100 },
+  sc: { name: 'Scotland', color: '#2f9e44', house: 150 },
+  lo: { name: 'London', color: '#3949ab', house: 200 },
+};
+const P = (name, g, price) => ({ t: 'prop', name, g, price });
+const BOARD = [
+  { t: 'corner', name: 'PAYDAY', sub: 'Collect £200' },
+  P('Penzance', 'sw', 60), { t: 'card', name: 'Fortune' }, P('Truro', 'sw', 60), { t: 'tax', name: 'Council Tax', amount: 100 },
+  P('Exeter', 'sw', 80), { t: 'trans', name: 'Ferry Port', price: 200 }, P('Swansea', 'wa', 100),
+  { t: 'corner', name: 'LOCK-UP', sub: 'Just visiting' },
+  P('Newport', 'wa', 100), { t: 'card', name: 'Fortune' }, P('Cardiff', 'wa', 120), { t: 'trans', name: 'Rail Hub', price: 200 },
+  P('Nottingham', 'mi', 140), P('Leicester', 'mi', 140), P('Birmingham', 'mi', 160),
+  { t: 'corner', name: 'REST STOP', sub: 'Take a breather' },
+  P('Leeds', 'no', 180), { t: 'card', name: 'Fortune' }, P('Liverpool', 'no', 180), P('Manchester', 'no', 200),
+  { t: 'tax', name: 'Repair Bill', amount: 75 }, P('Aberdeen', 'sc', 220), { t: 'card', name: 'Fortune' },
+  { t: 'corner', name: 'GET LOST', sub: 'Go to the Lock-up' },
+  P('Glasgow', 'sc', 220), P('Edinburgh', 'sc', 240), { t: 'trans', name: 'Airport', price: 200 }, { t: 'card', name: 'Fortune' },
+  P('Camden', 'lo', 300), P('Greenwich', 'lo', 300), P('Westminster', 'lo', 350),
+];
+const N = BOARD.length, LOCKUP = 8, GETLOST = 24, SALARY = 200, START_CASH = 1500, BAIL = 50;
+BOARD.forEach((s, i) => {
+  s.i = i;
+  if (s.t === 'prop') {
+    const b = Math.round(s.price / 10 * 0.8) || 4;
+    s.rents = [b, b * 5, b * 14, b * 36, b * 48, b * 60];   // 0–4 houses, then a hotel (5)
+  }
+});
+const buyable = s => s.t === 'prop' || s.t === 'trans';
+const groupSquares = g => BOARD.filter(s => s.g === g);
+
+const CARDS = [
+  ['Your allotment wins first prize. Collect £50.', { gain: 50 }],
+  ['Your car breaks down on the A30. Pay £60.', { pay: 60 }],
+  ['Tax rebate. Collect £100.', { gain: 100 }],
+  ['Advance to PAYDAY.', { to: 0 }],
+  ['Catch the next train: advance to the Rail Hub.', { to: 12 }],
+  ['Wrong turn. Go back 3 squares.', { back: 3 }],
+  ['Caught speeding. Go straight to the Lock-up.', { lockup: true }],
+  ['Get out of the Lock-up free. Keep this card.', { jailCard: true }],
+  ['Street party! Collect £20 from every player.', { fromEach: 20 }],
+  ['Your round at the pub. Pay every player £20.', { toEach: 20 }],
+  ['Property repairs: pay £30 per house, £100 per hotel.', { repairs: [30, 100] }],
+  ['You inherit a vintage bicycle and sell it. Collect £75.', { gain: 75 }],
+  ['Weekend in Edinburgh. Advance to Edinburgh.', { to: 26 }],
+  ['Flooded basement. Pay £80.', { pay: 80 }],
+  ['You win the pub quiz. Collect £30.', { gain: 30 }],
+  ['Fly south: advance to the Airport.', { to: 27 }],
+];
+const COLORS = ['#e8453c', '#3b82f6', '#22c55e', '#eab308'];
+const DIE = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+// ---- state -------------------------------------------------------------------------------
+let S = null;          // whole game, saved after every action
+let busy = false;      // a dice animation or computer move is under way
+const save = () => localStorage.setItem('estates.game', JSON.stringify(S));
+const cur = () => S.players[S.turn];
+const owner = i => S.own[i] ? S.players[S.own[i].p] : null;
+const shuffled = n => { const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const log = m => { S.log.unshift(m); S.log.length = Math.min(S.log.length, 30); };
+const money = n => '£' + n;
+
+function newGame(cfg, limit = 0) {
+  S = {
+    players: cfg.map((c, k) => ({ name: c.name, cpu: c.cpu, color: COLORS[k], cash: START_CASH, pos: 0, jail: 0, jailCards: 0, out: false })),
+    own: {}, turn: 0, phase: 'roll', doubles: 0, dice: [1, 1], deck: shuffled(CARDS.length), deckPos: 0,
+    debts: [], trade: null, pass: null, log: [], card: null, turns: 0, offers: {}, round: 1, limit, winner: null,
+  };
+  log('Game started. ' + S.players[0].name + ' goes first.');
+  maybePass(); save(); render();
+}
+
+// cash plus land at price (half if mortgaged) plus houses at cost: decides a game with a round limit
+const worth = p => { const k = S.players.indexOf(p); return p.cash + ownedBy(k).reduce((a, s) => { const o = S.own[s.i];
+  return a + (o.mort ? s.price / 2 : s.price) + (o.houses || 0) * (s.g ? GROUPS[s.g].house : 0); }, 0); };
+const owns = (p, g) => groupSquares(g).every(s => S.own[s.i] && S.own[s.i].p === p);
+const ownedBy = p => BOARD.filter(s => S.own[s.i] && S.own[s.i].p === p);
+const transCount = p => BOARD.filter(s => s.t === 'trans' && S.own[s.i] && S.own[s.i].p === p).length;
+
+function rent(i) {
+  const s = BOARD[i], o = S.own[i];
+  if (!o || o.mort) return 0;
+  if (s.t === 'trans') return 25 * 2 ** (transCount(o.p) - 1);
+  if (o.houses) return s.rents[o.houses];
+  return s.rents[0] * (owns(o.p, s.g) && groupSquares(s.g).every(q => !S.own[q.i].mort) ? 2 : 1);
+}
+
+// ---- turn flow ---------------------------------------------------------------------------
+// Payments that the payer can't cover go on S.debts and must be settled (sell, mortgage, or go bankrupt)
+// before play continues.
+function pay(from, amount, to) {
+  const p = S.players[from];
+  if (p.cash >= amount) { p.cash -= amount; if (to != null) S.players[to].cash += amount; return; }
+  S.debts.push({ p: from, amount, to });
+}
+
+function roll() {
+  if (busy) return;
+  const p = cur();
+  busy = true;
+  let n = 0;
+  const anim = setInterval(() => {
+    S.dice = [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
+    renderDice();
+    if (++n >= 6) { clearInterval(anim); busy = false; afterRoll(p); }
+  }, 70);
+}
+
+function afterRoll(p) {
+  const [a, b] = S.dice, dbl = a === b;
+  S.phase = 'act';   // landing may change it to 'buy'
+  if (p.jail) {
+    if (dbl) { p.jail = 0; S.doubles = 0; log(`${p.name} rolls a double and walks free.`); move(p, a + b); return finish(); }
+    if (p.jail >= 3) { log(`${p.name} pays ${money(BAIL)} bail after three tries.`); p.jail = 0; pay(S.turn, BAIL, null); move(p, a + b); return finish(); }
+    p.jail++; log(`${p.name} stays in the Lock-up.`); return finish();
+  }
+  if (dbl && ++S.doubles === 3) { log(`${p.name} rolls three doubles: off to the Lock-up!`); toLockup(p); return finish(); }
+  if (!dbl) S.doubles = 0;
+  move(p, a + b);
+  finish();
+}
+
+function toLockup(p) { p.pos = LOCKUP; p.jail = 1; S.doubles = 0; }
+
+function move(p, steps) {
+  const from = p.pos;
+  p.pos = (p.pos + steps + N) % N;
+  if (steps > 0 && p.pos < from) { p.cash += SALARY; log(`${p.name} passes PAYDAY: +${money(SALARY)}.`); }
+  land(p);
+}
+
+function land(p) {
+  const s = BOARD[p.pos], me = S.players.indexOf(p);
+  if (buyable(s)) {
+    const o = S.own[s.i];
+    if (!o) { S.phase = 'buy'; return; }
+    if (o.p !== me) {
+      const r = rent(s.i);
+      if (r) { log(`${p.name} pays ${money(r)} rent to ${S.players[o.p].name} for ${s.name}.`); pay(me, r, o.p); }
+    }
+  } else if (s.t === 'tax') { log(`${p.name} pays ${s.name}: ${money(s.amount)}.`); pay(me, s.amount, null); }
+  else if (s.i === GETLOST) { log(`${p.name} gets lost and ends up in the Lock-up.`); toLockup(p); }
+  else if (s.t === 'card') drawCard(p);
+}
+
+function drawCard(p) {
+  const id = S.deck[S.deckPos++ % S.deck.length], [text, e] = CARDS[id], me = S.players.indexOf(p);
+  S.card = text; log(`${p.name}: “${text}”`);
+  if (e.gain) p.cash += e.gain;
+  if (e.pay) pay(me, e.pay, null);
+  if (e.to != null) { const steps = (e.to - p.pos + N) % N; move(p, steps); }
+  if (e.back) { p.pos = (p.pos - e.back + N) % N; land(p); }
+  if (e.lockup) toLockup(p);
+  if (e.jailCard) p.jailCards++;
+  if (e.fromEach) S.players.forEach((q, k) => { if (k !== me && !q.out) pay(k, e.fromEach, me); });
+  if (e.toEach) S.players.forEach((q, k) => { if (k !== me && !q.out) pay(me, e.toEach, k); });
+  if (e.repairs) {
+    const total = ownedBy(me).reduce((a, s) => { const h = S.own[s.i].houses || 0; return a + (h === 5 ? e.repairs[1] : h * e.repairs[0]); }, 0);
+    if (total) pay(me, total, null);
+  }
+}
+
+function buy() {
+  const p = cur(), s = BOARD[p.pos];
+  if (p.cash < s.price) return;
+  p.cash -= s.price; S.own[s.i] = { p: S.turn, houses: 0, mort: false };
+  log(`${p.name} buys ${s.name} for ${money(s.price)}.`);
+  S.phase = 'act'; finish();
+}
+function decline() { log(`${cur().name} doesn't buy ${BOARD[cur().pos].name}.`); S.phase = 'act'; finish(); }
+
+function endTurn() {
+  const p = cur();
+  S.card = null;
+  if (S.doubles && !p.jail && !p.out) { S.phase = 'roll'; log(`${p.name} rolled a double: roll again.`); return finish(); }
+  S.doubles = 0; S.turns++;
+  const was = S.turn;
+  do S.turn = (S.turn + 1) % S.players.length; while (cur().out);
+  if (S.turn <= was && ++S.round > S.limit && S.limit) {
+    const w = S.players.filter(q => !q.out).sort((a, b) => worth(b) - worth(a))[0];
+    S.winner = S.players.indexOf(w); S.phase = 'over';
+    log(`${S.limit} rounds played. ${w.name} is richest with ${money(worth(w))}.`);
+    return finish();
+  }
+  S.phase = 'roll';
+  maybePass();
+  finish();
+}
+
+// asks the right person to take the phone, when more than one human is playing
+function maybePass(who = S.turn) {
+  const humans = S.players.filter(q => !q.cpu && !q.out).length;
+  if (humans > 1 && !S.players[who].cpu) S.pass = who;
+}
+
+function finish() {
+  const alive = S.players.filter(q => !q.out);
+  if (alive.length === 1 && S.winner == null) { S.phase = 'over'; S.winner = S.players.indexOf(alive[0]); log(`${alive[0].name} wins!`); }
+  if (S.debts.length) maybePass(S.debts[0].p);
+  save(); render(); cpuSoon();
+}
+
+// ---- building, mortgages, debts ----------------------------------------------------------
+function canBuild(i, p) {
+  const s = BOARD[i], o = S.own[i];
+  if (s.t !== 'prop' || !o || o.p !== p || o.mort || o.houses >= 5 || !owns(p, s.g)) return false;
+  const grp = groupSquares(s.g);
+  if (grp.some(q => S.own[q.i].mort)) return false;
+  return o.houses <= Math.min(...grp.map(q => S.own[q.i].houses)) && S.players[p].cash >= GROUPS[s.g].house;
+}
+function canSell(i, p) {
+  const s = BOARD[i], o = S.own[i];
+  if (!o || o.p !== p || !o.houses) return false;
+  return o.houses >= Math.max(...groupSquares(s.g).map(q => S.own[q.i].houses));   // sell evenly
+}
+const groupHasHouses = g => g && groupSquares(g).some(q => S.own[q.i] && S.own[q.i].houses);
+function build(i) { const o = S.own[i]; S.players[o.p].cash -= GROUPS[BOARD[i].g].house; o.houses++; log(`${S.players[o.p].name} builds on ${BOARD[i].name}.`); }
+function sell(i) { const o = S.own[i]; S.players[o.p].cash += GROUPS[BOARD[i].g].house / 2; o.houses--; log(`${S.players[o.p].name} sells a house on ${BOARD[i].name}.`); }
+function mortgage(i) { const o = S.own[i]; o.mort = true; S.players[o.p].cash += BOARD[i].price / 2; log(`${S.players[o.p].name} mortgages ${BOARD[i].name}.`); }
+const unmortCost = i => Math.ceil(BOARD[i].price * 0.55);
+function unmortgage(i) { const o = S.own[i]; S.players[o.p].cash -= unmortCost(i); o.mort = false; log(`${S.players[o.p].name} pays off the mortgage on ${BOARD[i].name}.`); }
+const canMortgage = (i, p) => S.own[i] && S.own[i].p === p && !S.own[i].mort && !groupHasHouses(BOARD[i].g);
+const canUnmortgage = (i, p) => S.own[i] && S.own[i].p === p && S.own[i].mort && S.players[p].cash >= unmortCost(i);
+
+function settleDebt() {
+  const d = S.debts[0], p = S.players[d.p];
+  if (p.cash < d.amount) return;
+  p.cash -= d.amount; if (d.to != null) S.players[d.to].cash += d.amount;
+  log(`${p.name} pays the ${money(d.amount)} owed.`);
+  S.debts.shift(); afterDebt(d);
+}
+
+// sells houses, then mortgages, cheapest first, until the debt is covered
+function autoRaise(k, need) {
+  const p = S.players[k];
+  let guard = 200;
+  while (p.cash < need && guard--) {
+    const sellable = ownedBy(k).filter(s => canSell(s.i, k));
+    if (sellable.length) { sell(sellable[0].i); continue; }
+    const m = ownedBy(k).filter(s => canMortgage(s.i, k)).sort((a, b) => a.price - b.price);
+    if (m.length) { mortgage(m[0].i); continue; }
+    break;
+  }
+}
+
+function bankrupt() {
+  const d = S.debts.shift(), p = S.players[d.p];
+  autoRaise(d.p, Infinity);   // everything to cash first (houses back to the bank)
+  if (d.to != null) {
+    const c = S.players[d.to];
+    c.cash += p.cash;
+    for (const s of ownedBy(d.p)) S.own[s.i].p = d.to;
+    c.jailCards += p.jailCards;
+    log(`${p.name} is bankrupt! Everything goes to ${c.name}.`);
+  } else {
+    for (const s of ownedBy(d.p)) delete S.own[s.i];
+    log(`${p.name} is bankrupt! Their land goes back on the market.`);
+  }
+  p.cash = 0; p.out = true; p.jailCards = 0;
+  S.debts = S.debts.filter(x => x.p !== d.p).map(x => x.to === d.p ? { ...x, to: null } : x);
+  afterDebt(d);
+}
+
+function afterDebt(d) {
+  if (cur().out) { S.doubles = 0; S.debts.length ? finish() : endTurn(); return; }
+  if (!S.debts.length && d.p !== S.turn) maybePass(S.turn);   // phone back to whoever's turn it is
+  finish();
+}
+
+function payBail(useCard) {
+  const p = cur();
+  if (useCard) { p.jailCards--; log(`${p.name} uses a get-out card.`); }
+  else { p.cash -= BAIL; log(`${p.name} pays ${money(BAIL)} bail.`); }
+  p.jail = 0; save(); render(); cpuSoon();
+}
+
+// ---- trading -----------------------------------------------------------------------------
+const tradable = (i, p) => S.own[i] && S.own[i].p === p && !groupHasHouses(BOARD[i].g);
+function doTrade(t) {
+  const a = S.players[t.from], b = S.players[t.to];
+  for (const i of t.give) S.own[i].p = t.to;
+  for (const i of t.get) S.own[i].p = t.from;
+  a.cash += t.cashGet - t.cashGive; b.cash += t.cashGive - t.cashGet;
+  log(`${a.name} and ${b.name} make a trade.`);
+}
+function setsCompleted(p, after) {   // groups p would own entirely under the ownership map `after`
+  return Object.keys(GROUPS).filter(g => groupSquares(g).every(s => after[s.i] === p)).length;
+}
+function cpuAccepts(t) {
+  const b = S.players[t.to];
+  const val = list => list.reduce((a, i) => a + (S.own[i].mort ? BOARD[i].price / 2 : BOARD[i].price), 0);
+  const map = {}; for (const k in S.own) map[k] = S.own[k].p;
+  const before = { me: setsCompleted(t.to, map), them: setsCompleted(t.from, map) };
+  t.give.forEach(i => map[i] = t.to); t.get.forEach(i => map[i] = t.from);
+  const gainSets = setsCompleted(t.to, map) - before.me, giveSets = setsCompleted(t.from, map) - before.them;
+  const gain = val(t.give) + t.cashGive + gainSets * 450, lose = val(t.get) + t.cashGet + giveSets * 450;
+  return b.cash + t.cashGive - t.cashGet >= 0 && gain >= lose * 1.1 + 20;
+}
+
+// A computer player one town short of a region asks the owner for it: as a swap for a town that
+// completes the owner's region if it has one, otherwise for cash. Each ask is repeated at most once a round.
+function cpuOffer(k) {
+  const p = S.players[k];
+  for (const g of Object.keys(GROUPS)) {
+    const sq = groupSquares(g), mine = sq.filter(s => S.own[s.i] && S.own[s.i].p === k);
+    if (mine.length !== sq.length - 1) continue;
+    const want = sq.find(s => !mine.includes(s)), o = S.own[want.i];
+    if (!o) continue;
+    const j = o.p, key = k + ':' + want.i;
+    if (S.offers[key] != null && S.offers[key] > S.turns - S.players.length * 2) continue;
+    S.offers[key] = S.turns;
+    const give = ownedBy(k).find(s => s.g && s.g !== g && tradable(s.i, k)
+      && groupSquares(s.g).every(q => q.i === s.i || (S.own[q.i] && S.own[q.i].p === j)));
+    let cash = give ? Math.ceil(Math.max(0, want.price * 1.1 - give.price + 70) / 10) * 10 : Math.floor(Math.min(p.cash - 150, want.price * 2) / 10) * 10;
+    if (give) cash = Math.min(cash, Math.max(0, p.cash - 50));
+    else if (cash < want.price * 1.2) continue;
+    return { from: k, to: j, give: give ? [give.i] : [], get: [want.i], cashGive: cash, cashGet: 0 };
+  }
+  return null;
+}
+
+// ---- computer players --------------------------------------------------------------------
+let cpuTimer = 0;
+function actor() {
+  if (S.phase === 'over') return null;
+  if (S.debts.length) return S.debts[0].p;
+  if (S.trade) return S.trade.to;
+  return S.turn;
+}
+function cpuSoon() {
+  clearTimeout(cpuTimer);
+  const a = actor();
+  if (a == null || !S.players[a].cpu || S.pass != null) return;
+  cpuTimer = setTimeout(cpuStep, 650);
+}
+function cpuStep() {
+  if (busy) return cpuSoon();
+  const k = actor(); if (k == null || !S.players[k].cpu) return;
+  const p = S.players[k];
+  if (S.debts.length) {
+    autoRaise(k, S.debts[0].amount);
+    return p.cash >= S.debts[0].amount ? settleDebt() : bankrupt();
+  }
+  if (S.phase === 'roll') {
+    if (p.jail && (p.jailCards || p.cash > 400)) return payBail(p.jailCards > 0);
+    return roll();
+  }
+  if (S.phase === 'buy') {
+    const s = BOARD[p.pos];
+    return p.cash - s.price >= 120 ? buy() : decline();
+  }
+  if (S.phase === 'act') {
+    // pay off mortgages and build while keeping a cushion
+    for (const s of ownedBy(k)) if (canUnmortgage(s.i, k) && p.cash - unmortCost(s.i) > 300) { unmortgage(s.i); save(); render(); return cpuSoon(); }
+    const t = cpuOffer(k);
+    if (t) {
+      if (!S.players[t.to].cpu) { S.trade = t; maybePass(t.to); return finish(); }
+      if (cpuAccepts(t)) doTrade(t); else log(`${S.players[t.to].name} turns down ${p.name}'s offer.`);
+      save(); render(); return cpuSoon();
+    }
+    const b = ownedBy(k).filter(s => canBuild(s.i, k) && p.cash - GROUPS[s.g].house > 250).sort((x, y) => S.own[x.i].houses - S.own[y.i].houses);
+    if (b.length) { build(b[0].i); save(); render(); return cpuSoon(); }
+    return endTurn();
+  }
+}
+
+// ---- rendering ---------------------------------------------------------------------------
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function cellPos(i) {   // [row, col] on the 9×9 grid: PAYDAY bottom-right, then left along the bottom and round
+  if (i <= 8) return [9, 9 - i];
+  if (i <= 16) return [9 - (i - 8), 1];
+  if (i <= 24) return [1, 1 + (i - 16)];
+  return [1 + (i - 24), 9];
+}
+
+function render() {
+  if (!S) return renderSetup();
+  const app = $('app');
+  let html = '<div id="board">';
+  BOARD.forEach((s, i) => {
+    const [r, c] = cellPos(i), o = S.own[i];
+    const toks = S.players.map((p, k) => !p.out && p.pos === i ? `<span class="tok" style="background:${p.color}"></span>` : '').join('');
+    const houses = o && o.houses ? (o.houses === 5 ? '🏨' : '🏠'.repeat(o.houses)) : '';
+    html += `<div class="sq${s.t === 'corner' ? ' corner' : ''}${o && o.mort ? ' mort' : ''}" style="grid-row:${r};grid-column:${c}" data-i="${i}">`
+      + (s.g ? `<div class="band" style="background:${GROUPS[s.g].color}"></div>` : '')
+      + (houses ? `<div class="houses">${houses}</div>` : '')
+      + `<div class="lbl"><div class="nm">${s.t === 'card' ? '❓<br>' : s.t === 'trans' ? '🚆<br>' : s.t === 'tax' ? '💷<br>' : ''}${esc(s.name)}</div>`
+      + (s.price ? `<div class="pr">${money(s.price)}</div>` : s.sub ? `<div class="pr">${esc(s.sub)}</div>` : '') + '</div>'
+      + (o ? `<div class="own" style="background:${S.players[o.p].color}"></div>` : '')
+      + `<div class="toks">${toks}</div></div>`;
+  });
+  html += `<div id="center"><div id="turn"></div><div id="dice"></div><div id="prompt"></div><div id="actions"></div><div id="log"></div></div></div>`;
+  html += '<div id="players">' + S.players.map((p, k) => `<div class="pl${k === S.turn ? ' cur' : ''}${p.out ? ' out' : ''}" data-p="${k}">
+    <span class="tok" style="background:${p.color}"></span><span>${esc(p.name)}${p.cpu ? ' 🤖' : ''}${p.jail ? ' 🔒' : ''}${p.jailCards ? ' 🎫' : ''}</span>
+    <span class="cash">${p.out ? 'out' : money(p.cash)}</span></div>`).join('') + '</div>';
+  html += `<div class="btns" style="justify-content:space-between"><button id="menuBtn">Menu</button><small style="color:var(--dim);align-self:center">Tap a square or player for details</small></div>`;
+  app.innerHTML = html;
+  app.querySelectorAll('.sq').forEach(el => el.onclick = () => showSquare(+el.dataset.i));
+  app.querySelectorAll('.pl').forEach(el => el.onclick = () => showPlayer(+el.dataset.p));
+  $('menuBtn').onclick = showMenu;
+  renderCenter(); renderDice();
+  if (S.pass != null) showPass();
+}
+
+function renderDice() { const d = $('dice'); if (d) d.textContent = DIE[S.dice[0]] + DIE[S.dice[1]]; }
+
+function renderCenter() {
+  const p = cur(), k = actor();
+  const who = k == null ? p : S.players[k];
+  $('turn').innerHTML = `<span class="tok" style="background:${who.color}"></span>${esc(who.name)}`
+    + `<small style="margin-left:auto;color:var(--dim);font-weight:400">Round ${S.round}${S.limit ? ' of ' + S.limit : ''}</small>`;
+  const acts = [], human = !who.cpu && !busy;
+  let prompt = '';
+  const btn = (label, fn, cls = '', disabled = false) => acts.push({ label, fn, cls, disabled });
+  if (S.phase === 'over') {
+    prompt = `🏆 ${esc(S.players[S.winner].name)} wins the game!<br>` + S.players.filter(q => !q.out).map(q => `${esc(q.name)}: ${money(worth(q))}`).join(' · ');
+    btn('New game', () => { S = null; localStorage.removeItem('estates.game'); render(); }, 'go');
+  } else if (S.debts.length) {
+    const d = S.debts[0];
+    prompt = `${esc(who.name)} owes ${money(d.amount)}${d.to != null ? ' to ' + esc(S.players[d.to].name) : ''} but has ${money(who.cash)}. Sell houses or mortgage to raise it.`;
+    if (human) {
+      btn('Pay', settleDebt, 'go', who.cash < d.amount);
+      btn('Properties', () => showManage(d.p));
+      btn('Auto-raise', () => { autoRaise(d.p, d.amount); finish(); }, '', who.cash >= d.amount);
+      btn('Go bankrupt', () => { if (confirm(`${who.name}: declare bankruptcy and leave the game?`)) bankrupt(); });
+    }
+  } else if (S.trade) {
+    prompt = `${esc(who.name)}, ${esc(S.players[S.trade.from].name)} offers you a trade.`;
+    if (human) btn('See offer', showOffer, 'go');
+  } else if (S.phase === 'roll') {
+    prompt = p.jail ? `${esc(p.name)} is in the Lock-up (try ${p.jail} of 3). Roll a double, pay ${money(BAIL)}, or use a card.` : S.card ? esc(S.card) : 'Roll the dice.';
+    if (human) {
+      btn('Roll', roll, 'go');
+      if (p.jail) { btn('Pay ' + money(BAIL), () => payBail(false), '', p.cash < BAIL); if (p.jailCards) btn('Use card', () => payBail(true)); }
+      btn('Build / mortgage', () => showManage(S.turn));
+      btn('Trade', showTrade);
+    }
+  } else if (S.phase === 'buy') {
+    const s = BOARD[p.pos];
+    prompt = (S.card ? esc(S.card) + '<br>' : '') + `${esc(s.name)} is for sale: ${money(s.price)}.`;
+    if (human) { btn('Buy ' + money(s.price), buy, 'go', p.cash < s.price); btn('No thanks', decline); btn('Details', () => showSquare(s.i)); btn('Mortgage', () => showManage(S.turn)); }
+  } else {
+    prompt = S.card ? esc(S.card) : `${esc(p.name)} is on ${esc(BOARD[p.pos].name)}.`;
+    if (human) {
+      btn(S.doubles && !p.jail ? 'Roll again' : 'End turn', endTurn, 'go');
+      btn('Build / mortgage', () => showManage(S.turn));
+      btn('Trade', showTrade);
+    }
+  }
+  if (who.cpu && S.phase !== 'over') prompt += '<br><i>Thinking…</i>';
+  $('prompt').innerHTML = prompt;
+  const a = $('actions'); a.innerHTML = '';
+  for (const x of acts) { const b = document.createElement('button'); b.textContent = x.label; b.className = x.cls; b.disabled = x.disabled; b.onclick = x.fn; a.appendChild(b); }
+  $('log').innerHTML = S.log.slice(0, 8).map(m => `<div>${esc(m)}</div>`).join('');
+}
+
+function modal(html, wire) { $('modalBody').innerHTML = html; $('modal').classList.remove('hidden'); if (wire) wire($('modalBody')); }
+function closeModal() { $('modal').classList.add('hidden'); }
+$('modal').onclick = e => { if (e.target.id === 'modal' && S && S.pass == null && !S.trade) closeModal(); };
+
+function showPass() {
+  const p = S.players[S.pass];
+  modal(`<div style="text-align:center"><span class="tok" style="display:inline-block;width:28px;height:28px;background:${p.color}"></span>
+    <h3>Pass the phone to ${esc(p.name)}</h3><p style="color:var(--dim)">${S.debts.length ? 'They have a debt to settle.' : S.trade ? 'They have a trade offer.' : 'It\'s their turn.'}</p>
+    <button class="go" id="ready">I'm ${esc(p.name)}</button></div>`, m => {
+    m.querySelector('#ready').onclick = () => { S.pass = null; save(); closeModal(); render(); cpuSoon(); };
+  });
+}
+
+function rentTable(s) {
+  if (s.t === 'trans') return '<table>' + [1, 2, 3].map(n => `<tr><td>Owner has ${n} transport</td><td>${money(25 * 2 ** (n - 1))}</td></tr>`).join('') + '</table>';
+  const L = ['Rent', 'Full region, no houses', '1 house', '2 houses', '3 houses', '4 houses', 'Hotel'];
+  const vals = [s.rents[0], s.rents[0] * 2, ...s.rents.slice(1)];
+  return '<table>' + vals.map((v, j) => `<tr><td>${L[j]}</td><td>${money(v)}</td></tr>`).join('') + `<tr><td>House cost</td><td>${money(GROUPS[s.g].house)}</td></tr></table>`;
+}
+
+function showSquare(i) {
+  const s = BOARD[i], o = S.own[i];
+  let body = `<h3>${s.g ? `<span style="color:${GROUPS[s.g].color}">■</span> ` : ''}${esc(s.name)}</h3>`;
+  if (buyable(s)) {
+    body += `<p>${s.g ? esc(GROUPS[s.g].name) + ' · ' : ''}Price ${money(s.price)} · mortgage ${money(s.price / 2)}</p>`;
+    body += `<p>${o ? `Owned by <b>${esc(S.players[o.p].name)}</b>${o.mort ? ' (mortgaged)' : ''}${o.houses ? ` · ${o.houses === 5 ? 'hotel' : o.houses + ' house(s)'}` : ''} · rent now ${money(rent(i))}` : 'For sale'}</p>`;
+    body += rentTable(s);
+  } else if (s.t === 'card') body += '<p>Draw a Fortune card.</p>';
+  else if (s.t === 'tax') body += `<p>Pay ${money(s.amount)} to the bank.</p>`;
+  else body += `<p>${esc(s.sub)}</p>`;
+  modal(body + '<div class="btns"><button id="x">Close</button></div>', m => m.querySelector('#x').onclick = closeModal);
+}
+
+function showPlayer(k) {
+  const p = S.players[k], list = ownedBy(k);
+  modal(`<h3>${esc(p.name)} · ${money(p.cash)}</h3>` + (list.length ? list.map(s => `<div class="row"><span class="sw" style="background:${s.g ? GROUPS[s.g].color : '#777'}"></span>
+    <span class="grow">${esc(s.name)}${S.own[s.i].mort ? ' (mortgaged)' : ''}</span><span>${S.own[s.i].houses ? (S.own[s.i].houses === 5 ? '🏨' : '🏠×' + S.own[s.i].houses) : ''}</span></div>`).join('') : '<p>No property yet.</p>')
+    + '<div class="btns"><button id="x">Close</button></div>', m => m.querySelector('#x').onclick = closeModal);
+}
+
+function showManage(k) {
+  const draw = () => {
+    const p = S.players[k], list = ownedBy(k);
+    modal(`<h3>${esc(p.name)}'s property · ${money(p.cash)}</h3>` + (list.length ? '' : '<p>Nothing owned yet.</p>') + list.map(s => {
+      const o = S.own[s.i];
+      const b = [];
+      if (s.t === 'prop') {
+        b.push(`<button data-a="build" data-i="${s.i}" ${canBuild(s.i, k) ? '' : 'disabled'}>+🏠 ${money(GROUPS[s.g].house)}</button>`);
+        b.push(`<button data-a="sell" data-i="${s.i}" ${canSell(s.i, k) ? '' : 'disabled'}>−🏠</button>`);
+      }
+      b.push(o.mort ? `<button data-a="unmort" data-i="${s.i}" ${canUnmortgage(s.i, k) ? '' : 'disabled'}>Repay ${money(unmortCost(s.i))}</button>`
+        : `<button data-a="mort" data-i="${s.i}" ${canMortgage(s.i, k) ? '' : 'disabled'}>Mortgage +${money(s.price / 2)}</button>`);
+      return `<div class="row"><span class="sw" style="background:${s.g ? GROUPS[s.g].color : '#777'}"></span><span class="grow">${esc(s.name)}<br><small style="color:var(--dim)">${o.mort ? 'mortgaged' : o.houses === 5 ? 'hotel' : o.houses ? o.houses + ' house(s)' : 'rent ' + money(rent(s.i))}</small></span>${b.join('')}</div>`;
+    }).join('') + '<p style="color:var(--dim);font-size:13px">Build on a whole region evenly. Houses sell back for half.</p><div class="btns"><button class="go" id="x">Done</button></div>', m => {
+      m.querySelector('#x').onclick = () => { closeModal(); finish(); };
+      m.querySelectorAll('button[data-a]').forEach(bt => bt.onclick = () => {
+        const i = +bt.dataset.i;
+        ({ build, sell, mort: mortgage, unmort: unmortgage })[bt.dataset.a](i);
+        save(); draw();
+      });
+    });
+  };
+  draw();
+}
+
+function showTrade() {
+  const me = S.turn, others = S.players.map((p, k) => k).filter(k => k !== me && !S.players[k].out);
+  let to = others[0];
+  const give = new Set(), get = new Set();
+  const draw = () => {
+    const list = (k, set, tag) => ownedBy(k).map(s => `<label class="row"><input type="checkbox" data-t="${tag}" value="${s.i}" ${set.has(s.i) ? 'checked' : ''} ${tradable(s.i, k) ? '' : 'disabled'}>
+      <span class="sw" style="background:${s.g ? GROUPS[s.g].color : '#777'}"></span><span class="grow">${esc(s.name)}${S.own[s.i].mort ? ' (mortgaged)' : ''}</span><span>${money(s.price)}</span></label>`).join('') || '<p style="color:var(--dim)">No property</p>';
+    modal(`<h3>Trade</h3><p>With <select id="to">${others.map(k => `<option value="${k}" ${k === to ? 'selected' : ''}>${esc(S.players[k].name)}</option>`).join('')}</select></p>
+      <b>You give</b>${list(me, give, 'give')}<p>Cash £<input id="cg" type="number" min="0" step="10" value="0" style="width:90px"></p>
+      <b>You get</b>${list(to, get, 'get')}<p>Cash £<input id="ct" type="number" min="0" step="10" value="0" style="width:90px"></p>
+      <p style="color:var(--dim);font-size:13px">Regions with houses can't be traded.</p>
+      <div class="btns"><button id="x">Cancel</button><button class="go" id="send">Offer</button></div>`, m => {
+      m.querySelector('#to').onchange = e => { to = +e.target.value; get.clear(); draw(); };
+      m.querySelectorAll('input[type=checkbox]').forEach(c => c.onchange = () => { const s = c.dataset.t === 'give' ? give : get; c.checked ? s.add(+c.value) : s.delete(+c.value); });
+      m.querySelector('#x').onclick = closeModal;
+      m.querySelector('#send').onclick = () => {
+        const t = { from: me, to, give: [...give], get: [...get], cashGive: Math.max(0, Math.floor(+m.querySelector('#cg').value || 0)), cashGet: Math.max(0, Math.floor(+m.querySelector('#ct').value || 0)) };
+        if (!t.give.length && !t.get.length && !t.cashGive && !t.cashGet) return;
+        if (t.cashGive > S.players[me].cash) return alert("You don't have that much cash.");
+        if (t.cashGet > S.players[to].cash) return alert(`${S.players[to].name} doesn't have that much cash.`);
+        closeModal();
+        if (S.players[to].cpu) {
+          if (cpuAccepts(t)) { doTrade(t); alert(`${S.players[to].name} accepts.`); } else alert(`${S.players[to].name} declines.`);
+          finish();
+        } else { S.trade = t; S.pass = to; finish(); }
+      };
+    });
+  };
+  draw();
+}
+
+function showOffer() {
+  const t = S.trade, a = S.players[t.from], b = S.players[t.to];
+  const names = l => l.map(i => esc(BOARD[i].name) + (S.own[i].mort ? ' (mortgaged)' : '')).join(', ') || 'no property';
+  modal(`<h3>${esc(a.name)} offers ${esc(b.name)}:</h3><p><b>You get:</b> ${names(t.give)}${t.cashGive ? ' + ' + money(t.cashGive) : ''}</p>
+    <p><b>You give:</b> ${names(t.get)}${t.cashGet ? ' + ' + money(t.cashGet) : ''}</p>
+    <div class="btns"><button id="no">Decline</button><button class="go" id="yes" ${b.cash < t.cashGet ? 'disabled' : ''}>Accept</button></div>`, m => {
+    const done = ok => { if (ok) doTrade(t); else log(`${b.name} declines ${a.name}'s offer.`); S.trade = null; maybePass(t.from); closeModal(); finish(); };
+    m.querySelector('#yes').onclick = () => done(true);
+    m.querySelector('#no').onclick = () => done(false);
+  });
+}
+
+function showMenu() {
+  modal(`<h3>Estates</h3><div class="btns" style="flex-direction:column;align-items:stretch">
+    <button id="rules">How to play</button><button id="quit">Quit this game</button><button class="go" id="x">Back to game</button></div>`, m => {
+    m.querySelector('#x').onclick = closeModal;
+    m.querySelector('#rules').onclick = showRules;
+    m.querySelector('#quit').onclick = () => { if (confirm('Quit? The game will be lost.')) { closeModal(); clearTimeout(cpuTimer); S = null; localStorage.removeItem('estates.game'); render(); } };
+  });
+}
+
+function showRules() {
+  modal(`<h3>How to play</h3><div style="font-size:14px;line-height:1.45">
+    <p>Take turns rolling two dice and moving round the board. Pass <b>PAYDAY</b> to collect ${money(SALARY)}.</p>
+    <p>Land on an unowned town or transport square to buy it. Land on someone else's and pay them rent. Mortgaged squares charge no rent.</p>
+    <p>Own a whole <b>region</b> (same colour) and its rent doubles. You can then build houses on it, evenly across the region, and a hotel after four houses.</p>
+    <p>Transport squares charge more the more of them the owner has.</p>
+    <p><b>Fortune</b> squares draw a card. <b>GET LOST</b>, three doubles in a row, or some cards send you to the <b>Lock-up</b>. To get out, roll a double, pay ${money(BAIL)}, or use a get-out card. After three tries you pay and move.</p>
+    <p>Roll a double and you go again.</p>
+    <p>If you can't pay, sell houses (for half) or mortgage. If that's not enough you're bankrupt and out. The last player standing wins.</p>
+    <p>On your turn you can build, mortgage and offer trades of land and cash to other players.</p>
+    <p>With a round limit, the richest player at the end wins: cash, plus land at its price (half if mortgaged), plus houses at cost.</p></div>
+    <div class="btns"><button class="go" id="x">OK</button></div>`, m => m.querySelector('#x').onclick = closeModal);
+}
+
+function renderSetup() {
+  const saved = JSON.parse(localStorage.getItem('estates.setup') || 'null') || [
+    { name: 'Player 1', cpu: false, on: true }, { name: 'Player 2', cpu: false, on: true },
+    { name: 'Player 3', cpu: true, on: false }, { name: 'Player 4', cpu: true, on: false }];
+  $('app').innerHTML = `<div class="setup"><h2>Estates</h2><p>Buy up Britain. 2–4 players sharing one phone; any seat can be the computer.</p>
+    <div class="row" style="color:var(--dim);font-size:13px"><span style="width:44px">Plays</span><span class="grow">Name</span><span>Computer</span></div>
+    ${saved.map((s, k) => `<div class="row seat"><input type="checkbox" class="on" ${s.on ? 'checked' : ''} ${k < 2 ? 'disabled checked' : ''}>
+      <span class="tok" style="background:${COLORS[k]}"></span><input class="nm grow" value="${esc(s.name)}" maxlength="14">
+      <label><input type="checkbox" class="cpu" ${s.cpu ? 'checked' : ''}> 🤖</label></div>`).join('')}
+    <p>Length <select id="limit"><option value="0">Until one player is left</option><option value="20">20 rounds, richest wins</option>
+      <option value="40">40 rounds, richest wins</option><option value="60">60 rounds, richest wins</option></select></p>
+    <div class="btns"><button id="rules">How to play</button><button class="go" id="start">Start</button></div></div>`;
+  $('limit').value = localStorage.getItem('estates.limit') || '0';
+  $('rules').onclick = showRules;
+  $('start').onclick = () => {
+    const rows = [...document.querySelectorAll('.setup .seat')].map((r, k) => ({
+      name: r.querySelector('.nm').value.trim() || 'Player ' + (k + 1), cpu: r.querySelector('.cpu').checked, on: k < 2 || r.querySelector('.on').checked }));
+    localStorage.setItem('estates.setup', JSON.stringify(rows));
+    const players = rows.filter(r => r.on);
+    if (players.every(p => p.cpu)) return alert('At least one player must be a person.');
+    localStorage.setItem('estates.limit', $('limit').value);
+    newGame(players, +$('limit').value);
+  };
+}
+
+try { S = JSON.parse(localStorage.getItem('estates.game')); } catch (e) { S = null; }
+if (S) { S.turns = S.turns || 0; S.offers = S.offers || {}; S.round = S.round || 1; S.limit = S.limit || 0; }
+render(); if (S) cpuSoon();
+</script>
+</body>
+</html>

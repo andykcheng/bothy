@@ -1,0 +1,13 @@
+{
+  "id": "chess",
+  "title": "Chess",
+  "description": "Full chess against the computer (3 levels) or a friend.",
+  "players": "1–2",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_click": [
+    "vs Computer: Beginner"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "party",
+  "title": "Party Cards",
+  "description": "Act it, draw it or describe it against the clock. Team game for the whole family.",
+  "players": "4+",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg"
+}

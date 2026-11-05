@@ -1,0 +1,102 @@
+# Builds the Android app: Rust core (sp-ffi) for arm64 via cargo-ndk, then the Flutter APK.
+# The GB10 build box is aarch64 Linux, where Google's Android build tools don't run, so APKs
+# are built here. Download the artifact with: gh run download -n survivalpedia-apk
+name: android
+
+on:
+  push:
+    branches: [master]
+    paths: ["app/**", "core/**", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core -> target
+          # v2: the v1 cache kept a llama.cpp build from before GGML_CPU_ARM_ARCH was set
+          key: android-v2
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --locked
+
+      - name: Build Rust core (libsp_ffi.so)
+        working-directory: core
+        env:
+          CARGO_PROFILE_RELEASE_DEBUG: "0"
+          CARGO_PROFILE_RELEASE_STRIP: "true"
+          # llama.cpp's int8 dot-product/matmul kernels: several times faster prompt processing for
+          # the chat and embedding models. Needs Armv8.2 dotprod + i8mm, i.e. Cortex-A710/X2 or newer
+          # (Snapdragon 8 Gen 1+, 2022 on; the S23 has them). Older phones would crash (SIGILL).
+          GGML_CPU_ARM_ARCH: "armv8.2-a+dotprod+i8mm+fp16"
+        run: |
+          # the runner image provides the NDK; workflow env expressions cannot see runner variables
+          export ANDROID_NDK_HOME="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_ROOT}"
+          echo "GGML_CPU_ARM_ARCH=$GGML_CPU_ARM_ARCH"
+          cargo ndk -t arm64-v8a -P 26 --link-libcxx-shared \
+            -o ../app/android/app/src/main/jniLibs build --release -p sp-ffi -vv > "$RUNNER_TEMP/cargo.log" 2>&1 \
+            || { tail -100 "$RUNNER_TEMP/cargo.log"; exit 1; }
+          # the cmake invocation for llama.cpp, to see which -D flags it really got
+          grep -o 'running: .*cmake.*llama.cpp.*' "$RUNNER_TEMP/cargo.log" | tr ' ' '\n' | grep -E 'GGML_|ANDROID_ABI' | sort -u || true
+          ls -la ../app/android/app/src/main/jniLibs/arm64-v8a
+
+      - name: Check llama.cpp CPU kernels
+        working-directory: core
+        run: |
+          for d in target/aarch64-linux-android/release/build/llama-cpp-sys-2-*/out/build; do
+            echo "== $d"
+            grep -E '^(GGML_CPU_ARM_ARCH|GGML_NATIVE|CMAKE_C_FLAGS|CMAKE_C_COMPILER):' "$d/CMakeCache.txt" || true
+            grep -h 'C_FLAGS' "$d/ggml/src/CMakeFiles/ggml-cpu.dir/flags.make" || true
+          done
+          NDK="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_ROOT}"
+          n=$("$NDK"/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objdump -d \
+                ../app/android/app/src/main/jniLibs/arm64-v8a/libsp_ffi.so | grep -cE '\s(sdot|smmla)\s' || true)
+          echo "int8 dot/matmul instructions in libsp_ffi.so: $n"
+          [ "$n" -gt 0 ] || echo "::warning::llama.cpp was built without dotprod/i8mm kernels (slow AI and semantic search on phones)"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.38.5"
+          channel: stable
+          cache: true
+
+      - name: Build APK
+        working-directory: app
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          SP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            export SP_KEYSTORE="$RUNNER_TEMP/release.jks"
+          else
+            echo "::warning::no signing secrets: APK is signed with a throwaway debug key"
+          fi
+          flutter pub get
+          flutter analyze
+          flutter build apk --release --target-platform android-arm64 --dart-define=SP_DEFAULT_HUB=${{ vars.SP_DEFAULT_HUB }}
+          ls -la build/app/outputs/flutter-apk/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: survivalpedia-apk
+          path: app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30

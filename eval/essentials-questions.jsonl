@@ -1,0 +1,931 @@
+{"topic": "medicine", "angle": "howto", "q": "how do I stop bleeding from a deep cut", "title": "First aid"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a burn at home", "title": "Burn"}
+{"topic": "medicine", "angle": "howto", "q": "how do I remove a splinter", "title": "Splinter"}
+{"topic": "medicine", "angle": "howto", "q": "how do I do the Heimlich maneuver", "title": "Abdominal thrusts"}
+{"topic": "medicine", "angle": "howto", "q": "how do I clean and close a wound without stitches", "title": "Wound closure"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a sprained ankle", "title": "Sprain"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a deep cut", "title": "First aid"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a snake bite in the field", "title": "Snake bite"}
+{"topic": "medicine", "angle": "howto", "q": "how do I deliver a baby at home", "title": "Home birth"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat dehydration at home", "title": "Oral rehydration therapy"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat diarrhea at home", "title": "Oral rehydration therapy"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a fever at home", "title": "Fever"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a cough at home", "title": "Cough"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a sore throat at home", "title": "Sore throat"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a stomach ache at home", "title": "Stomachache"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a headache at home", "title": "Headache"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a cold at home", "title": "Common cold"}
+{"topic": "medicine", "angle": "howto", "q": "how do I close a wound without stitches", "title": "Wound closure"}
+{"topic": "medicine", "angle": "howto", "q": "how do I make oral rehydration solution", "title": "Oral rehydration therapy"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a broken bone at home", "title": "Fracture"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a cut at home", "title": "Wound"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a concussion at home", "title": "Concussion"}
+{"topic": "medicine", "angle": "howto", "q": "how do I make oral rehydration solution at home", "title": "Oral rehydration therapy"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat severe diarrhea at home", "title": "Oral rehydration therapy"}
+{"topic": "medicine", "angle": "howto", "q": "how do I treat a fever at home without medicine", "title": "Fever"}
+{"topic": "medicine", "angle": "symptom", "q": "Someone's bleeding heavily from a cut on their arm and I can't stop it with pressure, when should I put on a tourniquet?", "title": "Tourniquet"}
+{"topic": "medicine", "angle": "symptom", "q": "I'm alone at home and my sister is going into labour, how do I deliver the baby myself", "title": "Delivery"}
+{"topic": "medicine", "angle": "symptom", "q": "Everyone who ate the beans at the pub is vomiting and has diarrhoea, what do I do", "title": "Foodborne illness"}
+{"topic": "medicine", "angle": "symptom", "q": "My neighbour fell off his bike and his forearm looks bent at the wrong angle, how do I keep it still until help comes", "title": "Splint"}
+{"topic": "medicine", "angle": "symptom", "q": "My friend started eating peanuts and now his face is swelling and he's wheezing, is this deadly", "title": "Anaphylaxis"}
+{"topic": "medicine", "angle": "symptom", "q": "My teenage daughter said she wants to hurt herself, what should I do right now", "title": "Suicidal thoughts"}
+{"topic": "medicine", "angle": "symptom", "q": "My husband keeps getting chest pain that spreads into his arm and he's sweating", "title": "Chest pain"}
+{"topic": "medicine", "angle": "symptom", "q": "My child has a cough for a week, high temperature and breathing fast, what could it be", "title": "Pneumonia"}
+{"topic": "medicine", "angle": "symptom", "q": "My neighbour was knocked on the head and now he's confused and keeping throwing up", "title": "Concussion"}
+{"topic": "medicine", "angle": "symptom", "q": "A woman was bitten by a snake, what are the signs of a venomous bite", "title": "Snake bite"}
+{"topic": "medicine", "angle": "symptom", "q": "My son fell from a ladder and hit his head, what should I look out for over the next few days", "title": "Concussion"}
+{"topic": "medicine", "angle": "symptom", "q": "My mother's finger is bent the wrong way and swollen after she pushed against a door, do I need to set it or just leave it alone", "title": "Bone fracture"}
+{"topic": "medicine", "angle": "symptom", "q": "My neighbour's chest keeps hurting when he breathes and it's been going on for days", "title": "Chest pain"}
+{"topic": "medicine", "angle": "symptom", "q": "My son was hit on the head with a cricket ball and now he's dazed and keeps throwing up, what should I do", "title": "Concussion"}
+{"topic": "medicine", "angle": "symptom", "q": "My friend's finger is bent at an odd angle after he fell off his bike, should I straighten it", "title": "Bone fracture"}
+{"topic": "medicine", "angle": "symptom", "q": "My neighbour's wife is at home on her own and having a baby, how do I help her deliver", "title": "Delivery"}
+{"topic": "medicine", "angle": "symptom", "q": "I've got a cut on my arm from a rusty nail, how do I stop it getting infected", "title": "Wound infection"}
+{"topic": "medicine", "angle": "symptom", "q": "My elderly father's leg is swollen and red and painful to the touch, what should I worry about", "title": "Cellulitis"}
+{"topic": "medicine", "angle": "symptom", "q": "I'm trying to give someone fluids because they've been vomiting all day, what's the best thing to make", "title": "Oral rehydration therapy"}
+{"topic": "medicine", "angle": "symptom", "q": "My neighbour's arm is bleeding from a deep cut and won't stop, when do I need to apply pressure higher up", "title": "Tourniquet"}
+{"topic": "medicine", "angle": "symptom", "q": "I'm having an allergic reaction to something and I can't breathe properly, what should I do", "title": "Anaphylaxis"}
+{"topic": "medicine", "angle": "symptom", "q": "My friend has been drinking all night and now he's vomiting and can't stand up straight, is he in danger", "title": "Alcohol poisoning"}
+{"topic": "medicine", "angle": "symptom", "q": "My child has had a high temperature for three days and is now very sleepy, what should I do", "title": "Fever"}
+{"topic": "medicine", "angle": "symptom", "q": "I'm trying to help my friend who's having a panic attack, how do I calm her down", "title": "Panic attack"}
+{"topic": "medicine", "angle": "symptom", "q": "My neighbour was burned by hot oil and his skin is blistering, what should I do with it", "title": "Burn"}
+{"topic": "water", "angle": "howto", "q": "how do I make water safe to drink without electricity", "title": "Water purification"}
+{"topic": "water", "angle": "howto", "q": "how to build a simple composting toilet", "title": "Composting toilet"}
+{"topic": "water", "angle": "howto", "q": "how to treat water with household bleach", "title": "Chlorine"}
+{"topic": "water", "angle": "howto", "q": "how to purify water using a candle device", "title": "Solar water disinfection"}
+{"topic": "water", "angle": "howto", "q": "how to make a DIY water filter at home", "title": "Water filtration"}
+{"topic": "water", "angle": "howto", "q": "how to collect rainwater for drinking", "title": "Rainwater harvesting"}
+{"topic": "water", "angle": "howto", "q": "how to build an outhouse toilet", "title": "Outhouse"}
+{"topic": "water", "angle": "howto", "q": "how to treat diarrhea with oral fluids during a crisis", "title": "Oral rehydration therapy"}
+{"topic": "water", "angle": "howto", "q": "how to purify water using sunlight alone", "title": "Solar water disinfection"}
+{"topic": "water", "angle": "howto", "q": "how to set up a makeshift toilet when sewage is down", "title": "Human waste"}
+{"topic": "water", "angle": "howto", "q": "how to boil water effectively", "title": "Boiling"}
+{"topic": "water", "angle": "howto", "q": "how to purify water with iodine", "title": "Iodine"}
+{"topic": "water", "angle": "howto", "q": "how to make a ceramic water filter", "title": "Ceramic water filter"}
+{"topic": "water", "angle": "howto", "q": "how to deal with water shortages during an emergency", "title": "Water crisis"}
+{"topic": "water", "angle": "howto", "q": "how to prevent cholera outbreak", "title": "Cholera"}
+{"topic": "water", "angle": "howto", "q": "how to store water for long periods", "title": "Water storage"}
+{"topic": "water", "angle": "howto", "q": "how to treat water with UV light", "title": "Ultraviolet light"}
+{"topic": "water", "angle": "howto", "q": "how to find water when you are lost in the countryside", "title": "Water supply"}
+{"topic": "water", "angle": "howto", "q": "how to dispose of human waste safely when sewers fail", "title": "Latrine"}
+{"topic": "water", "angle": "howto", "q": "how to prevent disease from contaminated water", "title": "Waterborne diseases"}
+{"topic": "water", "angle": "howto", "q": "how to purify water using a slow sand filter", "title": "Sand filtration"}
+{"topic": "water", "angle": "howto", "q": "how to keep water clean without running taps", "title": "Water supply"}
+{"topic": "water", "angle": "howto", "q": "how to avoid dehydration when water is scarce", "title": "Dehydration"}
+{"topic": "water", "angle": "howto", "q": "how to set up a bucket toilet", "title": "Bucket toilet"}
+{"topic": "water", "angle": "howto", "q": "how to purify water with a simple cloth and charcoal filter", "title": "Water purification"}
+{"topic": "water", "angle": "symptom", "q": "The tap water smells funny after the power went off and the pumps stopped — is it safe to drink?", "title": "Tap water"}
+{"topic": "water", "angle": "symptom", "q": "My kid has been throwing up and has diarrhoea for two days, what should I give them to drink?", "title": "Oral rehydration therapy"}
+{"topic": "water", "angle": "symptom", "q": "We've been boiling the water since the supply cut out but my wife says it tastes bad — how long do you need to boil it for?", "title": "Water purification"}
+{"topic": "water", "angle": "symptom", "q": "The rainwater I've been collecting from the roof tastes metallic — can that poison you?", "title": "Rainwater harvesting"}
+{"topic": "water", "angle": "symptom", "q": "I think the sewage has backed up into our toilet — what's the safest way to clean it up?", "title": "Sewage"}
+{"topic": "water", "angle": "symptom", "q": "No running water for weeks, how do you stop flies and flies from spreading disease around the house?", "title": "Hygiene"}
+{"topic": "water", "angle": "symptom", "q": "Someone in the block has been sick with a stomach bug — how do I wash my hands properly?", "title": "Hand washing"}
+{"topic": "water", "angle": "symptom", "q": "The bucket in the shed has been sitting for a month and now it smells awful — should I drink anything from it?", "title": "Water storage"}
+{"topic": "water", "angle": "symptom", "q": "My neighbour swears by chlorine tablets for the well water — are they safe to use?", "title": "Disinfectant"}
+{"topic": "water", "angle": "symptom", "q": "After days of no toilet paper, the only thing available is rough paper — how do you stop things getting infected?", "title": "Hygiene"}
+{"topic": "water", "angle": "symptom", "q": "There's been a flood near us and now the water supply has been turned off — what can we use instead?", "title": "Rainwater harvesting"}
+{"topic": "water", "angle": "symptom", "q": "I've been getting a stomach ache after drinking from a stream, but the water looked clear enough.", "title": "Waterborne diseases"}
+{"topic": "water", "angle": "symptom", "q": "The bottled water we had stored has started leaking — is it still good?", "title": "Bottled water"}
+{"topic": "water", "angle": "symptom", "q": "Someone's been sick in the kitchen and I wiped the counter with a cloth — is that enough?", "title": "Hygiene"}
+{"topic": "water", "angle": "symptom", "q": "We're out of washing powder and need to clean the nappies by hand — what should we use?", "title": "Hygiene"}
+{"topic": "water", "angle": "symptom", "q": "The septic tank is full and the council aren't coming — what can we do?", "title": "Septic tank"}
+{"topic": "water", "angle": "symptom", "q": "My baby's been having diarrhoea since the taps stopped working — what should I feed them?", "title": "Oral rehydration therapy"}
+{"topic": "water", "angle": "symptom", "q": "I heard rainwater can make you sick — is that true or just an old wives' tale?", "title": "Rainwater harvesting"}
+{"topic": "water", "angle": "symptom", "q": "The water tastes like rust after we've been using it for a while — what's going on?", "title": "Tap water"}
+{"topic": "water", "angle": "symptom", "q": "There's been a cholera scare in the papers — is that a real risk here in England?", "title": "Cholera"}
+{"topic": "water", "angle": "symptom", "q": "We're out of toilet paper and need to know the safest way to dispose of it without polluting the well.", "title": "Toilet"}
+{"topic": "water", "angle": "symptom", "q": "I've been feeling dizzy and my mouth is dry — what's wrong with me?", "title": "Oral rehydration therapy"}
+{"topic": "water", "angle": "symptom", "q": "The water in the plastic drum has gone cloudy — is it safe now?", "title": "Water storage"}
+{"topic": "water", "angle": "symptom", "q": "Someone's been sick in the toilet and I need to clean it up — what's the best way?", "title": "Hygiene"}
+{"topic": "water", "angle": "symptom", "q": "Can you purify water just by leaving it out in the sun in a clear plastic bottle?", "title": "Solar water disinfection"}
+{"topic": "water", "angle": "what", "q": "What is a waterborne disease?", "title": "Waterborne disease"}
+{"topic": "water", "angle": "what", "q": "How do I purify water by boiling it?", "title": "Boiling water"}
+{"topic": "water", "angle": "what", "q": "What is water treatment?", "title": "Water treatment"}
+{"topic": "water", "angle": "what", "q": "How do I purify water with chlorine?", "title": "Water purification"}
+{"topic": "water", "angle": "what", "q": "What is oral rehydration therapy?", "title": "Oral rehydration therapy"}
+{"topic": "water", "angle": "what", "q": "What is a rain barrel?", "title": "Rain barrel"}
+{"topic": "water", "angle": "what", "q": "How do I find water in the countryside?", "title": "Wilderness survival"}
+{"topic": "water", "angle": "what", "q": "What is water storage?", "title": "Water storage"}
+{"topic": "water", "angle": "what", "q": "How do I make a toilet?", "title": "Toilet"}
+{"topic": "water", "angle": "what", "q": "What is cholera?", "title": "Cholera"}
+{"topic": "water", "angle": "what", "q": "What is typhoid fever?", "title": "Typhoid fever"}
+{"topic": "water", "angle": "what", "q": "What is dysentery?", "title": "Dysentery"}
+{"topic": "water", "angle": "what", "q": "How do I purify water with iodine?", "title": "Water purification"}
+{"topic": "water", "angle": "what", "q": "What is a latrine?", "title": "Latrine"}
+{"topic": "water", "angle": "what", "q": "What is hand hygiene?", "title": "Hand hygiene"}
+{"topic": "water", "angle": "what", "q": "What is a septic tank?", "title": "Septic tank"}
+{"topic": "water", "angle": "what", "q": "What is water quality?", "title": "Water quality"}
+{"topic": "water", "angle": "what", "q": "What is the cholera toxin?", "title": "Cholera toxin"}
+{"topic": "water", "angle": "what", "q": "What is a water filtration system?", "title": "Water filtration"}
+{"topic": "water", "angle": "what", "q": "What is a rainwater harvesting system?", "title": "Rainwater harvesting"}
+{"topic": "water", "angle": "what", "q": "What is a water brick?", "title": "Water brick"}
+{"topic": "water", "angle": "what", "q": "What is a water treatment plant?", "title": "Water treatment plant"}
+{"topic": "water", "angle": "what", "q": "What is diarrhoea?", "title": "Diarrhoea"}
+{"topic": "water", "angle": "what", "q": "What is waterborne disease?", "title": "Waterborne disease"}
+{"topic": "water", "angle": "what", "q": "What is water scarcity?", "title": "Water scarcity"}
+{"topic": "food", "angle": "what", "q": "what is the difference between blanching and parboiling", "title": "Blanching"}
+{"topic": "food", "angle": "what", "q": "what is botulism and how does it relate to home canning", "title": "Botulism"}
+{"topic": "food", "angle": "what", "q": "what is the difference between sous vide and slow cooking", "title": "Sous-vide cooking"}
+{"topic": "food", "angle": "what", "q": "what is the difference between sterilisation and pasteurisation", "title": "Sterilisation"}
+{"topic": "food", "angle": "what", "q": "what are the essential vitamins and minerals humans need", "title": "Nutrient"}
+{"topic": "food", "angle": "what", "q": "what is the difference between dehydration and freeze-drying", "title": "Dehydration"}
+{"topic": "food", "angle": "what", "q": "what is the proper way to smoke fish at home", "title": "Smoking (cooking)"}
+{"topic": "food", "angle": "what", "q": "what is the difference between fermentation and pickling", "title": "Pickling"}
+{"topic": "food", "angle": "what", "q": "what is scurvy and what foods prevent it", "title": "Scurvy"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a cleaver and a chef's knife", "title": "Cleaver (knife)"}
+{"topic": "food", "angle": "what", "q": "what is the difference between jerky and biltong", "title": "Jerky"}
+{"topic": "food", "angle": "what", "q": "what is the best way to preserve meat in the countryside", "title": "Food preservation"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a camp stove and a hobo stove", "title": "Camp stove"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a bow and a crossbow for hunting", "title": "Bow"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a spear and a harpoon", "title": "Spear"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a moulinex and a food processor", "title": "Food processor"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a cast iron pan and a non-stick pan", "title": "Cast iron cookware"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a mortar and pestle and a blender", "title": "Mortar and pestle"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a sieve and a colander", "title": "Strainer"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a Dutch oven and a casserole dish", "title": "Dutch oven"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a pressure cooker and a slow cooker", "title": "Pressure cooker"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a trowel and a spade", "title": "Trowel"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a gillnet and a seine net for fishing", "title": "Gillnet"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a deadfall trap and a snare", "title": "Deadfall"}
+{"topic": "food", "angle": "what", "q": "what is the difference between a butcher's saw and a wood saw", "title": "Saw"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I save seeds from my vegetables for next year's planting", "title": "Seed saving"}
+{"topic": "agriculture", "angle": "howto", "q": "what vegetables grow well in UK soil and climate", "title": "UK climate"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I start a compost heap", "title": "Compost"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I store my grain harvest so it doesn't go mouldy or sprout", "title": "Grain storage"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I keep my chickens healthy without antibiotics", "title": "Chickens"}
+{"topic": "agriculture", "angle": "howto", "q": "what should I feed my goats in winter when there's no fresh grass", "title": "Goat farming"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I start a hive of bees from a swarm", "title": "Beekeeping"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I cure meat I've butchered so it doesn't spoil", "title": "Curing"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I make my own fertiliser from kitchen waste", "title": "Compost"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I keep rabbits from getting fly strike", "title": "Rabbit fly strike"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I treat a wound on a goat or sheep without vet access", "title": "Wound"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I keep my chickens warm and laying eggs through winter", "title": "Chickens"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I get rid of aphids without chemicals", "title": "Aphid"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I build a vegetable patch in poor soil", "title": "Compost"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I preserve my tomato harvest so it lasts all year", "title": "Preservation"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I get my bees to swarm less in spring", "title": "Beekeeping"}
+{"topic": "agriculture", "angle": "howto", "q": "what crops can I grow in the UK in autumn and winter", "title": "UK climate"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I treat worms in my chickens naturally", "title": "Helminth"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I make my own organic pest spray for garden pests", "title": "Biological pest control"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I build a good compost heap", "title": "Compost"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I cut my own grain by hand with a sickle", "title": "Sickle"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I feed my bees when there's no blossom", "title": "Beekeeping"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I check whether my goat's milk is safe to drink", "title": "Milk"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I grow wheat at home without a field", "title": "Wheat"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I keep my rabbits healthy without antibiotics", "title": "Rabbit fly strike"}
+{"topic": "agriculture", "angle": "howto", "q": "how do I store seeds so they stay viable for planting next year", "title": "Seed saving"}
+{"topic": "agriculture", "angle": "symptom", "q": "How do I stop my chicken eggs from being laid on the floor and getting broken?", "title": "Free-range poultry"}
+{"topic": "agriculture", "angle": "symptom", "q": "My goats keep eating the bark off the trees, is that normal?", "title": "Goat"}
+{"topic": "agriculture", "angle": "symptom", "q": "What can I do if my bees swarm away from their hive?", "title": "Beekeeping"}
+{"topic": "agriculture", "angle": "symptom", "q": "I need to grow enough wheat to feed my family for a year, where do I start?", "title": "Wheat"}
+{"topic": "agriculture", "angle": "symptom", "q": "My tomatoes have gone black and slimy at the bottom, what is it?", "title": "Tomato blight"}
+{"topic": "agriculture", "angle": "symptom", "q": "How do I keep my chickens from getting sick without using antibiotics?", "title": "Free-range poultry"}
+{"topic": "agriculture", "angle": "symptom", "q": "What should I do if my goat has a swollen hoof that looks like a boil?", "title": "Foot rot"}
+{"topic": "agriculture", "angle": "symptom", "q": "I'm worried my bees might die if the weather stays cold for too long.", "title": "Beekeeping"}
+{"topic": "agriculture", "angle": "symptom", "q": "How do I save seeds from my crops so I can plant them next year?", "title": "Seed bank"}
+{"topic": "agriculture", "angle": "symptom", "q": "My carrots keep rotting underground even though I watered them normally.", "title": "Carrot fly"}
+{"topic": "agriculture", "angle": "symptom", "q": "I've never grown beans before but I need food, what's the easiest one?", "title": "Bean"}
+{"topic": "agriculture", "angle": "symptom", "q": "How do I keep my sheep from getting eaten by foxes without electricity?", "title": "Sheep"}
+{"topic": "agriculture", "angle": "symptom", "q": "My cow is producing less milk than usual, is this normal after the calf is weaned?", "title": "Cattle"}
+{"topic": "agriculture", "angle": "symptom", "q": "How do I turn grass and weeds into hay so my animals have winter food?", "title": "Hay"}
+{"topic": "agriculture", "angle": "symptom", "q": "I want to grow potatoes but I don't want to use chemicals on them, how do I keep them safe?", "title": "Organic farming"}
+{"topic": "agriculture", "angle": "symptom", "q": "How do I keep cucumbers from going bad when I've got too many for fresh eating?", "title": "Pickle"}
+{"topic": "agriculture", "angle": "symptom", "q": "My chickens have stopped laying eggs in the middle of summer, why?", "title": "Chicken"}
+{"topic": "agriculture", "angle": "symptom", "q": "How do I know if my bees are healthy or sick?", "title": "Beekeeping"}
+{"topic": "agriculture", "angle": "symptom", "q": "I've lost all my crops to a long dry spell, what can I plant that survives without rain?", "title": "Famine"}
+{"topic": "agriculture", "angle": "symptom", "q": "My horse keeps coughing at night, what should I look for?", "title": "Equine influenza"}
+{"topic": "agriculture", "angle": "symptom", "q": "How do I stop aphids from eating my cabbage leaves without buying sprays?", "title": "Organic farming"}
+{"topic": "agriculture", "angle": "symptom", "q": "My soil looks like concrete and water just runs off it, what's wrong?", "title": "Soil fertility"}
+{"topic": "agriculture", "angle": "symptom", "q": "I want to grow my own vegetables but I don't have much space, what works?", "title": "Kitchen garden"}
+{"topic": "agriculture", "angle": "symptom", "q": "How do I treat a cut on my goat so it doesn't get infected?", "title": "Veterinary medicine"}
+{"topic": "agriculture", "angle": "symptom", "q": "I'm looking at my seed catalogues and I don't know the difference between heirloom and hybrid, what should I choose?", "title": "Heirloom vegetable"}
+{"topic": "agriculture", "angle": "what", "q": "What is mycorrhizal fungi and how does it help plants?", "title": "Mycorrhiza"}
+{"topic": "agriculture", "angle": "what", "q": "What is hydroponics and how does it work?", "title": "Hydroponics"}
+{"topic": "agriculture", "angle": "what", "q": "What is crop rotation and why do farmers use it?", "title": "Crop rotation"}
+{"topic": "agriculture", "angle": "what", "q": "What is compost and how do you make it?", "title": "Compost"}
+{"topic": "agriculture", "angle": "what", "q": "What is nitrogen fixation in plants?", "title": "Nitrogen fixation"}
+{"topic": "agriculture", "angle": "what", "q": "What is vermicomposting?", "title": "Vermicompost"}
+{"topic": "agriculture", "angle": "what", "q": "What is a greenhouse and how do you build one?", "title": "Greenhouse"}
+{"topic": "agriculture", "angle": "what", "q": "What is permaculture?", "title": "Permaculture"}
+{"topic": "agriculture", "angle": "what", "q": "What is an aeroponic system?", "title": "Aeroponics"}
+{"topic": "agriculture", "angle": "what", "q": "What is the seed bank of Svalbard?", "title": "Svalbard Global Seed Vault"}
+{"topic": "agriculture", "angle": "what", "q": "What is a scythe and how is it used?", "title": "Scythe"}
+{"topic": "agriculture", "angle": "what", "q": "What is a scythe and how do you use it?", "title": "Scythe"}
+{"topic": "agriculture", "angle": "what", "q": "What is the difference between a sickle and a scythe?", "title": "Sickle (tool)"}
+{"topic": "agriculture", "angle": "what", "q": "What is a thresher and how does it work?", "title": "Thresher"}
+{"topic": "agriculture", "angle": "what", "q": "What is a winnowing fan and how is it used?", "title": "Winnowing"}
+{"topic": "agriculture", "angle": "what", "q": "What is a grain mill and how do you use it?", "title": "Quern"}
+{"topic": "agriculture", "angle": "what", "q": "What is a seed drill and how does it work?", "title": "Seed drill"}
+{"topic": "agriculture", "angle": "what", "q": "What is a sickle and how is it used?", "title": "Sickle (tool)"}
+{"topic": "foraging", "angle": "symptom", "q": "I'm walking in the countryside and want to pick wild food for dinner, what can I eat?", "title": "Wild food"}
+{"topic": "foraging", "angle": "symptom", "q": "I think I ate a mushroom and now I feel sick, what happened to me?", "title": "Mushroom poisoning"}
+{"topic": "foraging", "angle": "symptom", "q": "What's the difference between a mushroom I can eat and one that will kill me?", "title": "Edible mushroom"}
+{"topic": "foraging", "angle": "symptom", "q": "Are any of the berries I see in the hedgerows safe to eat?", "title": "Berry"}
+{"topic": "foraging", "angle": "symptom", "q": "I found a plant by the river, what should I look at to tell if it's poisonous?", "title": "Poisonous plant"}
+{"topic": "foraging", "angle": "symptom", "q": "What plants can I eat if I'm feeling unwell and need something to settle my stomach?", "title": "Medicinal plant"}
+{"topic": "foraging", "angle": "symptom", "q": "I'm foraging on the beach at low tide, what grows there that I can eat?", "title": "Seaweed"}
+{"topic": "foraging", "angle": "symptom", "q": "How do I tell if a mushroom is poisonous just by looking at it?", "title": "Edible mushroom"}
+{"topic": "foraging", "angle": "symptom", "q": "What wild plants grow near water in Britain?", "title": "Riparian zone"}
+{"topic": "foraging", "angle": "symptom", "q": "Can I eat mushrooms I find on the ground in the forest?", "title": "Mushroom foraging"}
+{"topic": "foraging", "angle": "symptom", "q": "I found some yellow berries on a bush, are they dangerous?", "title": "Berry"}
+{"topic": "foraging", "angle": "symptom", "q": "What plants in the countryside can I use to cure myself of something?", "title": "Medicinal plant"}
+{"topic": "foraging", "angle": "symptom", "q": "I'm by the sea at low tide, what's growing on the rocks I can collect?", "title": "Seaweed"}
+{"topic": "foraging", "angle": "symptom", "q": "What should I eat after a long day gathering wild food so my stomach is happy?", "title": "Wild food"}
+{"topic": "foraging", "angle": "symptom", "q": "What wild plants are available to pick in the British countryside?", "title": "Wild food"}
+{"topic": "foraging", "angle": "symptom", "q": "How can I tell if a plant is poisonous before I eat it?", "title": "Poisonous plant"}
+{"topic": "foraging", "angle": "symptom", "q": "I want to eat mushrooms I found in the woods but I'm worried about them being poisonous", "title": "Edible mushroom"}
+{"topic": "foraging", "angle": "symptom", "q": "What plants grow by rivers and streams in the UK?", "title": "Riparian zone"}
+{"topic": "foraging", "angle": "symptom", "q": "I found some red berries and don't know if I can eat them", "title": "Berry"}
+{"topic": "foraging", "angle": "symptom", "q": "Is it safe to eat wild mushrooms if I'm not sure what they are?", "title": "Edible mushroom"}
+{"topic": "foraging", "angle": "symptom", "q": "What grows on the seashore that people eat?", "title": "Seaweed"}
+{"topic": "foraging", "angle": "symptom", "q": "I want to pick wild food in the British countryside, what can I find?", "title": "Wild food"}
+{"topic": "foraging", "angle": "symptom", "q": "Can I eat any mushroom I find in the woods?", "title": "Edible mushroom"}
+{"topic": "foraging", "angle": "symptom", "q": "What plants can I use to make medicine for myself?", "title": "Medicinal plant"}
+{"topic": "foraging", "angle": "symptom", "q": "What plants grow near rivers and streams in the UK?", "title": "Riparian zone"}
+{"topic": "foraging", "angle": "symptom", "q": "I found a plant with yellow flowers in the hedgerow, is it poisonous?", "title": "Poisonous plant"}
+{"topic": "foraging", "angle": "what", "q": "what is the edible seaweed called dulse that grows on the British coast", "title": "Dulse"}
+{"topic": "foraging", "angle": "what", "q": "what are the poisonous mushrooms in the UK that look like field mushrooms", "title": "Death cap"}
+{"topic": "foraging", "angle": "what", "q": "what wild plant can I use to make tea that tastes like Earl Grey", "title": "Wild thyme"}
+{"topic": "foraging", "angle": "what", "q": "what is the plant with three leaves that grows in hedges and causes severe poisoning", "title": "Hemlock"}
+{"topic": "foraging", "angle": "what", "q": "what are the edible sea vegetables I can pick from the intertidal zone in Britain", "title": "Irish moss (seaweed)"}
+{"topic": "foraging", "angle": "what", "q": "what is the yellow berry that looks like sloes but is poisonous", "title": "Baneberry"}
+{"topic": "foraging", "angle": "what", "q": "what medicinal plant is called willow bark and what does it treat", "title": "Salicylic acid"}
+{"topic": "foraging", "angle": "what", "q": "what are the green algae on British rocks that are safe to eat", "title": "Dulse"}
+{"topic": "foraging", "angle": "what", "q": "what is the tall yellow flower in fields that is poisonous to livestock", "title": "Cowslip"}
+{"topic": "foraging", "angle": "what", "q": "what wild greens can I harvest in spring from hedgerows", "title": "Wood sorrel"}
+{"topic": "foraging", "angle": "what", "q": "what is the mushroom called amanita muscaria and is it deadly", "title": "Amanita muscaria"}
+{"topic": "foraging", "angle": "what", "q": "what is the herb with silver leaves and aromatic flowers used for coughs", "title": "Mullein"}
+{"topic": "foraging", "angle": "what", "q": "what are the edible mussels and cockles on British shores", "title": "Blue mussel"}
+{"topic": "foraging", "angle": "what", "q": "what is the plant called monk's hood that has purple flowers and is very toxic", "title": "Monkshood"}
+{"topic": "foraging", "angle": "what", "q": "what wild food can I find in British rivers and streams", "title": "Watercress"}
+{"topic": "foraging", "angle": "what", "q": "what is the white mushroom with a ring around the stem that is deadly", "title": "Destroying angel"}
+{"topic": "foraging", "angle": "what", "q": "what is the herb called yarrow and what is it used for in medicine", "title": "Achillea millefolium"}
+{"topic": "foraging", "angle": "what", "q": "what are the edible sea vegetables called samphire", "title": "Samphire"}
+{"topic": "foraging", "angle": "what", "q": "what is the plant called foxglove and why is it dangerous", "title": "Foxglove"}
+{"topic": "foraging", "angle": "what", "q": "what wild food can I gather from hedgerows in autumn", "title": "Elderberry"}
+{"topic": "foraging", "angle": "what", "q": "what is the poisonous plant called hemlock water-dropwort", "title": "Oenanthe crocata"}
+{"topic": "foraging", "angle": "what", "q": "what is the herb called chamomile and how do I use it medicinally", "title": "Chamomile"}
+{"topic": "foraging", "angle": "what", "q": "what are the edible seaweeds that grow on British shores", "title": "Seaweed"}
+{"topic": "foraging", "angle": "what", "q": "what is the plant called deadly nightshade", "title": "Deadly nightshade"}
+{"topic": "foraging", "angle": "what", "q": "what is the mushroom called the fly agaric and how does it look", "title": "Amanita muscaria"}
+{"topic": "shelter", "angle": "howto", "q": "how do I start a fire using a ferro rod or fire steel", "title": "Ferrocerium"}
+{"topic": "shelter", "angle": "howto", "q": "how do I make a bow drill fire set from scratch", "title": "Bow drill"}
+{"topic": "shelter", "angle": "howto", "q": "how do I build a lean-to shelter in the woods", "title": "Lean-to shelter"}
+{"topic": "shelter", "angle": "howto", "q": "how do I insulate the floor of my shelter so I don't freeze", "title": "Sleeping pad"}
+{"topic": "shelter", "angle": "howto", "q": "how do I waterproof a tarp or poncho to make a shelter", "title": "Tarpaulin (shelter)"}
+{"topic": "shelter", "angle": "howto", "q": "how do I tie a bowline knot that won't slip under load", "title": "Bowline"}
+{"topic": "shelter", "angle": "howto", "q": "how do I build a debris hut for winter survival", "title": "Debris hut"}
+{"topic": "shelter", "angle": "howto", "q": "how do I find dry tinder for starting a fire", "title": "Firestarter"}
+{"topic": "shelter", "angle": "howto", "q": "how do I build a fire that produces little smoke", "title": "Smokeless fire"}
+{"topic": "shelter", "angle": "howto", "q": "how do I make a cordage from natural materials", "title": "Cordage"}
+{"topic": "shelter", "angle": "howto", "q": "how do I build a snow shelter or snow cave", "title": "Snow shelter"}
+{"topic": "shelter", "angle": "howto", "q": "how do I tie a square knot for binding shelter poles", "title": "Square knot"}
+{"topic": "shelter", "angle": "howto", "q": "how do I ventilate a fire shelter so it doesn't fill with smoke", "title": "Smoke detector"}
+{"topic": "shelter", "angle": "howto", "q": "how do I make a bivy sack from a bag and tape", "title": "Bivy sack"}
+{"topic": "shelter", "angle": "symptom", "q": "I've been cut off from shops for weeks and my electricity just went out, how do I keep warm without a heater?", "title": "Survivalism"}
+{"topic": "shelter", "angle": "symptom", "q": "What's the best thing to build if I have no power and need somewhere safe to sleep?", "title": "Shelter (structure)"}
+{"topic": "shelter", "angle": "symptom", "q": "I need to start a fire but I've run out of matches and my lighter won't work, any ideas?", "title": "Fire starting"}
+{"topic": "shelter", "angle": "symptom", "q": "Coal or wood — which is better for keeping warm at home?", "title": "Fuel"}
+{"topic": "shelter", "angle": "symptom", "q": "My clothes are soaked through and I'm freezing, what can I do to dry them quickly?", "title": "Air dryer"}
+{"topic": "shelter", "angle": "symptom", "q": "I keep waking up freezing in bed even with blankets — what's actually keeping me warm?", "title": "Bedding"}
+{"topic": "shelter", "angle": "symptom", "q": "We've got a cold floor in our house and I can't afford to fix it, what can I do?", "title": "Insulated flooring"}
+{"topic": "shelter", "angle": "symptom", "q": "The door in my flat is letting in cold air — any way to seal it without tools?", "title": "Weather stripping"}
+{"topic": "shelter", "angle": "symptom", "q": "I need to make a fire from nothing — where do I even start?", "title": "Fire starting"}
+{"topic": "shelter", "angle": "symptom", "q": "We've got a tent but the weather is awful, will that be enough?", "title": "Tent"}
+{"topic": "shelter", "angle": "symptom", "q": "It's snowing hard and I need somewhere to stay tonight, how do I build a snow shelter?", "title": "Snow shelter"}
+{"topic": "shelter", "angle": "symptom", "q": "I want to build a small house but I've only got wood — what do I need to know?", "title": "Woodworking"}
+{"topic": "shelter", "angle": "symptom", "q": "What makes a wall strong enough to keep the wind out?", "title": "Load-bearing wall"}
+{"topic": "shelter", "angle": "symptom", "q": "I need to tie something up but I've never done it before, which knots are the most useful?", "title": "Knot"}
+{"topic": "shelter", "angle": "symptom", "q": "I'm soaked and cold after being out in the rain, what should I do right away?", "title": "Hypothermia"}
+{"topic": "shelter", "angle": "symptom", "q": "I think I'm getting hypothermia — what are the signs and what should I do?", "title": "Hypothermia"}
+{"topic": "shelter", "angle": "symptom", "q": "How do I stay warm when the heating's gone off?", "title": "Survivalism"}
+{"topic": "shelter", "angle": "symptom", "q": "I want to cook something over a fire but I don't know how to set it up safely.", "title": "Campfire"}
+{"topic": "shelter", "angle": "symptom", "q": "I keep getting cold in bed even with lots of blankets — is there a better way to sleep warm?", "title": "Bedding"}
+{"topic": "shelter", "angle": "symptom", "q": "How do I keep warm and dry when I'm stuck in a shelter for days?", "title": "Survivalism"}
+{"topic": "shelter", "angle": "symptom", "q": "I've got a lighter but nothing seems to catch fire — what am I doing wrong?", "title": "Fire starting"}
+{"topic": "shelter", "angle": "symptom", "q": "I need to build a roof — what materials are best if I only have wood and stones?", "title": "Roof"}
+{"topic": "shelter", "angle": "symptom", "q": "Can I build a house with just stones and no mortar?", "title": "Stone masonry"}
+{"topic": "shelter", "angle": "symptom", "q": "I'm stuck in a shelter and the temperature's dropping — what should I be worried about?", "title": "Hypothermia"}
+{"topic": "shelter", "angle": "symptom", "q": "I need to make a fire from scratch — where do I find the first tiny flame?", "title": "Fire starting"}
+{"topic": "shelter", "angle": "what", "q": "what is the best kind of tinder to use when starting a fire in the damp", "title": "Tinder (fire)"}
+{"topic": "shelter", "angle": "what", "q": "what is a bowline knot", "title": "Bowline"}
+{"topic": "shelter", "angle": "what", "q": "what is a yurt shelter", "title": "Yurt"}
+{"topic": "shelter", "angle": "what", "q": "what is paracord made of", "title": "Parachute cord"}
+{"topic": "shelter", "angle": "what", "q": "what is a figure eight knot", "title": "Figure eight knot"}
+{"topic": "shelter", "angle": "what", "q": "what is a lean-to shelter", "title": "Lean-to"}
+{"topic": "shelter", "angle": "what", "q": "what is the best kind of rope to use for tying a tarp in a storm", "title": "Parachute cord"}
+{"topic": "shelter", "angle": "what", "q": "what is a quinzee shelter", "title": "Quinzee"}
+{"topic": "shelter", "angle": "what", "q": "what is a clove hitch knot", "title": "Clove hitch"}
+{"topic": "shelter", "angle": "what", "q": "what is the best way to insulate a floor for staying warm in a shelter", "title": "Insulation"}
+{"topic": "shelter", "angle": "what", "q": "what is a snow cave shelter", "title": "Snow cave"}
+{"topic": "shelter", "angle": "what", "q": "what is a figure eight knot used for", "title": "Figure eight knot"}
+{"topic": "shelter", "angle": "what", "q": "what is paracord", "title": "Parachute cord"}
+{"topic": "shelter", "angle": "what", "q": "what is a timber hitch knot", "title": "Timber hitch"}
+{"topic": "shelter", "angle": "what", "q": "what is a vapor barrier", "title": "Vapor barrier"}
+{"topic": "shelter", "angle": "what", "q": "what is a bowline knot used for", "title": "Bowline"}
+{"topic": "shelter", "angle": "what", "q": "what is the difference between twine and rope", "title": "Twine"}
+{"topic": "shelter", "angle": "what", "q": "what is a yurts", "title": "Yurt"}
+{"topic": "shelter", "angle": "what", "q": "what is a bivy sack shelter", "title": "Bivy sack"}
+{"topic": "hazards", "angle": "howto", "q": "how do I treat a cut in the field", "title": "First aid"}
+{"topic": "hazards", "angle": "howto", "q": "how do I avoid getting sick from flood water", "title": "Flood"}
+{"topic": "hazards", "angle": "howto", "q": "how do I shelter from a storm", "title": "Thunderstorm"}
+{"topic": "hazards", "angle": "howto", "q": "how do I stay cool in a heat wave", "title": "Heat wave"}
+{"topic": "hazards", "angle": "howto", "q": "how do I keep warm without electricity", "title": "Cold wave"}
+{"topic": "hazards", "angle": "howto", "q": "how do I treat a burn", "title": "Burns"}
+{"topic": "hazards", "angle": "howto", "q": "how do I avoid catching a pandemic illness", "title": "Pandemic"}
+{"topic": "hazards", "angle": "howto", "q": "how do I survive a power cut", "title": "Power outage"}
+{"topic": "hazards", "angle": "howto", "q": "how do I know if gas is leaking", "title": "Hydrogen sulfide"}
+{"topic": "hazards", "angle": "howto", "q": "how do I get rid of chlorine gas", "title": "Chlorine gas"}
+{"topic": "hazards", "angle": "howto", "q": "how do I avoid carbon monoxide poisoning", "title": "Carbon monoxide poisoning"}
+{"topic": "hazards", "angle": "howto", "q": "how do I know if I'm getting heat stroke", "title": "Heat stroke"}
+{"topic": "hazards", "angle": "howto", "q": "how do I protect myself from radiation", "title": "Nuclear fallout"}
+{"topic": "hazards", "angle": "howto", "q": "how do I find rescue when trapped", "title": "Rescue"}
+{"topic": "hazards", "angle": "howto", "q": "how do I stop bleeding", "title": "First aid"}
+{"topic": "hazards", "angle": "howto", "q": "how do I treat a broken arm", "title": "First aid"}
+{"topic": "hazards", "angle": "howto", "q": "how do I prepare for a storm", "title": "Storm"}
+{"topic": "hazards", "angle": "howto", "q": "how do I get water after a flood", "title": "Water supply"}
+{"topic": "hazards", "angle": "howto", "q": "how do I know if my house is safe after a storm", "title": "Structural integrity"}
+{"topic": "hazards", "angle": "howto", "q": "how do I treat frostbite", "title": "Frostbite"}
+{"topic": "hazards", "angle": "howto", "q": "how do I purify water", "title": "Water purification"}
+{"topic": "hazards", "angle": "howto", "q": "how do I know if I have radiation sickness", "title": "Radiation poisoning"}
+{"topic": "hazards", "angle": "howto", "q": "how do I keep food safe without power", "title": "Food safety"}
+{"topic": "hazards", "angle": "howto", "q": "how do I treat a sprain", "title": "First aid"}
+{"topic": "hazards", "angle": "howto", "q": "how do I get out of flood water", "title": "Flood"}
+{"topic": "hazards", "angle": "symptom", "q": "My skin is bright red and blistering after being in the sun all day", "title": "Sunburn"}
+{"topic": "hazards", "angle": "symptom", "q": "I think I have heat stroke because my skin is hot and dry and I am confused", "title": "Heat stroke"}
+{"topic": "hazards", "angle": "symptom", "q": "How to purify water when you only have the water supply", "title": "Water purification"}
+{"topic": "hazards", "angle": "symptom", "q": "I am getting cold and my hands and feet are numb with white patches", "title": "Frostbite"}
+{"topic": "hazards", "angle": "symptom", "q": "What do I do if I am caught in a flood", "title": "Flood"}
+{"topic": "hazards", "angle": "symptom", "q": "What should I do if there is a flood in my house", "title": "Flood"}
+{"topic": "hazards", "angle": "symptom", "q": "My house lost power and I need to keep my medicine cold", "title": "Power outage"}
+{"topic": "hazards", "angle": "symptom", "q": "My body is shaking and I am shivering badly because of cold", "title": "Shivering"}
+{"topic": "hazards", "angle": "symptom", "q": "How to stay warm when there is no electricity and no gas", "title": "Thermal insulation"}
+{"topic": "hazards", "angle": "symptom", "q": "What should I do if the sky goes yellow and a bright flash hits", "title": "Nuclear explosion"}
+{"topic": "hazards", "angle": "symptom", "q": "There was an accident at a factory and I smell something sharp and chemical", "title": "Chemical accident"}
+{"topic": "hazards", "angle": "symptom", "q": "I got a burn from touching the stove", "title": "Burns"}
+{"topic": "hazards", "angle": "symptom", "q": "What to do when the electricity is out and I have no phone or internet", "title": "Power outage"}
+{"topic": "hazards", "angle": "symptom", "q": "There is a lot of rain and the river is rising fast near my house", "title": "Flood"}
+{"topic": "hazards", "angle": "symptom", "q": "How to stay safe in a storm with strong wind and rain", "title": "Storm"}
+{"topic": "hazards", "angle": "symptom", "q": "My skin is hot and dry and I am very hot and confused", "title": "Heat stroke"}
+{"topic": "hazards", "angle": "symptom", "q": "What to do if the electricity cuts out in winter when I am very cold", "title": "Power outage"}
+{"topic": "hazards", "angle": "symptom", "q": "A lot of people are sick with the same cough and fever", "title": "Pandemic"}
+{"topic": "hazards", "angle": "symptom", "q": "Someone got electrocuted from a broken power line", "title": "Electrocution"}
+{"topic": "hazards", "angle": "symptom", "q": "How to save myself if I am trapped by flood water", "title": "Flood"}
+{"topic": "hazards", "angle": "symptom", "q": "There was a fire in the building next door", "title": "Fire"}
+{"topic": "hazards", "angle": "symptom", "q": "What should I do if there is a chemical spill", "title": "Chemical accident"}
+{"topic": "hazards", "angle": "symptom", "q": "What should I do if there is a chemical leak from a factory", "title": "Chemical accident"}
+{"topic": "hazards", "angle": "symptom", "q": "What to do if there is a radiation leak", "title": "Nuclear explosion"}
+{"topic": "hazards", "angle": "symptom", "q": "How to get rescued when flood water is rising", "title": "Flood"}
+{"topic": "energy", "angle": "howto", "q": "How do I start a fire using a magnifying glass to concentrate sunlight?", "title": "Fire"}
+{"topic": "energy", "angle": "howto", "q": "How do I charge my phone with a small solar panel?", "title": "Solar cell"}
+{"topic": "energy", "angle": "howto", "q": "How do I make a simple circuit from scrap copper wire and a battery?", "title": "Electric current"}
+{"topic": "energy", "angle": "howto", "q": "How do I know what wire size to use for a generator power line?", "title": "Electrical wiring in the United Kingdom"}
+{"topic": "energy", "angle": "howto", "q": "How do I use a portable generator safely inside my home?", "title": "Generator (electrical)"}
+{"topic": "energy", "angle": "howto", "q": "How do I build a simple battery bank from AA cells for emergency power?", "title": "Battery (electricity)"}
+{"topic": "energy", "angle": "howto", "q": "How do I connect a solar panel to a battery without damaging it?", "title": "Solar battery bank"}
+{"topic": "energy", "angle": "howto", "q": "How do I safely wire a small off-grid cabin?", "title": "Electrical wiring"}
+{"topic": "energy", "angle": "howto", "q": "How do I light my home using candles and reflectors instead of electricity?", "title": "Candle"}
+{"topic": "energy", "angle": "howto", "q": "How do I build a small wind turbine from scrap materials?", "title": "Wind power"}
+{"topic": "energy", "angle": "howto", "q": "How do I heat my house without the electricity or gas supply?", "title": "Space heating"}
+{"topic": "energy", "angle": "howto", "q": "How do I make a hand-crank radio that also charges my phone?", "title": "Wind-up radio"}
+{"topic": "energy", "angle": "howto", "q": "How do I install a small hydroelectric system from a stream near my house?", "title": "Micro hydro"}
+{"topic": "energy", "angle": "howto", "q": "How do I use a diesel generator during a blackout without poisoning myself?", "title": "Generator (electrical)"}
+{"topic": "energy", "angle": "howto", "q": "How do I make a simple inverter to run household appliances from car batteries?", "title": "Inverter"}
+{"topic": "energy", "angle": "howto", "q": "How do I wire up a small backup power system in my house?", "title": "Electrical wiring"}
+{"topic": "energy", "angle": "howto", "q": "How do I use biomass like wood or dung to generate electricity?", "title": "Biomass"}
+{"topic": "energy", "angle": "howto", "q": "How do I keep my fridge running when the grid goes down for weeks?", "title": "Refrigerator"}
+{"topic": "energy", "angle": "howto", "q": "How do I build a solar water heater using a black plastic container?", "title": "Solar water heating"}
+{"topic": "energy", "angle": "howto", "q": "How do I protect myself from electrical shocks when working with damaged wiring?", "title": "Electrical safety"}
+{"topic": "energy", "angle": "howto", "q": "How do I make a simple lamp using a bicycle dynamo and a bulb?", "title": "Dynamo"}
+{"topic": "energy", "angle": "howto", "q": "How do I safely store lead acid batteries for long-term emergency use?", "title": "Battery (electricity)"}
+{"topic": "energy", "angle": "howto", "q": "How do I generate electricity from falling water on my land?", "title": "Hydropower"}
+{"topic": "energy", "angle": "howto", "q": "How do I run essential appliances from a car battery when the power fails?", "title": "Battery (electricity)"}
+{"topic": "energy", "angle": "howto", "q": "How do I heat my home using solar thermal panels during a prolonged outage?", "title": "Solar heating"}
+{"topic": "energy", "angle": "symptom", "q": "my generator won't start and the battery seems flat, how do I charge it without mains power?", "title": "Generator (electricity)"}
+{"topic": "energy", "angle": "symptom", "q": "I'm running a long cable from my generator to the shed, what size wire should I use so it doesn't overheat?", "title": "Electrical wire and cable"}
+{"topic": "energy", "angle": "symptom", "q": "my solar panel on the garden shed isn't putting out as much power as it used to, do I need to clean it?", "title": "Photovoltaic system"}
+{"topic": "energy", "angle": "symptom", "q": "how do I keep my fridge and freezer cold during a blackout?", "title": "Refrigeration"}
+{"topic": "energy", "angle": "symptom", "q": "I've got a car battery and a wire, can I light a bulb to see in the dark?", "title": "Incandescent light bulb"}
+{"topic": "energy", "angle": "symptom", "q": "my phone battery seems to drain really fast now even when fully charged, is it worn out?", "title": "Rechargeable battery"}
+{"topic": "energy", "angle": "symptom", "q": "how do I charge a phone when the power's been off for days?", "title": "Battery (electricity)"}
+{"topic": "energy", "angle": "symptom", "q": "I've got a 12-volt battery and some wire, how do I make a light for the house?", "title": "Incandescent light bulb"}
+{"topic": "energy", "angle": "symptom", "q": "I'm thinking of getting a battery to keep my freezer running, which type will last longer?", "title": "Rechargeable battery"}
+{"topic": "energy", "angle": "symptom", "q": "my extension cable is getting warm when I plug in a kettle, what size cable do I need?", "title": "Electrical wire and cable"}
+{"topic": "energy", "angle": "symptom", "q": "my fuse keeps blowing every time I switch on the kettle, what's going on?", "title": "Fuse (electrical)"}
+{"topic": "energy", "angle": "symptom", "q": "I've got a car battery that's been sitting in the garage for a week and won't start the car, what's wrong?", "title": "Lead–acid battery"}
+{"topic": "energy", "angle": "symptom", "q": "my solar panel on the shed isn't putting out as much power as it used to, do I need to clean it?", "title": "Photovoltaic system"}
+{"topic": "energy", "angle": "symptom", "q": "I've got a 12-volt battery and a wire, how do I light a bulb to see in the dark?", "title": "Incandescent light bulb"}
+{"topic": "energy", "angle": "symptom", "q": "my battery charger gets too hot to touch, is that normal?", "title": "Battery charger"}
+{"topic": "energy", "angle": "symptom", "q": "is it safe to store spare batteries in the garage or will they go off?", "title": "Fire"}
+{"topic": "energy", "angle": "symptom", "q": "what's the difference between a battery and a power bank for charging a phone?", "title": "Rechargeable battery"}
+{"topic": "energy", "angle": "symptom", "q": "I'm trying to wire a new lamp into a wall socket, what do I need to know to stay safe?", "title": "Wiring"}
+{"topic": "energy", "angle": "symptom", "q": "can I use a car battery as a backup power source for the house?", "title": "Battery (electricity)"}
+{"topic": "energy", "angle": "symptom", "q": "I've got a portable battery for my phone but it doesn't seem to hold a charge anymore, is it worn out?", "title": "Rechargeable battery"}
+{"topic": "energy", "angle": "symptom", "q": "I'm trying to light a room with a torch and some wire, what kind of bulb can I use?", "title": "Incandescent light bulb"}
+{"topic": "energy", "angle": "symptom", "q": "I've got a 12-volt battery and I need a light for the house, what's the best way to do it?", "title": "Incandescent light bulb"}
+{"topic": "energy", "angle": "symptom", "q": "my battery keeps draining overnight, is it a short circuit or is the battery dying?", "title": "Short circuit"}
+{"topic": "energy", "angle": "symptom", "q": "what size wire do I need to run power from my generator to a room 50 metres away?", "title": "Electrical wire and cable"}
+{"topic": "energy", "angle": "what", "q": "what is a lead-acid battery", "title": "Lead–acid battery"}
+{"topic": "energy", "angle": "what", "q": "what is a solar panel", "title": "Photovoltaics"}
+{"topic": "energy", "angle": "what", "q": "what is a diesel generator", "title": "Electric generator"}
+{"topic": "energy", "angle": "what", "q": "how to stay warm without electricity", "title": "House fire"}
+{"topic": "energy", "angle": "what", "q": "how to charge phone in blackout", "title": "Battery (electricity)"}
+{"topic": "energy", "angle": "what", "q": "what is a lithium-ion battery", "title": "Lithium-ion battery"}
+{"topic": "energy", "angle": "what", "q": "what is a fuse box", "title": "Fuse (electrical)"}
+{"topic": "energy", "angle": "what", "q": "what is a deep cycle battery", "title": "Battery (electricity)"}
+{"topic": "energy", "angle": "what", "q": "solar panel for UK homes", "title": "Photovoltaics"}
+{"topic": "energy", "angle": "what", "q": "how to make fire in UK", "title": "Combustion"}
+{"topic": "energy", "angle": "what", "q": "what is a lithium polymer battery", "title": "Lithium-ion battery"}
+{"topic": "energy", "angle": "what", "q": "what is a generator", "title": "Electric generator"}
+{"topic": "energy", "angle": "what", "q": "how to light a room without electricity", "title": "Electric lamp"}
+{"topic": "energy", "angle": "what", "q": "what is a petrol generator", "title": "Electric generator"}
+{"topic": "energy", "angle": "what", "q": "what is a solar battery", "title": "Photovoltaic battery"}
+{"topic": "energy", "angle": "what", "q": "what is a circuit breaker", "title": "Circuit breaker"}
+{"topic": "energy", "angle": "what", "q": "what is a lithium iron phosphate battery", "title": "Lithium iron phosphate battery"}
+{"topic": "energy", "angle": "what", "q": "what is a wood burning stove", "title": "Wood-burning stove"}
+{"topic": "energy", "angle": "what", "q": "what is a kerosene heater", "title": "Kerosene heater"}
+{"topic": "energy", "angle": "what", "q": "what is a gas heater", "title": "Gas heater"}
+{"topic": "energy", "angle": "what", "q": "what is a wind turbine", "title": "Wind turbine"}
+{"topic": "energy", "angle": "what", "q": "how to boil water without electricity", "title": "Water heating"}
+{"topic": "energy", "angle": "what", "q": "what is a battery charger", "title": "Battery charger"}
+{"topic": "energy", "angle": "what", "q": "what is a car battery", "title": "Lead–acid battery"}
+{"topic": "energy", "angle": "what", "q": "what is a solar water heater", "title": "Solar water heating"}
+{"topic": "tools", "angle": "howto", "q": "How do I sharpen a kitchen knife without a whetstone", "title": "Knife sharpening"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a puncture in a bicycle tyre without a pump", "title": "Bicycle tyre"}
+{"topic": "tools", "angle": "howto", "q": "How do I sharpen garden scissors safely", "title": "Scissors"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a broken zipper on a jacket", "title": "Zipper"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a broken bicycle chain", "title": "Bicycle chain"}
+{"topic": "tools", "angle": "howto", "q": "How do I sharpen a garden axe", "title": "Axe"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a loose wooden chair leg without wood glue", "title": "Woodworking"}
+{"topic": "tools", "angle": "howto", "q": "How do I start a fire using a flint and steel", "title": "Firesteel"}
+{"topic": "tools", "angle": "howto", "q": "How do I adjust bicycle brake pads", "title": "Bicycle brake"}
+{"topic": "tools", "angle": "howto", "q": "How do I sharpen a wood chisel", "title": "Chisel"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a bent bicycle wheel", "title": "Bicycle wheel"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a broken sewing machine", "title": "Sewing machine"}
+{"topic": "tools", "angle": "howto", "q": "How do I sharpen a plane blade", "title": "Hand plane"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a bicycle pedal that won't tighten", "title": "Bicycle pedal"}
+{"topic": "tools", "angle": "howto", "q": "How do I make a strong rope from natural fibres", "title": "Rope"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a loose hammer head", "title": "Hammer"}
+{"topic": "tools", "angle": "howto", "q": "How do I use a hacksaw to cut metal", "title": "Hacksaw"}
+{"topic": "tools", "angle": "howto", "q": "How do I sharpen a scythe blade", "title": "Scythe"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a bicycle gear that keeps slipping", "title": "Derailleur"}
+{"topic": "tools", "angle": "howto", "q": "How do I use a metal file to shape a piece of iron", "title": "File (tool)"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a broken door hinge", "title": "Hinge"}
+{"topic": "tools", "angle": "howto", "q": "How do I sharpen a lawnmower blade safely", "title": "Lawnmower"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a broken bicycle spoke", "title": "Bicycle spoke"}
+{"topic": "tools", "angle": "howto", "q": "How do I use pliers to grip and twist a nut", "title": "Pliers"}
+{"topic": "tools", "angle": "howto", "q": "How do I fix a bicycle inner tube", "title": "Inner tube"}
+{"topic": "tools", "angle": "symptom", "q": "How do I sharpen a knife that's gone completely dull?", "title": "Whetstone"}
+{"topic": "tools", "angle": "symptom", "q": "My old spanner and pliers are covered in red dust — how do I get that off?", "title": "Rust"}
+{"topic": "tools", "angle": "symptom", "q": "My well is deep and I need to get water back up after years of disuse", "title": "Hand pump"}
+{"topic": "tools", "angle": "symptom", "q": "How do I get a motor started when water has got into the cylinders?", "title": "Hydrolock"}
+{"topic": "tools", "angle": "symptom", "q": "I need to light a fire but I've only got one match", "title": "Firecraft"}
+{"topic": "tools", "angle": "symptom", "q": "I've got a puncture on my bike and the inner tube's stuck", "title": "Bicycle maintenance"}
+{"topic": "tools", "angle": "symptom", "q": "How do I join two pieces of wood at right angles so they look seamless?", "title": "Mortise and tenon joinery"}
+{"topic": "tools", "angle": "symptom", "q": "I've broken a handle off my chisel and I need to fit it back on", "title": "Chisel"}
+{"topic": "tools", "angle": "symptom", "q": "What's the difference between a hammer and a mallet, and when do I use which?", "title": "Mallet"}
+{"topic": "tools", "angle": "symptom", "q": "I'm trying to make a simple lathe out of spare parts", "title": "Lathe"}
+{"topic": "tools", "angle": "symptom", "q": "I need to learn how to file metal without gouging it", "title": "File (tool)"}
+{"topic": "tools", "angle": "symptom", "q": "How do I set the bevel on a new plane blade so it doesn't tear the wood?", "title": "Mortise and tenon joinery"}
+{"topic": "tools", "angle": "symptom", "q": "My clothes are tearing at the seams and I need to fix them by hand", "title": "Sewing"}
+{"topic": "tools", "angle": "symptom", "q": "I need to solder a copper pipe to repair a leak", "title": "Soldering"}
+{"topic": "tools", "angle": "symptom", "q": "How do I temper steel so it holds an edge without snapping?", "title": "Temper"}
+{"topic": "tools", "angle": "symptom", "q": "I've got a stuck zipper on my winter jacket and I can't get it off", "title": "Zipper"}
+{"topic": "tools", "angle": "symptom", "q": "What's a good way to sew on a button that's lost its thread?", "title": "Button"}
+{"topic": "tools", "angle": "symptom", "q": "I need to cut through a piece of metal but I don't have a power saw", "title": "Hacksaw"}
+{"topic": "tools", "angle": "symptom", "q": "How do I adjust a bicycle chain that's started skipping on the gears?", "title": "Bicycle chain"}
+{"topic": "tools", "angle": "symptom", "q": "What's the difference between a mallet and a hammer, and when do I use which?", "title": "Mallet"}
+{"topic": "tools", "angle": "symptom", "q": "I need to start a fire from scratch using only a match and dry tinder", "title": "Firecraft"}
+{"topic": "tools", "angle": "symptom", "q": "My bicycle is making a clicking noise when I pedal and I think the chain's loose", "title": "Bicycle chain"}
+{"topic": "tools", "angle": "symptom", "q": "How do I sharpen a file that's gone clogged with metal shavings?", "title": "File (tool)"}
+{"topic": "tools", "angle": "symptom", "q": "I need to fix a leak in a copper pipe using copper solder", "title": "Soldering"}
+{"topic": "tools", "angle": "symptom", "q": "I'm trying to make a simple lathe from scrap parts and I don't know where to start", "title": "Lathe"}
+{"topic": "tools", "angle": "symptom", "q": "I need to sharpen a plane iron to get a clean cut on hardwood", "title": "Woodworking chisel"}
+{"topic": "tools", "angle": "symptom", "q": "I'm trying to forge a simple nail by hand", "title": "Blacksmithing"}
+{"topic": "tools", "angle": "symptom", "q": "How do I get a clean cut when using a bow saw on thick wood?", "title": "Bow saw"}
+{"topic": "tools", "angle": "symptom", "q": "I need to sharpen a hacksaw blade that's gone blunt", "title": "Hacksaw"}
+{"topic": "tools", "angle": "symptom", "q": "What's the best way to fix a clothesline that keeps snapping in the wind?", "title": "Shoehorn"}
+{"topic": "medicine", "angle": "what", "q": "what is oral rehydration therapy", "title": "Oral rehydration therapy"}
+{"topic": "medicine", "angle": "what", "q": "how to clean a wound properly", "title": "Wound cleaning"}
+{"topic": "medicine", "angle": "what", "q": "how to treat a burn", "title": "Burn"}
+{"topic": "medicine", "angle": "what", "q": "what are the symptoms of asthma", "title": "Asthma"}
+{"topic": "medicine", "angle": "what", "q": "what's the difference between a heart attack and angina", "title": "Angina"}
+{"topic": "medicine", "angle": "what", "q": "how to tell if someone is having a stroke", "title": "Stroke"}
+{"topic": "medicine", "angle": "what", "q": "what is hypoglycaemia", "title": "Hypoglycaemia"}
+{"topic": "medicine", "angle": "what", "q": "how to recognise the symptoms of meningitis", "title": "Meningitis"}
+{"topic": "medicine", "angle": "what", "q": "what is anaphylaxis", "title": "Anaphylaxis"}
+{"topic": "medicine", "angle": "what", "q": "how to treat a bee sting", "title": "Bee sting"}
+{"topic": "medicine", "angle": "what", "q": "how to treat a wasp sting", "title": "Wasp sting"}
+{"topic": "medicine", "angle": "what", "q": "what is tetanus and how do you get it", "title": "Tetanus"}
+{"topic": "medicine", "angle": "what", "q": "how to tell if you've been bitten by a snake in the UK", "title": "Snakebite"}
+{"topic": "medicine", "angle": "what", "q": "how to tell if a plant is poisonous", "title": "Poison oak"}
+{"topic": "medicine", "angle": "what", "q": "how to treat a sprain or strained muscle", "title": "Sprain"}
+{"topic": "medicine", "angle": "what", "q": "how to treat a fracture or broken bone", "title": "Bone fracture"}
+{"topic": "medicine", "angle": "what", "q": "what are the early signs of labour", "title": "Labour"}
+{"topic": "medicine", "angle": "what", "q": "what is chickenpox and how do you know if you have it", "title": "Chickenpox"}
+{"topic": "medicine", "angle": "what", "q": "how to treat a snake bite", "title": "Snakebite"}
+{"topic": "medicine", "angle": "what", "q": "what is tetanus shot", "title": "Tetanus"}
+{"topic": "medicine", "angle": "what", "q": "how to tell if you have chickenpox", "title": "Chickenpox"}
+{"topic": "medicine", "angle": "what", "q": "what is the difference between asthma and heart attack", "title": "Angina"}
+{"topic": "medicine", "angle": "what", "q": "how to recognise hypothermia", "title": "Hypothermia"}
+{"topic": "food", "angle": "howto", "q": "how do I cook food in a fire when I have no electricity", "title": "Fire cooking"}
+{"topic": "food", "angle": "howto", "q": "how do I make bread without electricity", "title": "Bread"}
+{"topic": "food", "angle": "howto", "q": "how do I smoke meat for long-term storage", "title": "Smoking (food)"}
+{"topic": "food", "angle": "howto", "q": "how do I preserve meat with salt", "title": "Salting (food)"}
+{"topic": "food", "angle": "howto", "q": "how do I dry food to store it for months", "title": "Drying (food)"}
+{"topic": "food", "angle": "howto", "q": "how do I pickle vegetables in vinegar", "title": "Pickling"}
+{"topic": "food", "angle": "howto", "q": "how do I make jam to preserve fruit", "title": "Jam"}
+{"topic": "food", "angle": "howto", "q": "how do I can food in glass jars", "title": "Canning (food)"}
+{"topic": "food", "angle": "howto", "q": "how do I ferment food to make it last longer", "title": "Fermentation"}
+{"topic": "food", "angle": "howto", "q": "how do I cure meat", "title": "Curing (food preservation)"}
+{"topic": "food", "angle": "howto", "q": "how do I prepare a fish for cooking", "title": "Fish preparation"}
+{"topic": "food", "angle": "howto", "q": "how do I store fish to keep it from spoiling", "title": "Fish preservation"}
+{"topic": "food", "angle": "howto", "q": "how do I make food last when there is no electricity", "title": "Food preservation"}
+{"topic": "food", "angle": "howto", "q": "how do I cook wild game without spoiling it", "title": "Game (food)"}
+{"topic": "food", "angle": "howto", "q": "how do I find edible plants in the countryside", "title": "Foraging"}
+{"topic": "food", "angle": "howto", "q": "how do I know which plants are safe to eat", "title": "Wild plant"}
+{"topic": "food", "angle": "howto", "q": "how do I cook meat so it won't make me sick", "title": "Food safety"}
+{"topic": "food", "angle": "howto", "q": "how do I get enough nutrition in a crisis", "title": "Nutrition"}
+{"topic": "food", "angle": "howto", "q": "how do I skin a deer after a hunt", "title": "Butchery"}
+{"topic": "food", "angle": "howto", "q": "how do I dress a deer in the field", "title": "Field dressing"}
+{"topic": "food", "angle": "howto", "q": "how do I butcher an animal", "title": "Butchery"}
+{"topic": "food", "angle": "howto", "q": "how do I use a meat grinder", "title": "Meat grinder"}
+{"topic": "food", "angle": "howto", "q": "how do I hunt wild animals for food", "title": "Hunting"}
+{"topic": "food", "angle": "howto", "q": "how do I shoot a deer", "title": "Hunting"}
+{"topic": "food", "angle": "howto", "q": "how do I cook a fish on a campfire", "title": "Fish preparation"}
+{"topic": "food", "angle": "symptom", "q": "My fridge stopped working after a storm and I've got milk and cheese that's been sitting out since yesterday - can I eat it?", "title": "Milk"}
+{"topic": "food", "angle": "symptom", "q": "I want to cook dinner without electricity and have a few camping stoves in my shed", "title": "Cooking"}
+{"topic": "food", "angle": "symptom", "q": "How do I keep my potatoes and onions from going bad when I don't have a cellar?", "title": "Food preservation"}
+{"topic": "food", "angle": "symptom", "q": "I'm trying to figure out whether that can of beans from last year is still safe to eat", "title": "Canned food"}
+{"topic": "food", "angle": "symptom", "q": "My neighbour's kid is throwing up and has diarrhoea after eating some leftovers from his mum's pantry", "title": "Foodborne illness"}
+{"topic": "food", "angle": "symptom", "q": "Is it safe to eat chicken that smells a bit off?", "title": "Spoiled meat"}
+{"topic": "food", "angle": "symptom", "q": "I've got too many apples from my garden and no freezer - how do I keep them from rotting?", "title": "Dried fruit"}
+{"topic": "food", "angle": "symptom", "q": "How do I boil water to make it drinkable in case my well gets contaminated?", "title": "Water purification"}
+{"topic": "food", "angle": "symptom", "q": "I'm trying to keep my meat from going bad without refrigeration", "title": "Preservation"}
+{"topic": "food", "angle": "symptom", "q": "We've had to cut back on food for a while and I need to stretch what I have", "title": "Rationing"}
+{"topic": "food", "angle": "symptom", "q": "I want to make soup from scratch using only the dried beans, rice and canned tomatoes I have left", "title": "Soup"}
+{"topic": "food", "angle": "symptom", "q": "I've got a deer I shot and need to know how to cut it up properly so it doesn't waste", "title": "Field dressing"}
+{"topic": "food", "angle": "symptom", "q": "How do I keep my vegetables from going bad without a fridge?", "title": "Vegetable"}
+{"topic": "food", "angle": "symptom", "q": "I'm trying to cook a joint of meat in my oven without electricity", "title": "Roasting"}
+{"topic": "food", "angle": "symptom", "q": "My neighbour has a small pond and wants to know how to catch fish in it", "title": "Angling"}
+{"topic": "food", "angle": "symptom", "q": "How do I make my food last longer when the power might be out for a while?", "title": "Food storage"}
+{"topic": "food", "angle": "symptom", "q": "I've got some bread that's gone mouldy and I want to make sure it's not going to hurt me", "title": "Mold"}
+{"topic": "food", "angle": "symptom", "q": "I want to know how to tell if meat has gone bad before I cook it", "title": "Spoiled meat"}
+{"topic": "food", "angle": "symptom", "q": "I'm trying to figure out how long canned food lasts once the tin is opened", "title": "Canned food"}
+{"topic": "food", "angle": "symptom", "q": "My kids are hungry and I've got only rice and canned beans left", "title": "Rice"}
+{"topic": "food", "angle": "symptom", "q": "I want to make a stew from scratch using only dried ingredients and canned stuff", "title": "Stew"}
+{"topic": "food", "angle": "symptom", "q": "I've got a chicken and want to know how to cut it up properly so I can cook it", "title": "Butchery"}
+{"topic": "food", "angle": "symptom", "q": "I'm trying to keep my milk fresh without a fridge", "title": "Milk"}
+{"topic": "food", "angle": "symptom", "q": "I want to know how to catch fish from a river without any special gear", "title": "Angling"}
+{"topic": "food", "angle": "symptom", "q": "I've got some apples that are about to go bad and want to know how to preserve them", "title": "Dried fruit"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify wild edible mushrooms safely in the UK?", "title": "Wild mushrooms"}
+{"topic": "foraging", "angle": "howto", "q": "How do I harvest and prepare wild garlic before it flowers?", "title": "Allium ursinum"}
+{"topic": "foraging", "angle": "howto", "q": "How do I collect and preserve sloes for making sloe gin?", "title": "Sloes"}
+{"topic": "foraging", "angle": "howto", "q": "How do I make elderflower cordial safely?", "title": "Elderflower cordial"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify and prepare young fiddlehead ferns?", "title": "Fiddlehead"}
+{"topic": "foraging", "angle": "howto", "q": "How do I harvest pine nuts from British pine trees?", "title": "Pine nut"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify poisonous plants that look like edible ones?", "title": "Poisonous plant"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify hemlock and water hemlock in the countryside?", "title": "Water hemlock"}
+{"topic": "foraging", "angle": "howto", "q": "What seaweeds are safe to eat in Britain and how do I prepare them?", "title": "Seaweed"}
+{"topic": "foraging", "angle": "howto", "q": "How do I forage safely in rock pools along the UK coast?", "title": "Rockpooling"}
+{"topic": "foraging", "angle": "howto", "q": "How do I collect and preserve wild blackberries?", "title": "Blackberry"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify and harvest wild nettle tops?", "title": "Nettles"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify foxgloves and avoid accidental poisoning?", "title": "Foxglove"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify deadly nightshade and its poisonous berries?", "title": "Deadly nightshade"}
+{"topic": "foraging", "angle": "howto", "q": "How do I make wild mushroom soup from fresh foraged mushrooms?", "title": "Mushroom soup"}
+{"topic": "foraging", "angle": "howto", "q": "How do I harvest and store wild bilberries safely?", "title": "Bilberry"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify and prepare wild dandelion leaves and roots?", "title": "Dandelion"}
+{"topic": "foraging", "angle": "howto", "q": "How do I make and use wild yarrow for medicinal purposes?", "title": "Yarrow"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify and harvest elder leaves for herbal tea?", "title": "Elder"}
+{"topic": "foraging", "angle": "howto", "q": "How do I prepare acorns to remove tannins and make them edible?", "title": "Acorn"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify wild edible strawberries in the UK?", "title": "Wild strawberry"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify and collect rosehips for vitamin C?", "title": "Rosehip"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify and harvest wild sorrel safely?", "title": "Sorrel"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify and prepare wild horseradish root?", "title": "Wild horseradish"}
+{"topic": "foraging", "angle": "howto", "q": "How do I identify and harvest wild angelica safely?", "title": "Angelica (plant)"}
+{"topic": "foraging", "angle": "howto", "q": "How do I make wild garlic pesto safely?", "title": "Wild garlic"}
+{"topic": "hazards", "angle": "what", "q": "what is carbon monoxide poisoning symptoms", "title": "Carbon monoxide poisoning"}
+{"topic": "hazards", "angle": "what", "q": "what is hydrogen sulphide gas smell", "title": "Hydrogen sulfide"}
+{"topic": "hazards", "angle": "what", "q": "what is flash flooding", "title": "Flash flooding"}
+{"topic": "hazards", "angle": "what", "q": "what is wildfire", "title": "Wildfire"}
+{"topic": "hazards", "angle": "what", "q": "what is a heatwave", "title": "Heatwave"}
+{"topic": "hazards", "angle": "what", "q": "what is carbon monoxide", "title": "Carbon monoxide"}
+{"topic": "hazards", "angle": "what", "q": "what is frostbite", "title": "Frostbite"}
+{"topic": "hazards", "angle": "what", "q": "what is radiation sickness", "title": "Radiation sickness"}
+{"topic": "hazards", "angle": "what", "q": "what is polar vortex", "title": "Polar vortex"}
+{"topic": "hazards", "angle": "what", "q": "what is flood", "title": "Flood"}
+{"topic": "hazards", "angle": "what", "q": "what is pneumonia", "title": "Pneumonia"}
+{"topic": "hazards", "angle": "what", "q": "what is chemical hazard", "title": "Chemical hazard"}
+{"topic": "hazards", "angle": "what", "q": "what is fire", "title": "Fire"}
+{"topic": "hazards", "angle": "what", "q": "what is firefighting", "title": "Firefighting"}
+{"topic": "hazards", "angle": "what", "q": "what is chlorine gas", "title": "Chlorine"}
+{"topic": "hazards", "angle": "what", "q": "what is anthrax", "title": "Anthrax"}
+{"topic": "hazards", "angle": "what", "q": "what is carbon monoxide detector", "title": "Carbon monoxide detector"}
+{"topic": "hazards", "angle": "what", "q": "what is a tornado", "title": "Tornado"}
+{"topic": "hazards", "angle": "what", "q": "what is a blizzard", "title": "Blizzard"}
+{"topic": "hazards", "angle": "what", "q": "what is a nuclear meltdown", "title": "Nuclear meltdown"}
+{"topic": "hazards", "angle": "what", "q": "what is a storm surge", "title": "Storm surge"}
+{"topic": "hazards", "angle": "what", "q": "what is a landslide", "title": "Landslide"}
+{"topic": "hazards", "angle": "what", "q": "what is a blackout", "title": "Power outage"}
+{"topic": "hazards", "angle": "what", "q": "what is a boil-water notice", "title": "Waterborne disease"}
+{"topic": "hazards", "angle": "what", "q": "what is a cold snap", "title": "Cold wave"}
+{"topic": "tools", "angle": "what", "q": "What is a spanner and what types are there?", "title": "Spanner"}
+{"topic": "tools", "angle": "what", "q": "What is the difference between flat-head and Phillips-head screwdrivers and when should I use each?", "title": "Screwdriver"}
+{"topic": "tools", "angle": "what", "q": "What is a hacksaw and how do I use it for cutting metal pipes?", "title": "Hacksaw"}
+{"topic": "tools", "angle": "what", "q": "What is WD-40 used for and what are its alternatives?", "title": "WD-40"}
+{"topic": "tools", "angle": "what", "q": "What is a carburettor and how does it work on a small engine?", "title": "Carburetor"}
+{"topic": "tools", "angle": "what", "q": "What is a sewing machine and what are the main parts?", "title": "Sewing machine"}
+{"topic": "tools", "angle": "what", "q": "What is the chain on a bicycle and how do I fix it if it breaks?", "title": "Bicycle chain"}
+{"topic": "tools", "angle": "what", "q": "What is linseed oil and what is it used for in woodwork and painting?", "title": "Linseed oil"}
+{"topic": "tools", "angle": "what", "q": "What is duct tape and what are its uses in repair and maintenance?", "title": "Duct tape"}
+{"topic": "tools", "angle": "what", "q": "What is a carburettor and how do I adjust it?", "title": "Carburetor"}
+{"topic": "radio", "angle": "howto", "q": "how do I build an emergency shortwave radio from household items", "title": "Crystal radio"}
+{"topic": "radio", "angle": "howto", "q": "how do I make an antenna from wire for a ham radio", "title": "Dipole antenna"}
+{"topic": "radio", "angle": "howto", "q": "how do I send Morse code with a torch", "title": "Morse code"}
+{"topic": "radio", "angle": "howto", "q": "how do I signal for help with a whistle", "title": "Emergency whistle"}
+{"topic": "radio", "angle": "howto", "q": "how do I build a simple battery from household items", "title": "Homemade battery"}
+{"topic": "radio", "angle": "howto", "q": "how do I find a ham radio operator nearby", "title": "Amateur radio operator"}
+{"topic": "radio", "angle": "howto", "q": "how do I build a longwire antenna", "title": "Long wire antenna"}
+{"topic": "radio", "angle": "howto", "q": "how do I listen for emergency broadcasts on a basic radio", "title": "Emergency broadcast system"}
+{"topic": "radio", "angle": "howto", "q": "how do I communicate without electricity in the UK", "title": "Amateur radio in the United Kingdom"}
+{"topic": "radio", "angle": "howto", "q": "how do I make a spark gap transmitter", "title": "Spark-gap transmitter"}
+{"topic": "radio", "angle": "howto", "q": "how do I know if I'm being monitored by the military", "title": "SIGINT"}
+{"topic": "radio", "angle": "howto", "q": "how do I use a ham radio to call for help", "title": "Amateur radio emergency communication"}
+{"topic": "radio", "angle": "howto", "q": "how do I build a crystal detector for shortwave listening", "title": "Crystal radio"}
+{"topic": "radio", "angle": "howto", "q": "how do I identify my location by listening to radio signals", "title": "Radio direction finding"}
+{"topic": "radio", "angle": "howto", "q": "how do I use a car battery to power a radio", "title": "Battery (electricity)"}
+{"topic": "radio", "angle": "howto", "q": "how do I make a simple antenna tuner at home", "title": "Antenna tuner"}
+{"topic": "radio", "angle": "howto", "q": "how do I use a CB radio to reach other people", "title": "Citizens broadband radio service"}
+{"topic": "radio", "angle": "howto", "q": "how do I use a ham radio to contact someone far away", "title": "Shortwave broadcasting"}
+{"topic": "radio", "angle": "howto", "q": "how do I signal with a mirror to rescue helicopters", "title": "Signaling mirror"}
+{"topic": "radio", "angle": "howto", "q": "how do I build a simple FM transmitter", "title": "FM transmitter (homemade)"}
+{"topic": "radio", "angle": "howto", "q": "how do I use a ham radio to communicate during a blackout", "title": "Amateur radio emergency communication"}
+{"topic": "radio", "angle": "howto", "q": "how do I build a long distance radio receiver", "title": "Crystal radio"}
+{"topic": "radio", "angle": "howto", "q": "how do I use Morse code to signal for help", "title": "SOS"}
+{"topic": "radio", "angle": "howto", "q": "how do I build a simple antenna from wire", "title": "Dipole antenna"}
+{"topic": "radio", "angle": "howto", "q": "how do I use a flashlight to send Morse code", "title": "Morse code"}
+{"topic": "radio", "angle": "symptom", "q": "How can I build a simple radio receiver using only parts found around the house?", "title": "Crystal radio"}
+{"topic": "radio", "angle": "symptom", "q": "I need a radio that works without being plugged into the mains electricity. What are my options?", "title": "Battery-powered radio"}
+{"topic": "radio", "angle": "symptom", "q": "The shops are closed so I need to scavenge radio parts from old broken equipment. Where do I start?", "title": "Radio"}
+{"topic": "radio", "angle": "symptom", "q": "My old radio only picks up a few local stations. How do I know what broadcast band types are available and where to find them?", "title": "Broadcast band"}
+{"topic": "radio", "angle": "symptom", "q": "I want to learn how to send and receive Morse code to communicate with people who can't use regular radio.", "title": "Morse code"}
+{"topic": "radio", "angle": "symptom", "q": "Is there a list of emergency radio frequencies in the UK that I should know about?", "title": "Emergency Alert System"}
+{"topic": "radio", "angle": "symptom", "q": "I need to build an antenna from household materials so I can pick up weaker signals further away.", "title": "Antenna (radio)"}
+{"topic": "radio", "angle": "symptom", "q": "My radio picks up a lot of static. How can I amplify a weak signal to make it clearer?", "title": "Amplifier"}
+{"topic": "radio", "angle": "symptom", "q": "Sometimes my radio works fine and then suddenly I get no reception at all. How do I know if someone is transmitting on a nearby frequency?", "title": "Radio frequency interference"}
+{"topic": "radio", "angle": "symptom", "q": "Why can I hear AM broadcasts better than FM in my area, and what's the difference?", "title": "AM broadcasting"}
+{"topic": "radio", "angle": "symptom", "q": "How do I know if a radio is picking up a strong signal or just picking up noise?", "title": "Signal-to-noise ratio"}
+{"topic": "radio", "angle": "symptom", "q": "I hear crackling and buzzing on my radio that isn't from any station. What causes interference?", "title": "Electromagnetic interference"}
+{"topic": "radio", "angle": "symptom", "q": "Can I listen to multiple channels at once on a single radio?", "title": "All-band radio"}
+{"topic": "radio", "angle": "symptom", "q": "How can I power my radio using a car battery?", "title": "Car battery"}
+{"topic": "radio", "angle": "symptom", "q": "Is there a guide to emergency communications that tells me what equipment and frequencies I should use?", "title": "Radio"}
+{"topic": "radio", "angle": "symptom", "q": "How long will a battery-powered radio last on one set of batteries?", "title": "Battery (electricity)"}
+{"topic": "radio", "angle": "symptom", "q": "I want to use amateur radio to connect with other people during the emergency. How do I get started?", "title": "Amateur radio"}
+{"topic": "radio", "angle": "symptom", "q": "What kind of antenna should I build for long-distance radio reception?", "title": "Antenna (radio)"}
+{"topic": "radio", "angle": "symptom", "q": "How can I listen to shortwave radio from other countries?", "title": "Shortwave broadcasting"}
+{"topic": "radio", "angle": "symptom", "q": "I need to signal for help using my radio. What methods work best?", "title": "Morse code"}
+{"topic": "radio", "angle": "symptom", "q": "My radio's tuning is not precise enough. How do I adjust it properly?", "title": "Radio tuner"}
+{"topic": "radio", "angle": "symptom", "q": "I'm interested in detecting signals from space using my radio setup.", "title": "Radio astronomy"}
+{"topic": "radio", "angle": "symptom", "q": "Is there an emergency broadcast system I should be monitoring?", "title": "Emergency Alert System"}
+{"topic": "radio", "angle": "symptom", "q": "What equipment do I need to start using amateur radio to communicate during a crisis?", "title": "Amateur radio"}
+{"topic": "radio", "angle": "symptom", "q": "How can I detect if there is someone transmitting on a nearby frequency?", "title": "Radio receiver"}
+{"topic": "radio", "angle": "what", "q": "What is radio?", "title": "Radio"}
+{"topic": "radio", "angle": "what", "q": "What is amateur radio?", "title": "Amateur radio"}
+{"topic": "radio", "angle": "what", "q": "What is shortwave radio?", "title": "Shortwave radio"}
+{"topic": "radio", "angle": "what", "q": "What is Morse code?", "title": "Morse code"}
+{"topic": "radio", "angle": "what", "q": "What is a cordless telephone?", "title": "Cordless telephone"}
+{"topic": "radio", "angle": "what", "q": "What is a cordless phone?", "title": "Cordless phone"}
+{"topic": "radio", "angle": "what", "q": "What is QWERTY?", "title": "QWERTY"}
+{"topic": "radio", "angle": "what", "q": "What is radio propagation?", "title": "Radio propagation"}
+{"topic": "radio", "angle": "what", "q": "What is radio frequency?", "title": "Radio frequency"}
+{"topic": "radio", "angle": "what", "q": "What is a radio receiver?", "title": "Radio receiver"}
+{"topic": "radio", "angle": "what", "q": "What is a radio transmitter?", "title": "Radio transmitter"}
+{"topic": "radio", "angle": "what", "q": "What is a radio wave?", "title": "Radio wave"}
+{"topic": "radio", "angle": "what", "q": "What is radio frequency identification?", "title": "Radio frequency identification"}
+{"topic": "radio", "angle": "what", "q": "What is an amateur radio operator?", "title": "Amateur radio operator"}
+{"topic": "radio", "angle": "what", "q": "What is the radio spectrum?", "title": "Radio spectrum"}
+{"topic": "radio", "angle": "what", "q": "What is SOS?", "title": "SOS"}
+{"topic": "radio", "angle": "what", "q": "What is an emergency beacon?", "title": "Emergency beacon"}
+{"topic": "radio", "angle": "what", "q": "What is emergency broadcasting?", "title": "Emergency broadcasting"}
+{"topic": "radio", "angle": "what", "q": "What is Morse code in the United Kingdom?", "title": "Morse code in the United Kingdom"}
+{"topic": "radio", "angle": "what", "q": "What is copper wire?", "title": "Copper wire"}
+{"topic": "radio", "angle": "what", "q": "What is a spark-gap transmitter?", "title": "Spark-gap transmitter"}
+{"topic": "radio", "angle": "what", "q": "What is Marconi?", "title": "Marconi"}
+{"topic": "radio", "angle": "what", "q": "What is a wireless telegraphy?", "title": "Wireless telegraphy"}
+{"topic": "radio", "angle": "what", "q": "What is a transceiver?", "title": "Transceiver"}
+{"topic": "radio", "angle": "what", "q": "What is a walkie-talkie?", "title": "Walkie-talkie"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make soap from animal fat and wood ash", "title": "Soap"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I purify drinking water with boiling and sand", "title": "Water purification"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make disinfectant from bleach", "title": "Sodium hypochlorite"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I ferment grain into alcohol without modern equipment", "title": "Ethanol fermentation"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make methanol safely for heating fuel", "title": "Methyl alcohol"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I prevent steel from rusting without paint", "title": "Corrosion"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I extract iron from rust using a chemical reaction", "title": "Thermite"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make vinegar for preserving food", "title": "Acetic acid"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make lye from wood ash for soap making", "title": "Lye"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I extract salt from seawater for preservation", "title": "Salt"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make a battery from copper and zinc", "title": "Voltaic pile"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I purify alcohol by boiling", "title": "Distillation"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make a weak acid to clean metal surfaces", "title": "Hydrochloric acid"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I preserve meat using salt and smoking", "title": "Curing (food preservation)"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make glass from sand and ash", "title": "Glass"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make a strong adhesive from animal glue", "title": "Animal glue"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I remove rust from tools using vinegar", "title": "Rust"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make a basic cleaning solution from ash water", "title": "Potash"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I preserve fish using salt and drying", "title": "Salt-curing"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make a disinfectant from iodine and alcohol", "title": "Iodine tincture"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make lactic acid for pickling vegetables", "title": "Lactic acid"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I prevent copper from turning green with verdigris", "title": "Verdigris"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make a strong base to neutralize acid burns", "title": "Sodium hydroxide"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make a waterproof coating for fabric from wax", "title": "Wax"}
+{"topic": "chemistry", "angle": "howto", "q": "how do I make a weak acid to dissolve mineral buildup", "title": "Acetic acid"}
+{"topic": "chemistry", "angle": "symptom", "q": "I have a pile of wood ashes from the fireplace and want to make soap—what do I do with them?", "title": "Lye"}
+{"topic": "chemistry", "angle": "symptom", "q": "My water tastes funny and I want to make it safe to drink without boiling it all the time", "title": "Water purification"}
+{"topic": "chemistry", "angle": "symptom", "q": "How do I make alcohol from apples or other fruit?", "title": "Ethanol"}
+{"topic": "chemistry", "angle": "symptom", "q": "I want to pickle vegetables and make vinegar at home", "title": "Vinegar"}
+{"topic": "chemistry", "angle": "symptom", "q": "I'm trying to understand what fermentation does and how to control it", "title": "Fermentation"}
+{"topic": "chemistry", "angle": "symptom", "q": "How do you make beer at home without a kit?", "title": "Beer"}
+{"topic": "chemistry", "angle": "symptom", "q": "I want to make my own soap from scratch using animal fat or lard", "title": "Soap"}
+{"topic": "chemistry", "angle": "symptom", "q": "Can I put honey on a cut or wound to help it heal?", "title": "Honey"}
+{"topic": "chemistry", "angle": "symptom", "q": "I need to purify water that's contaminated with chemicals", "title": "Distillation"}
+{"topic": "chemistry", "angle": "symptom", "q": "I have some bleach from cleaning and want to use it to disinfect water", "title": "Sodium hypochlorite"}
+{"topic": "chemistry", "angle": "symptom", "q": "I want to understand beer fermentation better so I can fix a bad batch", "title": "Fermentation (beer)"}
+{"topic": "chemistry", "angle": "symptom", "q": "I'm trying to understand why things burn and what's happening chemically", "title": "Combustion"}
+{"topic": "chemistry", "angle": "symptom", "q": "My iron tools are rusting even when I store them inside", "title": "Corrosion"}
+{"topic": "chemistry", "angle": "symptom", "q": "How can I tell if something is glass or plastic or crystal?", "title": "Glass"}
+{"topic": "chemistry", "angle": "symptom", "q": "I found a shiny piece of metal and need to figure out what kind it is", "title": "Metal"}
+{"topic": "chemistry", "angle": "symptom", "q": "I'm trying to understand acids and bases and how they work", "title": "Acid"}
+{"topic": "chemistry", "angle": "symptom", "q": "I have some washing soda and want to understand what it does", "title": "Sodium carbonate"}
+{"topic": "chemistry", "angle": "symptom", "q": "I'm trying to understand what oxidation means in everyday life", "title": "Oxidation"}
+{"topic": "chemistry", "angle": "symptom", "q": "What's the difference between an alkali and a base?", "title": "Alkali"}
+{"topic": "chemistry", "angle": "symptom", "q": "I have an unknown shiny piece of metal and need to identify it", "title": "Metallic bond"}
+{"topic": "chemistry", "angle": "symptom", "q": "I need to distinguish between different types of metal", "title": "Metallic bond"}
+{"topic": "chemistry", "angle": "symptom", "q": "How can I preserve meat without refrigeration?", "title": "Salt-curing"}
+{"topic": "chemistry", "angle": "symptom", "q": "I want to make a disinfectant from household bleach for cleaning surfaces", "title": "Sodium hypochlorite"}
+{"topic": "chemistry", "angle": "symptom", "q": "I need to use alcohol as an antiseptic but don't know what strength is safe", "title": "Ethanol"}
+{"topic": "chemistry", "angle": "symptom", "q": "I need to identify an unknown material by its smell", "title": "Alkali"}
+{"topic": "chemistry", "angle": "what", "q": "how to make soap with lard and wood ashes", "title": "Soap"}
+{"topic": "chemistry", "angle": "what", "q": "how to extract lye from wood ash", "title": "Potash"}
+{"topic": "chemistry", "angle": "what", "q": "what is the chemical formula for bleach", "title": "Sodium hypochlorite"}
+{"topic": "chemistry", "angle": "what", "q": "how to make chlorine gas from salt", "title": "Chlorine"}
+{"topic": "chemistry", "angle": "what", "q": "how to purify water with chlorine tablets", "title": "Water purification"}
+{"topic": "chemistry", "angle": "what", "q": "how to make alcohol from sugar", "title": "Fermentation"}
+{"topic": "chemistry", "angle": "what", "q": "how to make distilled spirits", "title": "Distillation"}
+{"topic": "chemistry", "angle": "what", "q": "how to purify water by boiling", "title": "Boiling"}
+{"topic": "chemistry", "angle": "what", "q": "how to preserve meat with salt", "title": "Food preservation"}
+{"topic": "chemistry", "angle": "what", "q": "how to preserve vegetables with salt", "title": "Food preservation"}
+{"topic": "chemistry", "angle": "what", "q": "how to make vinegar at home", "title": "Vinegar"}
+{"topic": "chemistry", "angle": "what", "q": "how to make charcoal from wood", "title": "Charcoal"}
+{"topic": "chemistry", "angle": "what", "q": "how to make gunpowder", "title": "Black powder"}
+{"topic": "chemistry", "angle": "what", "q": "what is rust and how to prevent it", "title": "Corrosion"}
+{"topic": "chemistry", "angle": "what", "q": "what is copper used for", "title": "Copper"}
+{"topic": "chemistry", "angle": "what", "q": "what is zinc used for", "title": "Zinc"}
+{"topic": "chemistry", "angle": "what", "q": "how to identify iron ore", "title": "Iron ore"}
+{"topic": "chemistry", "angle": "what", "q": "how to make soap from animal fat", "title": "Soap"}
+{"topic": "chemistry", "angle": "what", "q": "how to make lye from wood ash", "title": "Potash"}
+{"topic": "chemistry", "angle": "what", "q": "how to make distilled alcohol from fermented mash", "title": "Distillation"}
+{"topic": "chemistry", "angle": "what", "q": "how to make charcoal from wood for fuel", "title": "Charcoal"}
+{"topic": "chemistry", "angle": "what", "q": "how to purify water using boiling", "title": "Boiling"}
+{"topic": "chemistry", "angle": "what", "q": "how to preserve food using salt", "title": "Food preservation"}
+{"topic": "chemistry", "angle": "what", "q": "how to make vinegar from fruit", "title": "Vinegar"}
+{"topic": "chemistry", "angle": "what", "q": "how to prevent rust on metal tools", "title": "Corrosion"}
+{"topic": "navigation", "angle": "howto", "q": "How do I find north with a compass?", "title": "Compass"}
+{"topic": "navigation", "angle": "howto", "q": "How do I read a map with contour lines?", "title": "Contour line"}
+{"topic": "navigation", "angle": "howto", "q": "How do I find my direction using the sun?", "title": "Sundial"}
+{"topic": "navigation", "angle": "howto", "q": "How do I find my direction using the stars at night?", "title": "Celestial navigation"}
+{"topic": "navigation", "angle": "howto", "q": "How do I find north without a compass?", "title": "North"}
+{"topic": "navigation", "angle": "howto", "q": "How do I tell which way a tree is pointing using moss?", "title": "Moss"}
+{"topic": "navigation", "angle": "howto", "q": "How do I find my position using the sun's shadow?", "title": "Sundial"}
+{"topic": "navigation", "angle": "howto", "q": "How do I work out my latitude using the stars?", "title": "Celestial navigation"}
+{"topic": "navigation", "angle": "howto", "q": "How do I work out my longitude using the sun?", "title": "Celestial navigation"}
+{"topic": "navigation", "angle": "howto", "q": "How do I read a barometer to predict the weather?", "title": "Barometer"}
+{"topic": "navigation", "angle": "howto", "q": "How do I predict the weather from wind direction?", "title": "Wind direction"}
+{"topic": "navigation", "angle": "howto", "q": "How do I predict the weather from cloud types?", "title": "Cloud classification"}
+{"topic": "navigation", "angle": "howto", "q": "How do I find the tides without an almanac?", "title": "Tide"}
+{"topic": "navigation", "angle": "howto", "q": "How do I find the tides using the moon?", "title": "Tide"}
+{"topic": "navigation", "angle": "howto", "q": "How do I make a map from a sketch of the area?", "title": "Cartography"}
+{"topic": "navigation", "angle": "howto", "q": "How do I use a compass with a map together?", "title": "Compass"}
+{"topic": "navigation", "angle": "howto", "q": "How do I find my way home if I'm lost in the countryside?", "title": "Wilderness survival"}
+{"topic": "navigation", "angle": "howto", "q": "How do I know which way is north from moss on a tree?", "title": "Moss"}
+{"topic": "navigation", "angle": "howto", "q": "How do I navigate by the moon at night?", "title": "Celestial navigation"}
+{"topic": "navigation", "angle": "howto", "q": "How do I know when it's going to rain?", "title": "Meteorology"}
+{"topic": "navigation", "angle": "howto", "q": "How do I read a topographic map?", "title": "Contour line"}
+{"topic": "navigation", "angle": "howto", "q": "How do I find my direction using the moon?", "title": "Celestial navigation"}
+{"topic": "navigation", "angle": "howto", "q": "How do I make a compass from a needle and a magnet?", "title": "Compass"}
+{"topic": "navigation", "angle": "howto", "q": "How do I walk straight without a compass?", "title": "Navigation"}
+{"topic": "navigation", "angle": "howto", "q": "How do I find out the time from the sun's shadow?", "title": "Sundial"}
+{"topic": "navigation", "angle": "symptom", "q": "How do I know which way is north without a compass?", "title": "Compass"}
+{"topic": "navigation", "angle": "symptom", "q": "I've lost my phone and I'm in the countryside - how do I find my way back?", "title": "Orienteering"}
+{"topic": "navigation", "angle": "symptom", "q": "How can I tell if a storm is coming by looking at the clouds?", "title": "Cumulonimbus"}
+{"topic": "navigation", "angle": "symptom", "q": "What do the rings in a tree tell me?", "title": "Tree ring"}
+{"topic": "navigation", "angle": "symptom", "q": "How do I read those lines on a map that show hills and valleys?", "title": "Contour line"}
+{"topic": "navigation", "angle": "symptom", "q": "Can I use the sun to find direction?", "title": "Sunrise and sunset"}
+{"topic": "navigation", "angle": "symptom", "q": "I don't have a compass but I have a watch - how do I tell north?", "title": "Sunrise and sunset"}
+{"topic": "navigation", "angle": "symptom", "q": "How do I know what time it is at night without a clock?", "title": "Moon"}
+{"topic": "navigation", "angle": "symptom", "q": "Is a falling barometer good or bad weather?", "title": "Atmospheric pressure"}
+{"topic": "navigation", "angle": "symptom", "q": "How do I find water if I'm stuck out in the open?", "title": "Water supply"}
+{"topic": "navigation", "angle": "symptom", "q": "What do the stars look like and how do I use them to find my way?", "title": "Star chart"}
+{"topic": "navigation", "angle": "symptom", "q": "I'm on the coast and don't know when the tide will be high", "title": "Tide"}
+{"topic": "navigation", "angle": "symptom", "q": "How can I navigate when there's no GPS or mobile signal?", "title": "Landmark"}
+{"topic": "navigation", "angle": "symptom", "q": "What's the best way to walk across a bog or marshland?", "title": "Peatland"}
+{"topic": "navigation", "angle": "symptom", "q": "How do I know if a river is flowing towards the sea or not?", "title": "River"}
+{"topic": "navigation", "angle": "symptom", "q": "Can moss on trees tell me which way is north?", "title": "Moss"}
+{"topic": "navigation", "angle": "symptom", "q": "How do I tell if the weather is going to get worse soon?", "title": "Cumulonimbus"}
+{"topic": "navigation", "angle": "symptom", "q": "I'm on a hilltop and want to figure out where I am", "title": "Landmark"}
+{"topic": "navigation", "angle": "symptom", "q": "What's a good way to find direction when it's foggy?", "title": "Landmark"}
+{"topic": "navigation", "angle": "symptom", "q": "How do I know which way the wind is coming from?", "title": "Windward and leeward"}
+{"topic": "navigation", "angle": "symptom", "q": "I want to walk across a field but I keep getting turned round", "title": "Landmark"}
+{"topic": "navigation", "angle": "symptom", "q": "What do swallows flying low mean for the weather?", "title": "Bird migration"}
+{"topic": "navigation", "angle": "symptom", "q": "How do I tell when the tide is going out or in?", "title": "Tide"}
+{"topic": "navigation", "angle": "symptom", "q": "How do I read a map with hills and valleys on it?", "title": "Contour line"}
+{"topic": "navigation", "angle": "symptom", "q": "Can I use the moon to find north?", "title": "Moon"}
+{"topic": "navigation", "angle": "what", "q": "what is a compass and how does it work", "title": "Compass"}
+{"topic": "navigation", "angle": "what", "q": "how to use a compass to find north", "title": "Magnetic compass"}
+{"topic": "navigation", "angle": "what", "q": "what are the different types of maps", "title": "Map"}
+{"topic": "navigation", "angle": "what", "q": "how to navigate using the stars at night", "title": "Celestial navigation"}
+{"topic": "navigation", "angle": "what", "q": "what is the Beaufort scale for wind", "title": "Beaufort scale"}
+{"topic": "navigation", "angle": "what", "q": "how to find north with a watch and the sun", "title": "Magnetic declination"}
+{"topic": "navigation", "angle": "what", "q": "what are the different kinds of clouds", "title": "Cloud"}
+{"topic": "navigation", "angle": "what", "q": "how to read a contour line on a topographic map", "title": "Contour line"}
+{"topic": "navigation", "angle": "what", "q": "what is a sextant and how to use it", "title": "Sextant"}
+{"topic": "navigation", "angle": "what", "q": "how to find direction without a compass", "title": "Navigation"}
+{"topic": "navigation", "angle": "what", "q": "what do the phases of the moon tell you", "title": "Lunar phase"}
+{"topic": "navigation", "angle": "what", "q": "how to tell time by the sun", "title": "Sun"}
+{"topic": "navigation", "angle": "what", "q": "what are the different types of tides", "title": "Tide"}
+{"topic": "navigation", "angle": "what", "q": "how to navigate using the position of the sun", "title": "Solar noon"}
+{"topic": "navigation", "angle": "what", "q": "what is triangulation in navigation", "title": "Triangulation"}
+{"topic": "navigation", "angle": "what", "q": "how to read a nautical chart", "title": "Nautical chart"}
+{"topic": "navigation", "angle": "what", "q": "what are the different types of weather", "title": "Weather"}
+{"topic": "navigation", "angle": "what", "q": "how to find your way in fog", "title": "Navigation"}
+{"topic": "navigation", "angle": "what", "q": "what is the difference between true north and magnetic north", "title": "Geographic pole"}
+{"topic": "navigation", "angle": "what", "q": "how to use the moon to find direction", "title": "Lunar phase"}
+{"topic": "navigation", "angle": "what", "q": "what is dead reckoning", "title": "Dead reckoning"}
+{"topic": "navigation", "angle": "what", "q": "how to read a bearing on a map", "title": "Bearing"}
+{"topic": "navigation", "angle": "what", "q": "what are the signs of an approaching storm", "title": "Weather forecast"}
+{"topic": "navigation", "angle": "what", "q": "how to cross a river safely", "title": "River"}
+{"topic": "navigation", "angle": "what", "q": "what is the difference between a map and a chart", "title": "Nautical chart"}
+{"topic": "science", "angle": "howto", "q": "How do I calculate 10% of a number without a calculator", "title": "Percent"}
+{"topic": "science", "angle": "howto", "q": "How do I perform CPR on an adult", "title": "Cardiopulmonary resuscitation"}
+{"topic": "science", "angle": "howto", "q": "How do I make oral rehydration solution for severe diarrhoea", "title": "Oral rehydration therapy"}
+{"topic": "science", "angle": "howto", "q": "How do I identify edible mushrooms in the countryside", "title": "Edible mushroom"}
+{"topic": "science", "angle": "howto", "q": "How do I purify water by boiling it safely", "title": "Water purification"}
+{"topic": "science", "angle": "howto", "q": "How do I measure distance without a measuring tape", "title": "Dead reckoning"}
+{"topic": "science", "angle": "howto", "q": "How do I preserve meat without a refrigerator", "title": "Meat preservation"}
+{"topic": "science", "angle": "howto", "q": "How do I find north using a compass and the sun", "title": "Magnetic declination"}
+{"topic": "science", "angle": "howto", "q": "How do I treat radiation sickness", "title": "Acute radiation syndrome"}
+{"topic": "science", "angle": "howto", "q": "How do I calculate how many calories are in a food", "title": "Calorie"}
+{"topic": "science", "angle": "howto", "q": "How do I convert 5 feet into centimetres", "title": "Foot (unit)"}
+{"topic": "science", "angle": "howto", "q": "How do I explain photosynthesis to a seven year old", "title": "Photosynthesis"}
+{"topic": "science", "angle": "howto", "q": "What does the acronym DNA stand for", "title": "Deoxyribonucleic acid"}
+{"topic": "science", "angle": "howto", "q": "What does the word osmosis mean in science", "title": "Osmosis"}
+{"topic": "science", "angle": "howto", "q": "How do I build a simple water clock", "title": "Clepsydra"}
+{"topic": "science", "angle": "howto", "q": "How do I tell if a mushroom is poisonous", "title": "Mushroom poisoning"}
+{"topic": "science", "angle": "howto", "q": "How do I make penicillin from mould", "title": "Penicillin"}
+{"topic": "science", "angle": "howto", "q": "How do I explain why the sky is blue to a child", "title": "Rayleigh scattering"}
+{"topic": "science", "angle": "howto", "q": "How do I measure water flow in a stream", "title": "Stream gauge"}
+{"topic": "science", "angle": "howto", "q": "How do I explain the water cycle to a child", "title": "Hydrologic cycle"}
+{"topic": "science", "angle": "howto", "q": "How do I convert pints to litres", "title": "Pint"}
+{"topic": "science", "angle": "howto", "q": "How do I explain what ionising radiation is", "title": "Ionizing radiation"}
+{"topic": "science", "angle": "howto", "q": "How do I explain gravity to a child", "title": "Gravity"}
+{"topic": "science", "angle": "howto", "q": "How do I measure 100 ml without a measuring jug", "title": "Metric system"}
+{"topic": "science", "angle": "symptom", "q": "My child has had vomiting and diarrhoea for a day and is getting thirsty and tired; what should I give them to drink?", "title": "Oral rehydration therapy"}
+{"topic": "science", "angle": "symptom", "q": "We have no clean water and the tap supply is suspect; how do we make it safe to drink?", "title": "Water purification"}
+{"topic": "science", "angle": "symptom", "q": "Can I keep eating this bread that's gone fuzzy on top?", "title": "Mold"}
+{"topic": "science", "angle": "symptom", "q": "How do I work out what percentage of my tinned beans are left after cooking some?", "title": "Percentage"}
+{"topic": "science", "angle": "symptom", "q": "My daughter doesn't understand how to split 123 into 4 groups; can you show me how to do long division?", "title": "Long division"}
+{"topic": "science", "angle": "symptom", "q": "My head is aching and my mouth feels dry and my skin is not springy back; what's wrong with me?", "title": "Dehydration"}
+{"topic": "science", "angle": "symptom", "q": "What's the difference between having a stomach bug and food poisoning?", "title": "Foodborne illness"}
+{"topic": "science", "angle": "symptom", "q": "I'm trying to remember why we use Celsius and not Fahrenheit.", "title": "Degree Celsius"}
+{"topic": "science", "angle": "symptom", "q": "How far away is that hill — can I use my hand to work it out?", "title": "Hand (unit of measurement)"}
+{"topic": "science", "angle": "symptom", "q": "My son asks me why water boils at 100 degrees; how do I explain that simply?", "title": "Boiling point"}
+{"topic": "science", "angle": "symptom", "q": "A stranger offers me mushrooms they've found in the woods; how do I tell if they'll kill me?", "title": "Mushroom poisoning"}
+{"topic": "science", "angle": "symptom", "q": "My daughter asks what the difference is between weather and climate.", "title": "Climate"}
+{"topic": "science", "angle": "symptom", "q": "How much sugar would I need to add to a cup of water to make a drink that helps my child's sickness?", "title": "Oral rehydration therapy"}
+{"topic": "science", "angle": "symptom", "q": "Is it true that if you drop food on the floor you can still eat it in five seconds?", "title": "Five-second rule"}
+{"topic": "science", "angle": "symptom", "q": "My little girl wants to know why we use the metric system and what a litre actually is.", "title": "Metric system"}
+{"topic": "science", "angle": "symptom", "q": "I need to work out how much interest my savings account is earning — can you remind me how simple interest works?", "title": "Interest"}
+{"topic": "science", "angle": "symptom", "q": "My daughter asks me to explain what happens when two things hit each other.", "title": "Collision"}
+{"topic": "science", "angle": "symptom", "q": "How do I tell if a fruit is no longer safe to eat?", "title": "Food spoilage"}
+{"topic": "science", "angle": "symptom", "q": "My child asks why the sun is hot and the moon isn't.", "title": "Sun"}
+{"topic": "science", "angle": "symptom", "q": "I've forgotten how to multiply two-digit numbers together by hand.", "title": "Multiplication"}
+{"topic": "science", "angle": "symptom", "q": "My daughter wants to know why it's colder in winter than in summer.", "title": "Season"}
+{"topic": "science", "angle": "symptom", "q": "How do I explain to a seven-year-old why we need to measure things?", "title": "Measurement"}
+{"topic": "science", "angle": "symptom", "q": "My child asks what gravity is and why things fall down.", "title": "Gravity"}
+{"topic": "science", "angle": "symptom", "q": "How do I work out what time it is using the sun and a stick?", "title": "Sundial"}
+{"topic": "science", "angle": "symptom", "q": "My daughter asks why the sky is blue.", "title": "Rayleigh scattering"}
+{"topic": "science", "angle": "what", "q": "what is an astrolabe used for", "title": "Astrolabe"}
+{"topic": "science", "angle": "what", "q": "what is an elm leaf like", "title": "Ulmus"}
+{"topic": "science", "angle": "what", "q": "what is an hourglass", "title": "Sandglass"}
+{"topic": "science", "angle": "what", "q": "what is a compass rose", "title": "Compass rose"}
+{"topic": "science", "angle": "what", "q": "what is a compass used for", "title": "Magnetic compass"}
+{"topic": "science", "angle": "what", "q": "what is a fathom", "title": "Fathom"}
+{"topic": "science", "angle": "what", "q": "what is a fiddlehead fern", "title": "Fiddlehead"}
+{"topic": "science", "angle": "what", "q": "what is a lichen", "title": "Lichen"}
+{"topic": "science", "angle": "what", "q": "what is a moon phase", "title": "Lunar phase"}
+{"topic": "science", "angle": "what", "q": "what is a rabbit like", "title": "Rabbit"}
+{"topic": "science", "angle": "what", "q": "what is a sextant", "title": "Sextant (astronomy)"}
+{"topic": "science", "angle": "what", "q": "what is a spider mite", "title": "Tetranychidae"}
+{"topic": "science", "angle": "what", "q": "what is a yew tree", "title": "Taxus"}
+{"topic": "science", "angle": "what", "q": "what is an astrolabe", "title": "Astrolabe"}
+{"topic": "science", "angle": "what", "q": "what is an elm leaf", "title": "Ulmus"}
+{"topic": "science", "angle": "what", "q": "what is an hourglass used for", "title": "Sandglass"}

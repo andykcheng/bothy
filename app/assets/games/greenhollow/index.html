@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Greenhollow</title>
+<style>
+  :root { color-scheme: dark; --bg: #14170f; --card: #232a1b; --card2: #2e3724; --ink: #eef2e4; --dim: #a3ad92;
+    --green: #8fd16a; --gold: #f2c94c; --red: #ef6b5b; --blue: #6cb8f0; --soil: #4a3826; --soil2: #5d4630; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 15px system-ui, sans-serif;
+    user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; }
+  button { font: inherit; color: inherit; background: var(--card2); border: 0; border-radius: 10px; padding: 10px 12px; }
+  button:disabled { opacity: .4; }
+  button.go { background: #3f7a2a; } button.warn { background: #7a2f2a; } button.gold { background: #7a6420; }
+  .hidden { display: none !important; }
+  #top { padding: 8px 12px 6px; background: #1b2015; border-bottom: 1px solid #0006; }
+  #top .r { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  #top .day { font-weight: 600; } #top .gold { color: var(--gold); font-weight: 600; }
+  .bars { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 6px; font-size: 12px; color: var(--dim); }
+  .bar { height: 7px; background: #0005; border-radius: 4px; overflow: hidden; margin-top: 2px; }
+  .bar i { display: block; height: 100%; border-radius: 4px; transition: width .2s; }
+  #main { flex: 1; overflow-y: auto; padding: 10px 12px 16px; }
+  #tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #1b2015; border-top: 1px solid #0006; }
+  #tabs button { background: none; border-radius: 0; padding: 8px 0 10px; font-size: 13px; color: var(--dim); }
+  #tabs button b { display: block; font-size: 22px; font-weight: 400; }
+  #tabs button.on { color: var(--ink); background: #ffffff0d; }
+  h2 { font-size: 17px; margin: 4px 0 8px; } h3 { font-size: 15px; margin: 14px 0 6px; color: var(--dim); }
+  .grid { display: grid; gap: 6px; }
+  .plot { aspect-ratio: 1; border-radius: 10px; background: var(--soil); position: relative; padding: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; overflow: hidden; }
+  .plot.wild { background: #2f3a22; } .plot.wet { background: var(--soil2); box-shadow: inset 0 0 0 2px #6cb8f055; }
+  .plot .e { font-size: 30px; line-height: 1.1; } .plot .t { color: #e8dcc8; }
+  .plot .pb { position: absolute; left: 6px; right: 6px; bottom: 5px; height: 4px; background: #0006; border-radius: 2px; }
+  .plot .pb i { display: block; height: 100%; background: var(--green); border-radius: 2px; }
+  .plot .tag { position: absolute; top: 3px; right: 5px; font-size: 13px; }
+  .plot.ready { box-shadow: inset 0 0 0 2px var(--gold); }
+  .plot.mon { box-shadow: inset 0 0 0 2px var(--red); animation: shake 1.2s 2; }
+  @keyframes shake { 0%,100% { transform: none; } 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; } .row > button { flex: 1; min-width: 30%; }
+  .card { background: var(--card); border-radius: 12px; padding: 10px 12px; margin: 8px 0; }
+  .card small, .dim { color: var(--dim); }
+  .item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #ffffff10; }
+  .item:last-child { border-bottom: 0; } .item .e { font-size: 24px; width: 30px; text-align: center; }
+  .item .n { flex: 1; } .item .n small { display: block; }
+  .item button { padding: 7px 10px; font-size: 14px; }
+  #ov { position: fixed; inset: 0; background: #000a; display: flex; align-items: flex-end; justify-content: center; z-index: 5; }
+  #sheet { background: #1e2418; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; border-radius: 16px 16px 0 0;
+    padding: 14px 14px 18px; animation: up .18s ease-out; }
+  @keyframes up { from { transform: translateY(40px); opacity: .5; } }
+  #sheet h2 { display: flex; align-items: center; gap: 8px; }
+  .big { font-size: 56px; text-align: center; line-height: 1.2; }
+  .log { font-size: 13px; color: var(--dim); min-height: 54px; margin: 8px 0; }
+  .log div:first-child { color: var(--ink); }
+  .hit { animation: hit .35s; } @keyframes hit { 30% { transform: translateX(-8px) scale(.95); filter: brightness(2); } }
+  .pill { display: inline-block; font-size: 12px; background: #ffffff14; border-radius: 10px; padding: 2px 8px; margin: 2px 2px 0 0; }
+  #menu { position: fixed; inset: 0; background: radial-gradient(circle at 50% 30%, #2c3a1d, #101309); display: flex;
+    flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; z-index: 9; }
+  #menu h1 { font-size: 38px; margin: 0; letter-spacing: 1px; } #menu p { color: var(--dim); max-width: 340px; }
+  #menu button { width: 240px; margin: 6px; padding: 14px; font-size: 17px; }
+  #toast { position: fixed; left: 50%; top: 92px; transform: translateX(-50%); background: #000d; padding: 8px 14px;
+    border-radius: 18px; font-size: 14px; z-index: 8; pointer-events: none; transition: opacity .3s; max-width: 90%; text-align: center; }
+</style>
+</head>
+<body>
+<div id="menu">
+  <div class="big">🌱🏡🌳</div>
+  <h1>Greenhollow</h1>
+  <p>Grow crops through the seasons, drive off the monsters that raid your fields at night, explore the deep woods and help the village.</p>
+  <button class="go" id="cont">Continue</button>
+  <button id="newg">New farm</button>
+  <p id="best" style="font-size:13px"></p>
+</div>
+<div id="top">
+  <div class="r"><span class="day" id="day"></span><span id="wx"></span><span class="gold" id="gold"></span></div>
+  <div class="bars">
+    <div>⚡ <span id="en"></span><div class="bar"><i id="enb" style="background:#f2c94c"></i></div></div>
+    <div>❤️ <span id="hp"></span><div class="bar"><i id="hpb" style="background:#ef6b5b"></i></div></div>
+    <div>⭐ Lv <span id="lv"></span><div class="bar"><i id="xpb" style="background:#8fd16a"></i></div></div>
+  </div>
+</div>
+<div id="main"></div>
+<div id="tabs">
+  <button data-t="farm"><b>🌱</b>Farm</button><button data-t="woods"><b>🌲</b>Woods</button>
+  <button data-t="village"><b>🏘️</b>Village</button><button data-t="pack"><b>🎒</b>Pack</button>
+</div>
+<div id="ov" class="hidden"><div id="sheet"></div></div>
+<div id="toast" style="opacity:0"></div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const chance = p => Math.random() < p;
+const SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'], SEASON_E = ['🌸', '☀️', '🍂', '❄️'], DAYS = 10;
+
+// ---- items ---------------------------------------------------------------------------------------
+// crops: seasons (0-3), days to grow, regrow days (0 = single harvest), seed price, sell price, xp, energy if eaten
+const CROPS = {
+  radish:     { n: 'Radish', e: '🔴', s: [0], d: 3, seed: 10, sell: 24, xp: 3, eat: 2 },
+  potato:     { n: 'Potato', e: '🥔', s: [0], d: 5, seed: 20, sell: 55, xp: 6, eat: 4 },
+  pea:        { n: 'Peas', e: '🫛', s: [0, 1], d: 4, re: 2, seed: 30, sell: 22, xp: 3, eat: 2 },
+  lettuce:    { n: 'Lettuce', e: '🥬', s: [0, 2], d: 3, seed: 14, sell: 30, xp: 3, eat: 2 },
+  strawberry: { n: 'Strawberry', e: '🍓', s: [0, 1], d: 6, re: 2, seed: 80, sell: 38, xp: 5, eat: 3 },
+  tomato:     { n: 'Tomato', e: '🍅', s: [1], d: 6, re: 3, seed: 50, sell: 40, xp: 5, eat: 3 },
+  corn:       { n: 'Sweetcorn', e: '🌽', s: [1], d: 7, seed: 40, sell: 110, xp: 10, eat: 5 },
+  chilli:     { n: 'Chilli', e: '🌶️', s: [1], d: 5, re: 2, seed: 60, sell: 34, xp: 5, eat: 1 },
+  melon:      { n: 'Melon', e: '🍈', s: [1], d: 9, seed: 90, sell: 260, xp: 18, eat: 8 },
+  pumpkin:    { n: 'Pumpkin', e: '🎃', s: [2], d: 9, seed: 80, sell: 240, xp: 18, eat: 7 },
+  carrot:     { n: 'Carrot', e: '🥕', s: [2, 0], d: 4, seed: 20, sell: 48, xp: 5, eat: 3 },
+  leek:       { n: 'Leek', e: '🧅', s: [2, 3], d: 6, seed: 35, sell: 90, xp: 8, eat: 4 },
+  grape:      { n: 'Grapes', e: '🍇', s: [2], d: 7, re: 3, seed: 90, sell: 60, xp: 7, eat: 3 },
+  kale:       { n: 'Kale', e: '🥦', s: [3], d: 4, re: 3, seed: 40, sell: 32, xp: 4, eat: 3 },
+  garlic:     { n: 'Garlic', e: '🧄', s: [3, 0], d: 6, seed: 30, sell: 85, xp: 8, eat: 2 },
+  frostberry: { n: 'Frostberry', e: '🫐', s: [3], d: 8, seed: 120, sell: 320, xp: 20, eat: 6 },
+};
+const FORAGE = {
+  garlicw: { n: 'Wild garlic', e: '🌿', sell: 15, eat: 2 }, morel: { n: 'Morel', e: '🍄', sell: 60, eat: 4 },
+  elder: { n: 'Elderflower', e: '🌼', sell: 20, eat: 1 }, honey: { n: 'Wild honey', e: '🍯', sell: 70, eat: 8 },
+  bramble: { n: 'Blackberries', e: '🫐', sell: 25, eat: 3 }, hazel: { n: 'Hazelnuts', e: '🌰', sell: 30, eat: 3 },
+  apple: { n: 'Crab apple', e: '🍎', sell: 18, eat: 3 }, rosehip: { n: 'Rosehips', e: '🌹', sell: 22, eat: 2 },
+  herb: { n: 'Healing herb', e: '🌱', sell: 25, eat: 1 },
+  egg: { n: 'Egg', e: '🥚', sell: 30, eat: 3 }, milk: { n: 'Milk', e: '🥛', sell: 75, eat: 4 },
+};
+const FORAGE_BY_SEASON = [['garlicw', 'morel', 'herb', 'elder'], ['elder', 'honey', 'herb', 'bramble'],
+  ['bramble', 'hazel', 'apple', 'morel'], ['rosehip', 'hazel', 'herb', 'honey']];
+const MATS = {
+  wood: { n: 'Wood', e: '🪵', sell: 4 }, stone: { n: 'Stone', e: '🪨', sell: 4 }, slime: { n: 'Slime', e: '🟢', sell: 8 },
+  feather: { n: 'Feather', e: '🪶', sell: 8 }, fang: { n: 'Fang', e: '🦷', sell: 15 }, moss: { n: 'Glow moss', e: '✨', sell: 20 },
+  shard: { n: 'Star shard', e: '💎', sell: 150 },
+};
+const FOODS = {
+  soup: { n: 'Leek & potato soup', e: '🍲', en: 15, hp: 10, need: { potato: 1, leek: 1 }, sell: 190 },
+  salad: { n: 'Garden salad', e: '🥗', en: 8, hp: 5, need: { lettuce: 1, radish: 1 }, sell: 70 },
+  pie: { n: 'Bramble pie', e: '🥧', en: 10, hp: 20, need: { bramble: 2, apple: 1 }, sell: 120 },
+  stew: { n: 'Forest stew', e: '🥘', en: 20, hp: 15, atk: 3, need: { morel: 1, carrot: 1, garlic: 1 }, sell: 260 },
+  jam: { n: 'Strawberry jam', e: '🍓', en: 6, hp: 25, need: { strawberry: 2, honey: 1 }, sell: 200 },
+  chowder: { n: 'Corn chowder', e: '🍜', en: 25, hp: 10, need: { corn: 1, potato: 1, pea: 1 }, sell: 280 },
+  tonic: { n: 'Herbal tonic', e: '🧪', en: 0, hp: 35, need: { herb: 2, slime: 1 }, sell: 90 },
+  curry: { n: 'Fire curry', e: '🍛', en: 15, hp: 10, atk: 5, need: { chilli: 2, tomato: 1, garlic: 1 }, sell: 300 },
+  pumpkinpie: { n: 'Pumpkin pie', e: '🥧', en: 30, hp: 30, need: { pumpkin: 1, honey: 1 }, sell: 420 },
+  omelette: { n: 'Chilli omelette', e: '🍳', en: 12, hp: 12, atk: 2, need: { egg: 2, chilli: 1 }, sell: 160 },
+  pancakes: { n: 'Honey pancakes', e: '🥞', en: 25, hp: 20, need: { egg: 1, milk: 1, honey: 1 }, sell: 330 },
+  porridge: { n: 'Hazelnut porridge', e: '🥣', en: 18, hp: 8, need: { milk: 1, hazel: 2 }, sell: 210 },
+};
+const GEAR = {  // weapons (atk) and armour (def)
+  w1: { n: 'Old hoe', e: '⛏️', atk: 2, price: 0, lv: 1 }, w2: { n: 'Bronze sickle', e: '🗡️', atk: 5, price: 400, lv: 3 },
+  w3: { n: 'Iron scythe', e: '⚔️', atk: 9, price: 2000, lv: 6 }, w4: { n: 'Moonsteel blade', e: '🔱', atk: 15, price: 7000, lv: 10 },
+  w5: { n: 'Wyrmbane', e: '🌟', atk: 24, price: 20000, lv: 15 },
+  a1: { n: 'Work shirt', e: '👕', def: 0, price: 0, lv: 1 }, a2: { n: 'Leather jerkin', e: '🦺', def: 2, price: 350, lv: 2 },
+  a3: { n: 'Chainmail', e: '🥋', def: 5, price: 1800, lv: 5 }, a4: { n: 'Oakheart plate', e: '🛡️', def: 9, price: 6000, lv: 9 },
+  a5: { n: 'Starweave mail', e: '🌌', def: 14, price: 18000, lv: 14 },
+};
+const BUILD = {
+  scarecrow: { n: 'Scarecrow', e: '🧑‍🌾', d: 'Each one scares off a quarter of night raids (max 3).', need: { wood: 5, feather: 3 }, max: 3 },
+  sprinkler: { n: 'Sprinkler', e: '⛲', d: 'Waters 4 plots every morning.', need: { stone: 6, slime: 4 }, max: 9 },
+  beehive: { n: 'Beehive', e: '🐝', d: 'Makes a jar of honey every 3 days.', need: { wood: 8, honey: 1 }, max: 2 },
+  coop: { n: 'Hen house', e: '🐔', d: 'Two hens: 2 eggs every morning.', need: { wood: 12 }, gold: 800, max: 3 },
+  barn: { n: 'Cow shed', e: '🐄', d: 'A cow: a pail of milk every morning.', need: { wood: 20, stone: 10 }, gold: 3000, max: 3 },
+  lantern: { n: 'Glow lantern', e: '🏮', d: 'Monsters in the woods are easier to spot: +25% chance to flee.', need: { moss: 4, stone: 4 }, max: 1 },
+};
+const PROJECTS = {  // village restoration: one-off, lasting bonuses
+  well: { n: 'Village well', e: '🪣', d: 'Watering costs half the energy.', gold: 1500, need: { stone: 15 } },
+  mill: { n: 'Windmill', e: '🌬️', d: 'The miller pays 10% more for everything.', gold: 3000, need: { wood: 25, stone: 15 } },
+  inn: { n: 'The Green Man inn', e: '🍺', d: 'A hearty breakfast: +10 max energy.', gold: 6000, need: { wood: 40 } },
+  chapel: { n: 'Chapel bell', e: '🔔', d: 'The bell keeps monsters away: 30% fewer raids.', gold: 9000, need: { shard: 4 } },
+  tower: { n: 'Watchtower', e: '🗼', d: 'Lookouts: another 40% fewer raids, +2 defence.', gold: 15000, need: { fang: 12, feather: 12 } },
+  hall: { n: 'Festival hall', e: '🎪', d: 'Festivals give twice the prizes; +1 skill point.', gold: 25000, need: { moss: 12 } },
+  statue: { n: 'Statue of the Hero', e: '🗽', d: 'The village honours you. Everything sells for 10% more.', gold: 60000, need: { shard: 15 } },
+};
+const PERKS = {
+  thumb: { n: 'Green thumb', e: '🌿', d: '10% chance per plot to grow an extra day overnight.', max: 3 },
+  arm: { n: 'Strong arm', e: '💪', d: '+2 attack.', max: 5 },
+  tough: { n: 'Tough skin', e: '🛡️', d: '+8 max health, +1 defence.', max: 5 },
+  stamina: { n: 'Stamina', e: '⚡', d: '+6 max energy.', max: 5 },
+  haggle: { n: 'Haggler', e: '🪙', d: 'Sell for 10% more.', max: 3 },
+  forager: { n: 'Forager', e: '🧺', d: 'Find more in the woods.', max: 3 },
+  luck: { n: 'Lucky', e: '🍀', d: 'More treasure and rare finds; more critical hits.', max: 3 },
+};
+function info(id) { return CROPS[id] || FORAGE[id] || MATS[id] || FOODS[id] || BUILD[id] || { n: id, e: '❔', sell: 0 }; }
+
+// ---- monsters -----------------------------------------------------------------------------------
+// tier = first glade it appears in. hp/atk scale with glade depth.
+const MONSTERS = [
+  { id: 'slug', n: 'Slugling', e: '🐌', t: 1, hp: 1, atk: .8, drop: 'slime', farm: 1, says: 'It leaves a shiny trail toward your lettuce.' },
+  { id: 'crow', n: 'Crowbeak', e: '🐦', t: 1, hp: .8, atk: 1, drop: 'feather', farm: 1, says: 'It caws and eyes your seeds.' },
+  { id: 'rat', n: 'Thornrat', e: '🐀', t: 2, hp: .9, atk: 1.1, drop: 'fang', farm: 1, says: 'Its back bristles with thorns.' },
+  { id: 'shroom', n: 'Shroomling', e: '🍄', t: 2, hp: 1.2, atk: .8, drop: 'morel', says: 'A puff of spores fills the air.' },
+  { id: 'boar', n: 'Bristleboar', e: '🐗', t: 3, hp: 1.4, atk: 1.2, drop: 'fang', farm: 1, says: 'It snorts and paws the ground.' },
+  { id: 'bat', n: 'Duskbat', e: '🦇', t: 4, hp: .8, atk: 1.3, drop: 'feather', says: 'It swoops out of the dark.' },
+  { id: 'wisp', n: 'Bog wisp', e: '👻', t: 5, hp: 1, atk: 1.4, drop: 'moss', farm: 1, says: 'A cold light drifts between the trees.' },
+  { id: 'spider', n: 'Webspinner', e: '🕷️', t: 6, hp: 1.1, atk: 1.4, drop: 'slime', says: 'Silk glints across the path.' },
+  { id: 'goblin', n: 'Rot goblin', e: '👺', t: 7, hp: 1.3, atk: 1.3, drop: 'shard', farm: 1, says: '“Shiny! Give shiny!”' },
+  { id: 'hound', n: 'Barrow hound', e: '🐺', t: 9, hp: 1.3, atk: 1.5, drop: 'fang', says: 'It howls from the old barrows.' },
+  { id: 'wight', n: 'Barrow wight', e: '🧟', t: 12, hp: 1.5, atk: 1.5, drop: 'moss', says: 'A shape in rusted armour rises.' },
+  { id: 'imp', n: 'Ember imp', e: '😈', t: 15, hp: 1.2, atk: 1.8, drop: 'shard', says: 'Sparks crackle at its fingertips.' },
+];
+const BOSSES = {
+  5: { id: 'golem', n: 'Moss Golem', e: '🗿', hp: 2.5, atk: 1.2, drop: 'moss', says: 'The hillside stands up.' },
+  10: { id: 'queen', n: 'Briar Queen', e: '🥀', hp: 2.8, atk: 1.4, drop: 'shard', says: 'Thorns coil around the glade.' },
+  15: { id: 'troll', n: 'Bridge Troll', e: '🧌', hp: 3.2, atk: 1.5, drop: 'shard', says: '“Toll. Pay toll. Or be toll.”' },
+  20: { id: 'wyrm', n: 'Old Oak Wyrm', e: '🐉', hp: 3.5, atk: 1.6, drop: 'shard', says: 'The roots of the world shift. Something ancient wakes.' },
+};
+function makeMonster(m, depth, boss) {
+  const lv = depth, base = 8 + 5 * lv + lv * lv * .2;
+  return { id: m.id, n: m.n, e: m.e, says: m.says, drop: m.drop, boss: !!boss, lv,
+    max: Math.round(base * m.hp), hp: Math.round(base * m.hp), atk: Math.round((1.5 + 1.1 * lv) * m.atk),
+    xp: Math.round((4 + 3 * lv) * (boss ? 4 : 1)), gold: Math.round((3 + 2 * lv) * (boss ? 5 : 1)) };
+}
+function monsterFor(depth, farm) {
+  const pool = MONSTERS.filter(m => m.t <= depth && (!farm || m.farm));
+  const m = pool[Math.max(0, pool.length - 1 - Math.floor(Math.random() * Math.min(pool.length, 4)))];
+  return makeMonster(m, depth);
+}
+
+// ---- state --------------------------------------------------------------------------------------
+let S = null, tab = 'farm', fight = null;
+const KEY = 'greenhollow.save';
+function newGame() {
+  S = { v: 1, day: 1, season: 0, year: 1, gold: 120, lv: 1, xp: 0, en: 30, hp: 30, perks: {}, pts: 0,
+    weapon: 'w1', armour: 'a1', owned: { w1: 1, a1: 1 }, inv: { radish: 0 }, seeds: { radish: 6, potato: 3 },
+    plots: [], size: 3, built: {}, deepest: 1, glade: 0, steps: 0, wx: 'sun', buff: 0, quests: [], qdone: 0,
+    kills: {}, grown: {}, ach: {}, raid: 0, log: [], honeyT: 0, stats: { days: 0, gold: 0 } };
+  for (let i = 0; i < 25; i++) S.plots.push({ st: i < 9 && [0, 1, 3, 4].includes(i) ? 'till' : 'wild' });
+  makeQuests();
+  save();
+}
+const save = () => S && localStorage.setItem(KEY, JSON.stringify(S));
+const P = id => !!(S.proj || {})[id];
+const maxEn = () => 30 + 2 * (S.lv - 1) + 6 * (S.perks.stamina || 0) + (P('inn') ? 10 : 0);
+const maxHp = () => 30 + 6 * (S.lv - 1) + 8 * (S.perks.tough || 0);
+const atk = () => 2 + Math.floor(S.lv / 2) + GEAR[S.weapon].atk + 2 * (S.perks.arm || 0) + S.buff;
+const def = () => GEAR[S.armour].def + (S.perks.tough || 0) + (P('tower') ? 2 : 0);
+const xpNext = () => Math.round(30 * Math.pow(S.lv, 1.9));
+const plotsIdx = () => { const out = []; for (let r = 0; r < S.size; r++) for (let c = 0; c < S.size; c++) out.push(r * 5 + c); return out; };
+const have = id => (S.inv[id] || 0);
+const add = (id, n = 1) => { S.inv[id] = (S.inv[id] || 0) + n; if (S.inv[id] <= 0) delete S.inv[id]; };
+const sellPrice = id => Math.round((info(id).sell || 0) * (1 + .1 * (S.perks.haggle || 0) + (P('mill') ? .1 : 0) + (P('statue') ? .1 : 0)) * (S.fair ? 1.5 : 1));
+
+function spend(n) {
+  if (S.en < n) { toast('Too tired — eat something or sleep 🌙'); return false; }
+  S.en -= n; return true;
+}
+function gainXp(n) {
+  S.xp += n;
+  let up = false;
+  while (S.xp >= xpNext()) { S.xp -= xpNext(); S.lv++; S.pts++; up = true; }
+  if (up) {
+    S.hp = maxHp(); S.en = Math.max(S.en, Math.round(maxEn() / 2));
+    queue(() => levelUp());
+  }
+}
+function achieve(id, text, reward) {
+  if (S.ach[id]) return;
+  S.ach[id] = 1; S.gold += reward; toast(`🏆 ${text} (+${reward} g)`);
+}
+
+// ---- dialogs ------------------------------------------------------------------------------------
+const Q = [];
+function queue(f) { Q.push(f); if ($('ov').classList.contains('hidden')) next(); }
+function next() { const f = Q.shift(); if (f) f(); else { $('ov').classList.add('hidden'); render(); } }
+function sheet(html, onclick) {
+  delete $('sheet').dataset.lock;
+  $('sheet').innerHTML = html; $('ov').classList.remove('hidden');
+  $('sheet').onclick = e => { const b = e.target.closest('button'); if (b && !b.disabled) onclick(b.dataset.a, b.dataset.v, b); };
+}
+function closeSheet() { next(); }
+$('ov').onclick = e => { if (e.target === $('ov') && !fight && !$('sheet').dataset.lock) closeSheet(); };
+let toastT;
+function toast(t) { const el = $('toast'); el.textContent = t; el.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => el.style.opacity = 0, 2200); }
+function story(e, title, text, buttons = [['ok', 'OK', 'go']], cb = () => closeSheet()) {
+  sheet(`<div class="big">${e}</div><h2 style="justify-content:center">${title}</h2><p class="dim" style="text-align:center">${text}</p>
+    <div class="row">${buttons.map(([a, t, c]) => `<button data-a="${a}" class="${c || ''}">${t}</button>`).join('')}</div>`, (a, v) => cb(a, v));
+}
+
+// ---- farm ---------------------------------------------------------------------------------------
+function plotView(i) {
+  const p = S.plots[i];
+  let e = '', t = '', cls = 'plot', tag = '', bar = '';
+  if (p.mon) { cls += ' mon'; e = p.mon.e; t = p.mon.n; }
+  else if (p.st === 'wild') { cls += ' wild'; e = i % 3 ? '🌾' : '🪨'; t = 'Clear'; }
+  else if (p.crop) {
+    const c = CROPS[p.crop];
+    if (p.dead) { e = '🥀'; t = 'Withered'; }
+    else if (p.g >= c.d) { cls += ' ready'; e = c.e; t = p.giant ? 'GIANT!' : 'Ready'; }
+    else { e = p.g < c.d / 2 ? '🌱' : '🌿'; t = c.n; bar = `<div class="pb"><i style="width:${100 * p.g / c.d}%"></i></div>`; }
+    if (p.wet) cls += ' wet';
+    if (p.star && !p.dead) tag = '⭐';
+  } else { e = ''; t = 'Plant'; if (p.wet) cls += ' wet'; }
+  if (p.fairy) tag = '🧚';
+  return `<button class="${cls}" data-a="plot" data-v="${i}"><span class="tag">${tag}</span><span class="e">${e}</span><span class="t">${t}</span>${bar}</button>`;
+}
+function farmView() {
+  const idx = plotsIdx(), mons = idx.filter(i => S.plots[i].mon).length;
+  const dry = idx.filter(i => S.plots[i].crop && !S.plots[i].wet && !S.plots[i].dead && S.plots[i].g < CROPS[S.plots[i].crop].d).length;
+  const ready = idx.filter(i => readyAt(i)).length;
+  let h = `<h2>Your farm ${S.built.scarecrow ? '🧑‍🌾'.repeat(S.built.scarecrow) : ''}${S.built.sprinkler ? ' ⛲×' + S.built.sprinkler : ''}${S.built.beehive ? ' 🐝×' + S.built.beehive : ''}</h2>`;
+  if (mons) h += `<div class="card" style="border:1px solid #ef6b5b88">⚠️ ${mons === 1 ? 'A monster is' : mons + ' monsters are'} in your fields! Tap to fight before they eat the crops tonight.</div>`;
+  h += `<div class="grid" style="grid-template-columns:repeat(${S.size},1fr)">${idx.map(plotView).join('')}</div>`;
+  h += `<div class="row"><button data-a="waterall" ${dry ? '' : 'disabled'}>💧 Water all (${P('well') ? Math.ceil(dry / 2) : dry} ⚡)</button>
+    <button data-a="harvestall" ${ready ? '' : 'disabled'}>🧺 Harvest all (${ready} ⚡)</button></div>
+    <div class="row"><button data-a="sleep" class="go">🌙 Sleep — end the day</button></div>`;
+  const seeds = Object.entries(S.seeds).filter(([, n]) => n > 0);
+  h += `<h3>Seeds</h3><div>${seeds.length ? seeds.map(([id, n]) => `<span class="pill">${CROPS[id].e} ${CROPS[id].n} ×${n}${CROPS[id].s.includes(S.season) ? '' : ' (out of season)'}</span>`).join('') : '<span class="dim">None — buy some in the village.</span>'}</div>`;
+  return h;
+}
+const readyAt = i => { const p = S.plots[i]; return p.crop && !p.dead && !p.mon && p.g >= CROPS[p.crop].d; };
+function harvest(i, quiet) {
+  const p = S.plots[i], c = CROPS[p.crop], giant = p.giant;
+  let n = 1 + (p.star ? 1 : 0) + (chance(.1 * (S.perks.luck || 0)) ? 1 : 0);
+  if (p.giant) n = 8;
+  add(p.crop, n); gainXp(c.xp * (p.giant ? 3 : 1));
+  S.grown[p.crop] = (S.grown[p.crop] || 0) + n;
+  if (p.giant) achieve('giant', 'Grew a giant crop', 200);
+  const total = Object.values(S.grown).reduce((a, b) => a + b, 0);
+  if (total >= 100) achieve('h100', '100 crops harvested', 300);
+  if (total >= 500) achieve('h500', '500 crops harvested', 1500);
+  if (c.re) { p.g = c.d - c.re; p.star = false; p.giant = false; }
+  else { p.crop = null; p.g = 0; p.star = false; p.giant = false; }
+  if (!quiet) toast(`${c.e} +${n} ${c.n}${giant ? ' (giant!)' : ''}`);
+  questCheck();
+}
+function plotSheet(i) {
+  const p = S.plots[i];
+  if (p.mon) return startFight(p.mon, { farm: i });
+  if (p.st === 'wild') {
+    return sheet(`<h2>🌾 Overgrown ground</h2><p class="dim">Clear the weeds and stones to make a bed. You might find something.</p>
+      <div class="row"><button data-a="clear" class="go">Clear it (3 ⚡)</button><button data-a="x">Cancel</button></div>`, a => {
+      if (a === 'clear' && spend(3)) {
+        p.st = 'till'; gainXp(2);
+        const f = pick(['wood', 'stone', 'stone', 'wood', null, 'herb']); if (f) { add(f); toast(`Found ${info(f).e} ${info(f).n}`); }
+        save();
+      }
+      closeSheet();
+    });
+  }
+  if (p.crop) {
+    const c = CROPS[p.crop];
+    if (p.dead) return sheet(`<h2>🥀 Withered ${c.n}</h2><p class="dim">It wasn't in season. Clear it to plant again.</p>
+      <div class="row"><button data-a="rm" class="go">Clear (free)</button></div>`, () => { p.crop = null; p.dead = false; closeSheet(); });
+    if (p.g >= c.d) { if (spend(1)) harvest(i); save(); return render(); }
+    return sheet(`<h2>${c.e} ${c.n}</h2><p class="dim">Day ${p.g} of ${c.d}. ${p.wet ? 'Watered today 💧' : 'Needs water today.'}
+      ${p.star ? '<br>⭐ Watered every day so far: double harvest.' : ''}${c.re ? `<br>Keeps cropping every ${c.re} days after the first harvest.` : ''}
+      <br>Grows in ${c.s.map(s => SEASONS[s]).join(' and ')}.</p>
+      <div class="row"><button data-a="water" class="go" ${p.wet ? 'disabled' : ''}>💧 Water (1 ⚡)</button><button data-a="rm" class="warn">Dig up</button></div>`, a => {
+      if (a === 'water' && spend(1)) { p.wet = true; save(); }
+      if (a === 'rm') return story('⛏️', `Dig up the ${c.n}?`, 'The plant will be lost.', [['yes', 'Dig up', 'warn'], ['no', 'Keep it']], b => {
+        if (b === 'yes') { p.crop = null; p.g = 0; p.star = false; save(); }
+        closeSheet();
+      });
+      closeSheet();
+    });
+  }
+  const seeds = Object.entries(S.seeds).filter(([id, n]) => n > 0 && CROPS[id].s.includes(S.season));
+  sheet(`<h2>🟫 Empty bed</h2>${seeds.length ? '<p class="dim">Plant (1 ⚡):</p>' : '<p class="dim">No seeds for this season. The village shop sells them.</p>'}
+    ${seeds.map(([id, n]) => { const c = CROPS[id]; return `<div class="item"><span class="e">${c.e}</span><span class="n">${c.n} ×${n}<small>${c.d} days${c.re ? `, then every ${c.re}` : ''} · sells ${sellPrice(id)} g</small></span><button data-a="plant" data-v="${id}" class="go">Plant</button></div>`; }).join('')}
+    ${seeds.length > 0 ? `<div class="row"><button data-a="fill" data-v="${seeds[0][0]}">Plant ${CROPS[seeds[0][0]].e} in every empty bed</button></div>` : ''}
+    <div class="row"><button data-a="x">Close</button></div>`, (a, v) => {
+    if (a === 'plant' && spend(1)) { S.seeds[v]--; Object.assign(p, { crop: v, g: 0, star: true, wet: p.wet || S.wx === 'rain' }); gainXp(1); save(); }
+    if (a === 'fill') {
+      for (const j of plotsIdx()) {
+        const q = S.plots[j];
+        if (q.st === 'till' && !q.crop && !q.mon && S.seeds[v] > 0 && S.en >= 1) { S.en--; S.seeds[v]--; Object.assign(q, { crop: v, g: 0, star: true, wet: q.wet || S.wx === 'rain' }); gainXp(1); }
+      }
+      save();
+    }
+    closeSheet();
+  });
+}
+
+// ---- night / morning ------------------------------------------------------------------------------
+function sleep() {
+  const ev = [];
+  // growth
+  for (const i of plotsIdx()) {
+    const p = S.plots[i];
+    if (p.mon) {  // an unbeaten monster eats the crop
+      if (p.crop && !p.dead) ev.push(`${p.mon.e} The ${p.mon.n} ate your ${CROPS[p.crop].n}.`);
+      else ev.push(`${p.mon.e} The ${p.mon.n} trampled the bed and wandered off.`);
+      p.crop = null; p.g = 0; p.mon = null; p.star = false;
+    }
+    if (p.crop && !p.dead) {
+      const c = CROPS[p.crop];
+      if (p.g < c.d) {
+        if (p.wet) {
+          p.g += 1 + (S.moon ? 1 : 0) + (chance(.1 * (S.perks.thumb || 0)) ? 1 : 0) + (p.fairy ? 1 : 0);
+          if (p.g >= c.d) { p.g = c.d; if (!c.re && chance(.04 + (S.perks.luck || 0) * .02) && p.star) p.giant = true; }
+        } else p.star = false;
+      }
+    }
+    p.wet = false; p.fairy = false;
+  }
+  S.moon = false; S.fair = false; S.buff = 0;
+  // calendar
+  S.day++; S.stats.days++;
+  if (S.day > DAYS) {
+    S.day = 1; S.season = (S.season + 1) % 4; if (S.season === 0) S.year++;
+    let lost = 0;
+    for (const i of plotsIdx()) { const p = S.plots[i]; if (p.crop && !CROPS[p.crop].s.includes(S.season)) { p.dead = true; lost++; } }
+    ev.push(`${SEASON_E[S.season]} ${SEASONS[S.season]} has arrived${S.season === 0 ? ` — year ${S.year}!` : '.'} New seeds are in the shop.${lost ? ` ${lost} out-of-season crop${lost > 1 ? 's' : ''} withered.` : ''}`);
+    makeQuests();
+    if (S.season === 0 && S.year === 2) achieve('year', 'Survived a whole year', 500);
+  }
+  // weather
+  const r = Math.random(), sn = S.season;
+  S.wx = r < [.3, .15, .3, .2][sn] ? 'rain' : r < [.35, .2, .4, .3][sn] ? 'storm' : r < [.45, .28, .55, .45][sn] ? 'fog' : (sn === 3 && r < .7 ? 'snow' : 'sun');
+  if (S.wx === 'rain' || S.wx === 'storm') for (const i of plotsIdx()) S.plots[i].wet = true;
+  // sprinklers water the driest planted beds
+  let spr = 4 * (S.built.sprinkler || 0);
+  for (const i of plotsIdx()) { const p = S.plots[i]; if (spr > 0 && p.crop && !p.wet && !p.dead) { p.wet = true; spr--; } }
+  // animals
+  if (S.built.coop) { add('egg', 2 * S.built.coop); ev.push(`🐔 The hens laid ${2 * S.built.coop} eggs.`); }
+  if (S.built.barn) { add('milk', S.built.barn); ev.push(`🐄 ${S.built.barn} pail${S.built.barn > 1 ? 's' : ''} of milk.`); }
+  // beehives
+  if (S.built.beehive && ++S.honeyT >= 3) { S.honeyT = 0; add('honey', S.built.beehive); ev.push(`🐝 Your bees made ${S.built.beehive} jar${S.built.beehive > 1 ? 's' : ''} of honey.`); }
+  // night raid
+  const crops = plotsIdx().filter(i => S.plots[i].crop && !S.plots[i].dead);
+  let raidP = (S.wx === 'fog' ? .55 : .35) * Math.pow(.75, S.built.scarecrow || 0) * (S.stats.days < 3 ? 0 : 1) * (P('chapel') ? .7 : 1) * (P('tower') ? .6 : 1);
+  let raids = 0;
+  while (crops.length && chance(raidP) && raids < 1 + Math.floor(S.lv / 4)) {
+    const i = crops.splice(Math.floor(Math.random() * crops.length), 1)[0];
+    S.plots[i].mon = monsterFor(Math.max(1, Math.min(S.deepest, Math.ceil(S.lv * .8))), true);
+    raids++; raidP *= .6;
+  }
+  if (raids) ev.push(`🌙 ${raids === 1 ? 'Something' : raids + ' things'} crept into your fields in the night…`);
+  // storm damage
+  if (S.wx === 'storm' && crops.length && chance(.3)) {
+    const i = pick(crops); const p = S.plots[i];
+    if (!p.mon) { ev.push(`⛈️ The storm flattened your ${CROPS[p.crop].n}.`); p.crop = null; p.g = 0; }
+  }
+  S.en = maxEn(); S.hp = maxHp();
+  S.glade = 0; S.steps = 0;
+  const later = [];
+  morningEvent(ev, later);
+  save();
+  queue(() => story(SEASON_E[S.season], `${SEASONS[S.season]}, day ${S.day}`, (ev.length ? ev : ['A quiet night. The farm is waiting.']).map(x => `<div style="margin:6px 0">${x}</div>`).join(''), [['ok', 'Good morning ☀️', 'go']]));
+  later.forEach(queue);
+}
+function morningEvent(ev, later) {
+  const d = S.day;
+  if (d === 5) {  // festival in the middle of each season
+    const f = [
+      ['🥚', 'Spring Egg Hunt', 'Painted eggs are hidden all over the village green. Pick a bush!', 'egg'],
+      ['🎡', 'Summer Fair', 'The fair is in town: the village buys everything for 50% more today.', 'fair'],
+      ['🌕', 'Harvest Moon', 'A huge orange moon tonight: watered crops grow two days instead of one.', 'moon'],
+      ['🎄', 'Midwinter Feast', 'The village shares the feast. Everyone brings a gift.', 'feast']][S.season];
+    if (f[3] === 'fair') S.fair = true;
+    if (f[3] === 'moon') S.moon = true;
+    later.push(() => festival(f));
+    return;
+  }
+  const r = Math.random();
+  if (r < .1) later.push(() => merchant());
+  else if (r < .17) {
+    const f = pick(plotsIdx().filter(i => S.plots[i].crop && !S.plots[i].dead));
+    if (f !== undefined) { S.plots[f].fairy = true; ev.push('🧚 A fairy ring appeared around one of your crops. It will grow faster tonight.'); }
+  } else if (r < .23) { const g = R(20, 60) * S.lv; S.gold += g; ev.push(`💌 Old Mabel left a basket on your step: ${g} g and a slice of cake. Restored energy!`); S.en = maxEn() + 10; }
+  else if (r < .28) { add('shard'); ev.push('🌠 A shooting star landed by the well. You found a 💎 Star shard!'); }
+  else if (r < .33) { const s = pick(Object.keys(CROPS).filter(c => CROPS[c].s.includes(S.season))); S.seeds[s] = (S.seeds[s] || 0) + 3; ev.push(`🧑‍🌾 Your neighbour had spare seeds: 3 × ${CROPS[s].e} ${CROPS[s].n}.`); }
+  else if (r < .37 && S.lv >= 3) later.push(() => lostChild());
+  else if (r < .41) { S.buff = 3; ev.push('🔔 The shrine bell rang at dawn. You feel strong today (+3 attack).'); }
+}
+function festival([e, title, text, kind]) {
+  if (kind === 'egg') return story(e, title, text, [['a', '🌳'], ['b', '🌲'], ['c', '🌴']], () => {
+    const prize = pick([['gold', R(80, 200) * S.lv], ['shard', 1], ['seed', 'strawberry'], ['gold', 50]]);
+    if (P('hall')) prize[1] *= 2;
+    if (prize[0] === 'gold') { S.gold += prize[1]; story('🥚', 'You found an egg!', `It was full of coins: ${prize[1]} g.`); }
+    else if (prize[0] === 'shard') { add('shard'); story('💎', 'A golden egg!', 'Inside was a Star shard.'); }
+    else { S.seeds.strawberry = (S.seeds.strawberry || 0) + 5; story('🍓', 'A seed egg!', '5 strawberry seeds.'); }
+    achieve('egg', 'Went egg hunting', 50); save();
+  });
+  if (kind === 'feast') {
+    const f = pick(Object.keys(FOODS)), n = P('hall') ? 4 : 2; add(f, n); S.en = maxEn() + 20;
+    return story(e, title, `${text}<br><br>You were given ${n} × ${FOODS[f].e} ${FOODS[f].n}, and the feast left you full of energy.`);
+  }
+  story(e, title, text);
+}
+function merchant() {
+  const stock = [];
+  const offSeason = Object.keys(CROPS).filter(c => !CROPS[c].s.includes(S.season));
+  stock.push(['seed', pick(Object.keys(CROPS).filter(c => CROPS[c].s.includes(S.season) && CROPS[c].seed >= 60)) || 'potato', 5]);
+  stock.push(['mat', pick(['slime', 'feather', 'stone', 'wood', 'moss']), 5]);
+  stock.push(['food', pick(Object.keys(FOODS)), 1]);
+  const price = ([k, id, n]) => k === 'seed' ? Math.round(CROPS[id].seed * n * .7) : k === 'mat' ? (MATS[id].sell * 3 + 5) * n : Math.round(FOODS[id].sell * .9);
+  const show = () => sheet(`<div class="big">🧙</div><h2>Wandering merchant</h2><p class="dim">“Rare wares, fair prices, never twice the same!”</p>
+    ${stock.map((s, i) => { const it = s[0] === 'seed' ? CROPS[s[1]] : info(s[1]); return `<div class="item"><span class="e">${it.e}</span><span class="n">${s[2]} × ${it.n}${s[0] === 'seed' ? ' seeds' : ''}<small>${price(s)} g</small></span><button data-a="buy" data-v="${i}" ${S.gold < price(s) || s.sold ? 'disabled' : ''}>${s.sold ? 'Sold' : 'Buy'}</button></div>`; }).join('')}
+    <div class="row"><button data-a="x" class="go">Farewell</button></div>`, (a, v) => {
+    if (a === 'buy') {
+      const s = stock[v]; S.gold -= price(s); s.sold = true;
+      if (s[0] === 'seed') S.seeds[s[1]] = (S.seeds[s[1]] || 0) + s[2]; else add(s[1], s[2]);
+      save(); return show();
+    }
+    closeSheet();
+  });
+  show();
+}
+function lostChild() {
+  story('🧒', 'A lost child', '“I followed a rabbit into the woods and now I can’t find my way home!” Walk them back to the village? (5 ⚡)',
+    [['help', 'Help (5 ⚡)', 'go'], ['no', 'Not now']], a => {
+      if (a === 'help' && S.en >= 5) {
+        S.en -= 5; const g = 40 * S.lv; S.gold += g; gainXp(15 * S.lv);
+        return story('🤗', 'Home safe', `The baker thanks you with ${g} g and a warm loaf. (+${15 * S.lv} xp)`);
+      }
+      closeSheet();
+    });
+}
+function levelUp() {
+  const opts = Object.entries(PERKS).filter(([id, p]) => (S.perks[id] || 0) < p.max);
+  sheet(`<div class="big">⭐</div><h2 style="justify-content:center">Level ${S.lv}!</h2><p class="dim" style="text-align:center">Max energy and health went up. Choose a skill:</p>
+    ${opts.map(([id, p]) => `<div class="item"><span class="e">${p.e}</span><span class="n">${p.n} ${'●'.repeat(S.perks[id] || 0)}${'○'.repeat(p.max - (S.perks[id] || 0))}<small>${p.d}</small></span><button data-a="perk" data-v="${id}" class="go">Pick</button></div>`).join('')}`, (a, v) => {
+    if (a === 'perk') {
+      S.perks[v] = (S.perks[v] || 0) + 1; S.pts--;
+      if (v === 'stamina') S.en += 6; if (v === 'tough') S.hp += 8;
+      delete $('sheet').dataset.lock; save(); closeSheet();
+    }
+  });
+  $('sheet').dataset.lock = 1;
+  if (!opts.length) { S.pts--; delete $('sheet').dataset.lock; closeSheet(); }
+}
+
+// ---- combat -------------------------------------------------------------------------------------
+function startFight(m, where) {
+  fight = { m, where, log: [`${m.says}`] };
+  showFight();
+}
+function showFight(anim) {
+  const f = fight, m = f.m;
+  const foods = Object.keys(FOODS).filter(id => have(id)).concat(Object.keys(FORAGE).filter(id => have(id))).concat(Object.keys(CROPS).filter(id => have(id)));
+  sheet(`<div class="big ${anim === 'm' ? 'hit' : ''}" id="mon">${m.e}</div>
+    <h2 style="justify-content:center">${m.n} <span class="pill">Lv ${m.lv}${m.boss ? ' · BOSS' : ''}</span></h2>
+    <div class="bar" style="height:10px"><i style="width:${100 * m.hp / m.max}%;background:#ef6b5b"></i></div>
+    <div class="log">${f.log.slice(-3).reverse().map(l => `<div>${l}</div>`).join('')}</div>
+    <div class="dim" style="font-size:13px">You: ❤️ ${S.hp}/${maxHp()} · ⚡ ${S.en} · ⚔️ ${atk()} · 🛡️ ${def()}</div>
+    <div class="bar ${anim === 'p' ? 'hit' : ''}" style="height:10px;margin-bottom:8px"><i style="width:${100 * S.hp / maxHp()}%;background:#8fd16a"></i></div>
+    <div class="row"><button data-a="hit" class="go">⚔️ Attack</button><button data-a="heavy" ${S.en < 3 ? 'disabled' : ''}>💥 Power strike (3 ⚡)</button></div>
+    <div class="row"><button data-a="eat" ${foods.length ? '' : 'disabled'}>🍲 Eat</button><button data-a="flee" ${f.where.farm !== undefined ? 'disabled' : ''}>🏃 Run</button></div>`, (a) => act(a, foods));
+  $('sheet').dataset.lock = 1;
+}
+function act(a, foods) {
+  const f = fight, m = f.m;
+  if (a === 'eat') return eatMenu(foods, () => { monsterTurn(); checkEnd() || showFight('p'); });
+  if (a === 'flee') {
+    if (chance(.55 + (S.built.lantern ? .25 : 0))) { f.log.push('You got away!'); endFight('fled'); return; }
+    f.log.push('You stumble — no escape!'); monsterTurn(); return checkEnd() || showFight('p');
+  }
+  let dmg = atk() + R(0, 2), crit = chance(.08 + .05 * (S.perks.luck || 0));
+  if (a === 'heavy') { if (!spend(3)) return; if (chance(.8)) dmg = Math.round(dmg * 2.2); else { dmg = 0; } }
+  if (crit && dmg) dmg *= 2;
+  m.hp = Math.max(0, m.hp - dmg);
+  f.log.push(dmg ? `You hit for ${dmg}${crit ? ' — critical!' : ''}.` : 'You swing wide and miss!');
+  if (m.hp <= 0) return endFight('win');
+  monsterTurn();
+  checkEnd() || showFight('m');
+}
+function monsterTurn() {
+  const f = fight, m = f.m;
+  if (chance(.12)) { f.log.push(`The ${m.n} misses.`); return; }
+  const d = Math.max(1, m.atk + R(-1, 2) - def());
+  S.hp = Math.max(0, S.hp - d); f.log.push(`The ${m.n} hits you for ${d}.`);
+}
+function checkEnd() { if (S.hp <= 0) { endFight('lose'); return true; } return false; }
+function endFight(res) {
+  const f = fight, m = f.m; fight = null; delete $('sheet').dataset.lock;
+  if (f.where.farm !== undefined && res !== 'lose') S.plots[f.where.farm].mon = null;
+  if (res === 'win') {
+    S.kills[m.id] = (S.kills[m.id] || 0) + 1;
+    const g = m.gold + R(0, m.lv * 2); S.gold += g;
+    const drops = [m.drop]; if (chance(.4 + .1 * (S.perks.luck || 0))) drops.push(m.drop); if (chance(.05 + .03 * (S.perks.luck || 0))) drops.push('shard');
+    drops.forEach(d => add(d));
+    const k = Object.values(S.kills).reduce((a, b) => a + b, 0);
+    if (k >= 1) achieve('k1', 'First monster beaten', 25); if (k >= 50) achieve('k50', '50 monsters beaten', 500); if (k >= 250) achieve('k250', '250 monsters beaten', 3000);
+    let extra = '';
+    if (m.boss) { S.bossDone = S.bossDone || {}; S.bossDone[m.lv] = 1; achieve('boss' + m.lv, `Defeated the ${m.n}`, 300 * m.lv); extra = '<br><b>The way deeper into the woods is open.</b>'; if (m.id === 'wyrm') extra += '<br>🌳 The ancient wyrm sleeps again. Greenhollow is safe — but the woods go on…'; }
+    questCheck(); save();
+    gainXp(m.xp);
+    story(m.e, `${m.n} defeated!`, `+${m.xp} xp · +${g} g · ${drops.map(d => info(d).e + ' ' + info(d).n).join(', ')}${extra}`, [['ok', 'Onward', 'go']]);
+  } else if (res === 'lose') {
+    const lost = Math.floor(S.gold * .1); S.gold -= lost; S.hp = Math.round(maxHp() / 3); S.en = Math.min(S.en, 5); S.glade = 0;
+    if (f.where.farm !== undefined) { S.plots[f.where.farm].crop = null; S.plots[f.where.farm].mon = null; }
+    save(); tab = 'farm';
+    story('🤕', 'You were knocked out', `You wake up at home, bruised. You dropped ${lost} g${f.where.farm !== undefined ? ' and the monster ate the crop' : ''}. Better gear or a hearty meal would help.`);
+  } else { save(); closeSheet(); }
+}
+function eatMenu(list, after) {
+  const all = list.length ? list : Object.keys(S.inv).filter(id => (FOODS[id] || FORAGE[id] || CROPS[id]));
+  sheet(`<h2>🍲 Eat</h2>${all.map(id => { const it = info(id), en = it.en ?? it.eat ?? 0, hp = it.hp ?? Math.round((it.eat || 0) * 1.5); return `<div class="item"><span class="e">${it.e}</span><span class="n">${it.n} ×${have(id)}<small>${en ? '+' + en + ' ⚡ ' : ''}${hp ? '+' + hp + ' ❤️' : ''}${it.atk ? ' · +' + it.atk + ' attack today' : ''}</small></span><button data-a="eat" data-v="${id}" class="go">Eat</button></div>`; }).join('') || '<p class="dim">Nothing to eat.</p>'}
+    <div class="row"><button data-a="x">Back</button></div>`, (a, v) => {
+    if (a === 'eat') {
+      const it = info(v); add(v, -1);
+      S.en = Math.min(maxEn() + 20, S.en + (it.en ?? it.eat ?? 0)); S.hp = Math.min(maxHp(), S.hp + (it.hp ?? Math.round((it.eat || 0) * 1.5)));
+      if (it.atk) S.buff = Math.max(S.buff, it.atk);
+      if (fight) fight.log.push(`You eat the ${it.n}. Delicious!`);
+      save(); return after ? after() : (render(), eatMenu([], null));
+    }
+    if (fight) showFight(); else closeSheet();
+  });
+}
+
+// ---- woods --------------------------------------------------------------------------------------
+const GLADE_NAMES = ['Bluebell Edge', 'Mossy Hollow', 'Fernwood', 'Whispering Pines', 'Golem Hill', 'Brambledeep', 'Misty Mire', 'Old Barrows',
+  'Spider Thicket', 'Briar Court', 'Hollow Oaks', 'Stone Circle', 'Wightwood', 'Ember Glen', 'Troll Bridge', 'Moonwell', 'Ashen Grove', 'Rootdeep', 'Elder Heart', 'Wyrm’s Roots'];
+const gladeName = d => (GLADE_NAMES[d - 1] || `Deep Wood ${d}`);
+const STEPS = 5;
+function woodsView() {
+  if (!S.glade) {
+    const starts = [1]; for (let d = 6; d <= S.deepest; d += 5) starts.push(d);
+    if (!starts.includes(S.deepest)) starts.push(S.deepest);
+    return `<h2>🌲 The Deep Woods</h2><p class="dim">Each step costs 3 ⚡. Forage, find treasure, fight monsters. Clear ${STEPS} steps to go deeper; a guardian waits every 5th glade.</p>
+      <div class="card">Deepest glade reached: <b>${S.deepest}</b> · ${gladeName(S.deepest)}</div>
+      ${starts.map(d => `<div class="row"><button data-a="enter" data-v="${d}" class="${d === starts[starts.length - 1] ? 'go' : ''}">Enter at glade ${d}: ${gladeName(d)}</button></div>`).join('')}
+      <h3>Bestiary</h3><div>${MONSTERS.concat(Object.values(BOSSES)).map(m => S.kills[m.id] ? `<span class="pill">${m.e} ${m.n} ×${S.kills[m.id]}</span>` : `<span class="pill">❔ ???</span>`).join('')}</div>`;
+  }
+  const boss = BOSSES[S.glade] && !(S.bossDone || {})[S.glade];
+  return `<h2>🌲 Glade ${S.glade}: ${gladeName(S.glade)}</h2>
+    <div class="bar" style="height:8px"><i style="width:${100 * S.steps / STEPS}%;background:#8fd16a"></i></div>
+    <p class="dim">${S.steps < STEPS ? `Step ${S.steps} of ${STEPS}.` : boss ? 'A guardian blocks the way deeper.' : 'You found the path deeper.'}</p>
+    <div class="card" id="wlog">${S.wlog || 'The trees close in behind you. Birdsong, then silence.'}</div>
+    ${S.steps < STEPS ? `<div class="row"><button data-a="step" class="go">👣 Explore (3 ⚡)</button></div>`
+      : boss ? `<div class="row"><button data-a="boss" class="warn">${BOSSES[S.glade].e} Face the ${BOSSES[S.glade].n}</button></div>`
+      : `<div class="row"><button data-a="deeper" class="go">⬇️ Go deeper to glade ${S.glade + 1}</button></div>`}
+    <div class="row"><button data-a="eatw">🍲 Eat</button><button data-a="leave">🏡 Go home</button></div>`;
+}
+function step() {
+  if (!spend(3)) return;
+  S.steps++;
+  const d = S.glade, r = Math.random(), luck = S.perks.luck || 0, forager = S.perks.forager || 0;
+  if (r < .42) { const m = monsterFor(d); S.wlog = `${m.e} A wild ${m.n} appears!`; save(); render(); return startFight(m, { woods: d }); }
+  if (r < .72) {
+    const f = pick(FORAGE_BY_SEASON[S.season]), n = 1 + R(0, forager) + (chance(.3) ? 1 : 0); add(f, n);
+    const mat = pick(['wood', 'stone', 'wood', null]); if (mat) add(mat, R(1, 2));
+    S.wlog = `🧺 You forage ${n} × ${info(f).e} ${info(f).n}${mat ? ` and some ${info(mat).e} ${info(mat).n.toLowerCase()}` : ''}.`; gainXp(2 + d);
+  } else if (r < .8 + luck * .03) {
+    const g = R(8, 20) * d * (1 + luck * .3) | 0; S.gold += g;
+    const extra = chance(.2 + luck * .1) ? (add('shard'), ' and a 💎 star shard') : chance(.5) ? (add('moss', 2), ' and 2 ✨ glow moss') : '';
+    S.wlog = `🧰 A mossy chest! ${g} g${extra}.`; achieve('chest', 'Opened a treasure chest', 40);
+  } else if (r < .86) {
+    S.hp = maxHp(); S.wlog = '⛲ A clear spring. You drink and feel completely healed.';
+  } else if (r < .91) {
+    S.wlog = '🦌 A white stag watches you, then bounds away. You feel lucky (+10 xp).'; gainXp(10);
+  } else if (r < .95) {
+    const s = pick(Object.keys(CROPS).filter(c => CROPS[c].s.includes(S.season))); S.seeds[s] = (S.seeds[s] || 0) + 2;
+    S.wlog = `🌱 Wild ${CROPS[s].n.toLowerCase()} gone to seed: +2 ${CROPS[s].e} seeds.`;
+  } else {
+    const d2 = R(2, 4 + d); S.hp = Math.max(1, S.hp - d2); S.wlog = `🪤 An old snare! You lose ${d2} ❤️.`;
+  }
+  questCheck(); save(); render();
+}
+
+// ---- village ------------------------------------------------------------------------------------
+let vtab = 'shop';
+function villageView() {
+  const t = (id, n) => `<button data-a="vtab" data-v="${id}" class="${vtab === id ? 'go' : ''}">${n}</button>`;
+  let h = `<div class="row">${t('shop', '🌱 Seeds')}${t('market', '🪙 Sell')}${t('smith', '⚒️ Smith')}${t('board', '📜 Quests')}${t('rebuild', '🏗️ Rebuild')}</div>`;
+  if (vtab === 'shop') {
+    h += `<p class="dim">${SEASON_E[S.season]} ${SEASONS[S.season]} seeds. Crops wither when the season changes, unless they grow in the next one too.</p>`;
+    for (const [id, c] of Object.entries(CROPS)) {
+      if (!c.s.includes(S.season)) continue;
+      h += `<div class="item"><span class="e">${c.e}</span><span class="n">${c.n} <span class="dim">×${S.seeds[id] || 0}</span><small>${c.d} days${c.re ? `, regrows in ${c.re}` : ''} · sells ${sellPrice(id)} g</small></span>
+        <button data-a="seed" data-v="${id}" ${S.gold < c.seed ? 'disabled' : ''}>${c.seed} g</button><button data-a="seed5" data-v="${id}" ${S.gold < c.seed * 5 ? 'disabled' : ''}>×5</button></div>`;
+    }
+    h += `<h3>Building supplies</h3>`;
+    for (const [id, pr] of [['wood', 12], ['stone', 15]]) h += `<div class="item"><span class="e">${MATS[id].e}</span><span class="n">${MATS[id].n} <span class="dim">×${have(id)}</span></span><button data-a="mat" data-v="${id}" ${S.gold < pr * 5 ? 'disabled' : ''}>5 for ${pr * 5} g</button></div>`;
+    h += `<h3>Land</h3>`;
+    h += S.size < 5 ? `<div class="item"><span class="e">🗺️</span><span class="n">Buy more land<small>Grow the farm to ${S.size + 1}×${S.size + 1}</small></span><button data-a="land" ${S.gold < landPrice() ? 'disabled' : ''}>${landPrice()} g</button></div>` : '<p class="dim">Your farm is as big as it gets.</p>';
+  } else if (vtab === 'market') {
+    const items = Object.keys(S.inv).filter(id => S.inv[id] > 0 && sellPrice(id) > 0);
+    h += S.fair ? '<div class="card">🎡 Summer Fair: +50% today!</div>' : '';
+    const total = items.filter(id => CROPS[id]).reduce((a, id) => a + sellPrice(id) * have(id), 0);
+    h += `<div class="row"><button data-a="sellcrops" class="gold" ${total ? '' : 'disabled'}>Sell all crops (${total} g)</button></div>`;
+    h += items.map(id => { const it = info(id); return `<div class="item"><span class="e">${it.e}</span><span class="n">${it.n} ×${have(id)}<small>${sellPrice(id)} g each</small></span><button data-a="sell1" data-v="${id}">Sell 1</button><button data-a="sellall" data-v="${id}">All</button></div>`; }).join('') || '<p class="dim">Nothing to sell yet.</p>';
+  } else if (vtab === 'smith') {
+    h += `<p class="dim">Weapon: ${GEAR[S.weapon].e} ${GEAR[S.weapon].n} (⚔️ ${atk()}) · Armour: ${GEAR[S.armour].e} ${GEAR[S.armour].n} (🛡️ ${def()})</p>`;
+    for (const [id, g] of Object.entries(GEAR)) {
+      if (!g.price) continue;
+      const own = S.owned[id], cur = S.weapon === id || S.armour === id;
+      h += `<div class="item"><span class="e">${g.e}</span><span class="n">${g.n}<small>${g.atk ? '⚔️ +' + g.atk : '🛡️ +' + g.def} · needs level ${g.lv}</small></span>
+        ${cur ? '<span class="pill">Equipped</span>' : own ? `<button data-a="equip" data-v="${id}">Equip</button>` : `<button data-a="gear" data-v="${id}" ${S.gold < g.price || S.lv < g.lv ? 'disabled' : ''}>${g.price} g</button>`}</div>`;
+    }
+    h += `<h3>Build for the farm</h3>`;
+    for (const [id, b] of Object.entries(BUILD)) {
+      const n = S.built[id] || 0, ok = n < b.max && S.gold >= (b.gold || 0) && Object.entries(b.need).every(([k, q]) => have(k) >= q);
+      h += `<div class="item"><span class="e">${b.e}</span><span class="n">${b.n} ${n ? `<span class="dim">×${n}</span>` : ''}<small>${b.d}<br>Needs ${b.gold ? `🪙${b.gold} ` : ''}${Object.entries(b.need).map(([k, q]) => `${info(k).e}${q} <span style="color:${have(k) >= q ? '#8fd16a' : '#ef6b5b'}">(${have(k)})</span>`).join(' ')}</small></span><button data-a="build" data-v="${id}" ${ok ? '' : 'disabled'}>${n >= b.max ? 'Max' : 'Build'}</button></div>`;
+    }
+  } else if (vtab === 'rebuild') {
+    const done = Object.keys(S.proj || {}).length;
+    h += `<p class="dim">Greenhollow fell on hard times when the woods grew wild. Fund the repairs (${done}/${Object.keys(PROJECTS).length}).</p>`;
+    for (const [id, pr] of Object.entries(PROJECTS)) {
+      const ok = S.gold >= pr.gold && Object.entries(pr.need).every(([k, q]) => have(k) >= q);
+      h += `<div class="item"><span class="e">${pr.e}</span><span class="n">${pr.n}<small>${pr.d}<br>🪙${pr.gold} ${Object.entries(pr.need).map(([k, q]) => `${info(k).e}${q} <span style="color:${have(k) >= q ? '#8fd16a' : '#ef6b5b'}">(${have(k)})</span>`).join(' ')}</small></span>
+        ${P(id) ? '<span class="pill">✔ Built</span>' : `<button data-a="project" data-v="${id}" ${ok ? 'class="go"' : 'disabled'}>Fund</button>`}</div>`;
+    }
+  } else {
+    h += `<p class="dim">The notice board. New requests every season. Completed: ${S.qdone}</p>`;
+    h += S.quests.map((q, i) => `<div class="card"><b>${q.who}</b>: ${q.text}<br><small>${questProgress(q)} · reward ${q.gold} g, ${q.xp} xp</small>
+      ${q.done ? '<span class="pill">✔ Done</span>' : questReady(q) ? `<div class="row"><button data-a="claim" data-v="${i}" class="go">Hand in</button></div>` : ''}</div>`).join('');
+  }
+  return h;
+}
+const landPrice = () => [0, 0, 0, 1000, 4000][S.size];
+const NAMES = ['Old Mabel', 'Farmer Giles', 'The Baker', 'Little Pip', 'Granny Wren', 'The Innkeeper', 'Sister Hazel', 'Captain Thorne'];
+function makeQuests() {
+  const qs = [], sc = Object.keys(CROPS).filter(c => CROPS[c].s.includes(S.season));
+  const c = pick(sc), n = R(3, 6);
+  qs.push({ k: 'deliver', id: c, n, who: pick(NAMES), text: `“Could you bring me ${n} ${CROPS[c].e} ${CROPS[c].n.toLowerCase()}?”`, gold: Math.round(CROPS[c].sell * n * 1.6), xp: CROPS[c].xp * n });
+  const pool = MONSTERS.filter(m => m.t <= Math.max(1, S.deepest)), m = pick(pool), k = R(2, 4);
+  qs.push({ k: 'kill', id: m.id, n: k, base: S.kills[m.id] || 0, who: 'Captain Thorne', text: `“${m.e} ${m.n}s are bothering travellers. Drive off ${k} of them.”`, gold: 30 * k * m.t + 40, xp: 12 * k * m.t });
+  const f = pick(FORAGE_BY_SEASON[S.season]), fn = R(2, 5);
+  qs.push({ k: 'deliver', id: f, n: fn, who: pick(NAMES), text: `“I’m making something special. Find me ${fn} ${FORAGE[f].e} ${FORAGE[f].n.toLowerCase()} in the woods?”`, gold: FORAGE[f].sell * fn * 2 + 30, xp: 8 * fn });
+  if (S.deepest >= 3 || S.year > 1) { const d = S.deepest + 2; qs.push({ k: 'deep', n: d, who: 'Sister Hazel', text: `“Something stirs in the deep woods. Reach glade ${d} and tell me what you see.”`, gold: 60 * d, xp: 25 * d }); }
+  S.quests = qs;
+}
+const questProgress = q => q.k === 'deliver' ? `You have ${Math.min(have(q.id), q.n)}/${q.n}` : q.k === 'kill' ? `${Math.min((S.kills[q.id] || 0) - q.base, q.n)}/${q.n} beaten` : `Deepest: ${S.deepest}/${q.n}`;
+const questReady = q => !q.done && (q.k === 'deliver' ? have(q.id) >= q.n : q.k === 'kill' ? (S.kills[q.id] || 0) - q.base >= q.n : S.deepest >= q.n);
+function questCheck() { if (S.quests.some(questReady) && !S.qnote) { S.qnote = 1; toast('📜 A quest is ready to hand in at the village'); } }
+
+// ---- pack ---------------------------------------------------------------------------------------
+function packView() {
+  let h = `<h2>🎒 ${S.lv >= 15 ? 'Hero' : S.lv >= 8 ? 'Warden' : S.lv >= 4 ? 'Farmer' : 'Newcomer'} of Greenhollow</h2>
+    <div class="card">⚔️ Attack ${atk()} · 🛡️ Defence ${def()} · ❤️ ${maxHp()} · ⚡ ${maxEn()}<br><small>${GEAR[S.weapon].e} ${GEAR[S.weapon].n} · ${GEAR[S.armour].e} ${GEAR[S.armour].n}</small><br>
+    ${Object.entries(S.perks).map(([id, n]) => `<span class="pill">${PERKS[id].e} ${PERKS[id].n} ${n}</span>`).join('')}</div>
+    <div class="row"><button data-a="eatp">🍲 Eat something</button><button data-a="cook" class="go">🍳 Cook</button></div>`;
+  const groups = [['Harvest', CROPS], ['Forage', FORAGE], ['Meals', FOODS], ['Materials', MATS]];
+  for (const [title, set] of groups) {
+    const ids = Object.keys(set).filter(id => have(id));
+    if (ids.length) h += `<h3>${title}</h3><div>${ids.map(id => `<span class="pill">${set[id].e} ${set[id].n} ×${have(id)}</span>`).join('')}</div>`;
+  }
+  const ach = { k1: 'First monster', egg: 'Egg hunter', chest: 'Treasure!', giant: 'Giant crop', h100: '100 harvested', h500: '500 harvested', year: 'One year on', k50: '50 monsters', k250: '250 monsters', boss5: 'Moss Golem', boss10: 'Briar Queen', boss15: 'Bridge Troll', boss20: 'Old Oak Wyrm', rich: '10,000 g', cook: 'First meal', q10: '10 quests', land5: 'Full-size farm', village: 'Village restored' };
+  h += `<h3>Achievements ${Object.keys(S.ach).length}/${Object.keys(ach).length}</h3><div>${Object.entries(ach).map(([id, n]) => `<span class="pill" style="opacity:${S.ach[id] ? 1 : .35}">🏆 ${n}</span>`).join('')}</div>
+    <h3>Farm</h3><p class="dim">Year ${S.year}, ${S.stats.days} days farmed. Quests done: ${S.qdone}.</p>
+    <div class="row"><button data-a="quit" class="warn">Main menu</button></div>`;
+  return h;
+}
+function cookView() {
+  sheet(`<h2>🍳 Kitchen</h2><p class="dim">Meals restore far more than raw food, give buffs, and sell well.</p>
+    ${Object.entries(FOODS).map(([id, f]) => { const ok = Object.entries(f.need).every(([k, q]) => have(k) >= q);
+      return `<div class="item"><span class="e">${f.e}</span><span class="n">${f.n}<small>${Object.entries(f.need).map(([k, q]) => `${info(k).e}${q}<span style="color:${have(k) >= q ? '#8fd16a' : '#ef6b5b'}">(${have(k)})</span>`).join(' ')} → ${f.en ? '+' + f.en + '⚡ ' : ''}+${f.hp}❤️${f.atk ? ' +' + f.atk + '⚔️' : ''}</small></span><button data-a="cook" data-v="${id}" ${ok ? '' : 'disabled'}>Cook</button></div>`; }).join('')}
+    <div class="row"><button data-a="x">Close</button></div>`, (a, v) => {
+    if (a === 'cook') { for (const [k, q] of Object.entries(FOODS[v].need)) add(k, -q); add(v); gainXp(10); achieve('cook', 'Cooked a meal', 30); save(); toast(`${FOODS[v].e} Cooked ${FOODS[v].n}`); return cookView(); }
+    closeSheet();
+  });
+}
+
+// ---- render & input -------------------------------------------------------------------------------
+const WX = { sun: '☀️ Sunny', rain: '🌧️ Rain (crops watered)', storm: '⛈️ Storm', fog: '🌫️ Fog (more raids)', snow: '🌨️ Snow' };
+function render() {
+  if (!S) return;
+  $('day').textContent = `${SEASON_E[S.season]} ${SEASONS[S.season]} ${S.day}/${DAYS} · Y${S.year}`;
+  $('wx').textContent = WX[S.wx].split(' (')[0]; $('gold').textContent = `🪙 ${S.gold}`;
+  $('en').textContent = `${S.en}/${maxEn()}`; $('enb').style.width = Math.min(100, 100 * S.en / maxEn()) + '%';
+  $('hp').textContent = `${S.hp}/${maxHp()}`; $('hpb').style.width = 100 * S.hp / maxHp() + '%';
+  $('lv').textContent = S.lv; $('xpb').style.width = 100 * S.xp / xpNext() + '%';
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === tab));
+  $('main').innerHTML = tab === 'farm' ? farmView() : tab === 'woods' ? woodsView() : tab === 'village' ? villageView() : packView();
+  if (S.gold >= 10000) achieve('rich', 'Saved 10,000 g', 0);
+}
+$('tabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; if (S.glade && b.dataset.t !== 'woods') { toast('Head home from the woods first 🏡'); return; } tab = b.dataset.t; render(); $('main').scrollTop = 0; };
+$('main').onclick = e => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  const a = b.dataset.a, v = b.dataset.v;
+  if (a === 'plot') return plotSheet(+v);
+  if (a === 'waterall') { let n = 0; for (const i of plotsIdx()) { const p = S.plots[i]; if (p.crop && !p.wet && !p.dead && p.g < CROPS[p.crop].d && S.en >= 1) { if (!P('well') || n % 2 === 0) S.en--; n++; p.wet = true; } } if (S.en < 1) toast('Out of energy'); }
+  if (a === 'harvestall') { let n = 0; for (const i of plotsIdx()) if (readyAt(i) && S.en >= 1) { S.en--; harvest(i, true); n++; } toast(`🧺 Harvested ${n} bed${n > 1 ? 's' : ''}`); }
+  if (a === 'sleep') {
+    const mons = plotsIdx().filter(i => S.plots[i].mon).length;
+    if (!mons) return sleep();
+    return story('🌙', 'Monsters in the fields!', 'If you sleep now they will eat those crops.', [['yes', 'Sleep anyway', 'warn'], ['no', 'Go and fight', 'go']], b => { if (b === 'yes') { Q.length = 0; $('ov').classList.add('hidden'); sleep(); } else closeSheet(); });
+  }
+  if (a === 'enter') { S.glade = +v; S.steps = 0; S.wlog = ''; S.deepest = Math.max(S.deepest, S.glade); }
+  if (a === 'step') return step();
+  if (a === 'boss') { const B = BOSSES[S.glade]; return startFight(makeMonster(B, S.glade, true), { woods: S.glade }); }
+  if (a === 'deeper') { S.glade++; S.steps = 0; S.deepest = Math.max(S.deepest, S.glade); S.wlog = `You push on into ${gladeName(S.glade)}.`; questCheck(); }
+  if (a === 'leave') { S.glade = 0; tab = 'farm'; }
+  if (a === 'eatw' || a === 'eatp') return eatMenu([], null);
+  if (a === 'cook') return cookView();
+  if (a === 'vtab') vtab = v;
+  if (a === 'seed' || a === 'seed5') { const n = a === 'seed' ? 1 : 5; S.gold -= CROPS[v].seed * n; S.seeds[v] = (S.seeds[v] || 0) + n; }
+  if (a === 'mat') { S.gold -= (v === 'wood' ? 12 : 15) * 5; add(v, 5); }
+  if (a === 'land') { S.gold -= landPrice(); S.size++; if (S.size === 5) achieve('land5', 'Full-size farm', 0); }
+  if (a === 'sell1' || a === 'sellall') { const n = a === 'sell1' ? 1 : have(v); S.gold += sellPrice(v) * n; S.stats.gold += sellPrice(v) * n; add(v, -n); }
+  if (a === 'sellcrops') { for (const id of Object.keys(S.inv)) if (CROPS[id]) { const g = sellPrice(id) * have(id); S.gold += g; S.stats.gold += g; delete S.inv[id]; } toast('🪙 Sold!'); }
+  if (a === 'gear') { const g = GEAR[v]; S.gold -= g.price; S.owned[v] = 1; if (g.atk !== undefined) S.weapon = v; else S.armour = v; toast(`${g.e} ${g.n} equipped`); }
+  if (a === 'equip') { if (GEAR[v].atk !== undefined) S.weapon = v; else S.armour = v; }
+  if (a === 'build') { const b = BUILD[v]; S.gold -= b.gold || 0; for (const [k, q] of Object.entries(b.need)) add(k, -q); S.built[v] = (S.built[v] || 0) + 1; toast(`${b.e} Built a ${b.n}!`); }
+  if (a === 'claim') { const q = S.quests[v]; if (q.k === 'deliver') add(q.id, -q.n); q.done = true; S.gold += q.gold; S.qdone++; S.qnote = 0; toast(`📜 +${q.gold} g`); gainXp(q.xp); if (S.qdone >= 10) achieve('q10', 'Ten quests done', 400); }
+  if (a === 'project') {
+    const pr = PROJECTS[v]; S.gold -= pr.gold; for (const [k, q] of Object.entries(pr.need)) add(k, -q);
+    S.proj = S.proj || {}; S.proj[v] = 1;
+    if (v === 'inn') S.en += 10;
+    if (Object.keys(S.proj).length === Object.keys(PROJECTS).length) achieve('village', 'Restored Greenhollow', 5000);
+    save(); render();
+    queue(() => story(pr.e, `${pr.n} restored!`, `The villagers cheer. ${pr.d}`));
+    if (v === 'hall') { S.pts++; queue(() => levelUp()); }
+    return;
+  }
+  if (a === 'quit') { save(); S = null; showMenu(); return; }
+  save(); render();
+};
+function showMenu() {
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(KEY)); } catch (e) { }
+  $('cont').classList.toggle('hidden', !saved);
+  $('best').textContent = saved ? `Saved farm: level ${saved.lv}, year ${saved.year} ${SEASONS[saved.season]}, glade ${saved.deepest}` : '';
+  $('menu').classList.remove('hidden');
+}
+$('cont').onclick = () => { S = JSON.parse(localStorage.getItem(KEY)); $('menu').classList.add('hidden'); tab = S.glade ? 'woods' : 'farm'; render(); };
+$('newg').onclick = () => {
+  if (localStorage.getItem(KEY) && $('newg').dataset.sure !== '1') { $('newg').dataset.sure = '1'; $('newg').textContent = 'Tap again: lose saved farm'; return; }
+  $('newg').dataset.sure = ''; $('newg').textContent = 'New farm';
+  newGame(); $('menu').classList.add('hidden'); tab = 'farm'; render();
+  queue(() => story('🏡', 'Welcome to Greenhollow', 'Your great-aunt left you her little farm at the edge of the deep woods. Tap a bed to plant, water every day for a double harvest, then sleep 🌙 to grow. Monsters come out at night — keep your crops safe, and grow strong.', [['ok', 'Let’s farm!', 'go']]));
+};
+document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+addEventListener('sp-pause', save);
+showMenu();
+</script>
+</body>
+</html>

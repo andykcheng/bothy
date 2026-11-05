@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Sea Battle</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0b1d33; color: #e6f0ff; font: 15px system-ui, sans-serif; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+  body { display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 520px; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; }
+  button { font: inherit; color: inherit; background: #ffffff1c; border: 0; border-radius: 10px; padding: 9px 14px; }
+  button.go { background: #2b7de0; }
+  .lbl { font-size: 13px; color: #9bb3d1; margin: 6px 0 4px; }
+  .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; background: #123a63; padding: 3px; border-radius: 6px; }
+  #enemy { width: min(94vw, 440px); } #mine { width: min(60vw, 260px); }
+  .c { aspect-ratio: 1; background: #1c5a96; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  #enemy .c { font-size: 16px; }
+  .c.ship { background: #8a99ab; } .c.miss { background: #164a7c; } .c.miss::after { content: '•'; color: #9bc; }
+  .c.hit { background: #e0472f; } .c.hit::after { content: '✕'; color: #fff; font-weight: 700; }
+  .c.sunk { background: #6b1d12; } .c.sunk::after { content: '✕'; color: #f99; }
+  #status { min-height: 24px; font-weight: 600; margin: 6px; text-align: center; }
+  #fleet { font-size: 12px; color: #9bb3d1; margin-top: 4px; text-align: center; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header><button id="newg">New</button><b>⚓ Sea Battle</b><span id="score" style="font-size:13px"></span></header>
+<div id="setup" style="text-align:center">
+  <div class="lbl">Your fleet: 5 ships. Shuffle until you like it, then start.</div>
+  <div class="grid" id="place" style="width:min(80vw,340px);margin:auto"></div>
+  <div style="margin:10px"><button id="shuffle">🔀 Shuffle</button> <button id="level">Computer: Smart</button> <button id="start" class="go">Start</button></div>
+</div>
+<div id="game" class="hidden" style="display:flex;flex-direction:column;align-items:center">
+  <div id="status"></div>
+  <div class="lbl">Enemy waters — tap to fire</div>
+  <div class="grid" id="enemy"></div>
+  <div id="fleet"></div>
+  <div class="lbl">Your fleet</div>
+  <div class="grid" id="mine"></div>
+</div>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const SHIPS = [['Carrier', 5], ['Battleship', 4], ['Cruiser', 3], ['Submarine', 3], ['Destroyer', 2]];
+let me, ai, turn, over, smart = localStorage.getItem('sea.level') !== 'easy', score = JSON.parse(localStorage.getItem('sea.score') || '{"w":0,"l":0}');
+let aiTargets = [], aiShots;
+function fleet() {
+  const b = { ships: [], cell: Array(100).fill(-1), shot: Array(100).fill(0) };
+  for (const [n, len] of SHIPS) {
+    while (true) {
+      const h = Math.random() < .5, r = Math.floor(Math.random() * (h ? 10 : 11 - len)), c = Math.floor(Math.random() * (h ? 11 - len : 10));
+      const cells = [...Array(len)].map((_, k) => (r + (h ? 0 : k)) * 10 + c + (h ? k : 0));
+      // no touching other ships (including diagonally)
+      if (cells.every(i => { const rr = i / 10 | 0, cc = i % 10; for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const r2 = rr + dr, c2 = cc + dc; if (r2 >= 0 && r2 < 10 && c2 >= 0 && c2 < 10 && b.cell[r2 * 10 + c2] >= 0) return false; } return true; })) {
+        cells.forEach(i => b.cell[i] = b.ships.length); b.ships.push({ n, len, cells, hits: 0 }); break;
+      }
+    }
+  }
+  return b;
+}
+function grid(el, n, cls) { el.innerHTML = ''; for (let i = 0; i < 100; i++) { const d = document.createElement('div'); d.className = 'c'; d.dataset.i = i; el.appendChild(d); } }
+grid($('place')); grid($('enemy')); grid($('mine'));
+function showPlace() { [...$('place').children].forEach((d, i) => d.className = 'c' + (me.cell[i] >= 0 ? ' ship' : '')); }
+function setup() { me = fleet(); showPlace(); $('setup').classList.remove('hidden'); $('game').classList.add('hidden'); $('level').textContent = `Computer: ${smart ? 'Smart' : 'Easy'}`; $('score').textContent = `Won ${score.w} · Lost ${score.l}`; }
+$('shuffle').onclick = () => { me = fleet(); showPlace(); };
+$('level').onclick = () => { smart = !smart; localStorage.setItem('sea.level', smart ? 'smart' : 'easy'); $('level').textContent = `Computer: ${smart ? 'Smart' : 'Easy'}`; };
+$('newg').onclick = setup;
+$('start').onclick = () => { ai = fleet(); turn = 0; over = false; aiTargets = []; aiShots = 0; $('setup').classList.add('hidden'); $('game').classList.remove('hidden'); $('status').textContent = 'Your shot. Tap enemy waters.'; draw(); };
+function fire(b, i) {  // returns 'miss' | 'hit' | ship name if sunk
+  b.shot[i] = 1; const s = b.cell[i]; if (s < 0) return 'miss';
+  const ship = b.ships[s]; ship.hits++; return ship.hits === ship.len ? ship.n : 'hit';
+}
+const sunk = (b, i) => b.cell[i] >= 0 && b.ships[b.cell[i]].hits === b.ships[b.cell[i]].len;
+const allSunk = b => b.ships.every(s => s.hits === s.len);
+function draw() {
+  [...$('enemy').children].forEach((d, i) => d.className = 'c' + (ai.shot[i] ? (ai.cell[i] < 0 ? ' miss' : sunk(ai, i) ? ' sunk' : ' hit') : '') + (over && ai.cell[i] >= 0 && !ai.shot[i] ? ' ship' : ''));
+  [...$('mine').children].forEach((d, i) => d.className = 'c' + (me.shot[i] ? (me.cell[i] < 0 ? ' miss' : sunk(me, i) ? ' sunk' : ' hit') : me.cell[i] >= 0 ? ' ship' : ''));
+  $('fleet').innerHTML = 'Enemy: ' + ai.ships.map(s => s.hits === s.len ? `<s>${s.n}</s>` : s.n).join(' · ');
+}
+$('enemy').onclick = e => {
+  const d = e.target.closest('.c'); if (!d || over || turn !== 0) return; const i = +d.dataset.i; if (ai.shot[i]) return;
+  const r = fire(ai, i);
+  $('status').textContent = r === 'miss' ? 'Splash — a miss.' : r === 'hit' ? '💥 Hit! Fire again.' : `💥 You sank their ${r}! Fire again.`;
+  if (allSunk(ai)) { over = true; score.w++; save(); $('status').textContent = '🎉 You sank the whole enemy fleet!'; draw(); return; }
+  draw();
+  if (r === 'miss') { turn = 1; setTimeout(aiTurn, 700); }
+};
+const save = () => localStorage.setItem('sea.score', JSON.stringify(score));
+function aiPick() {
+  // finish off a damaged ship first: extend along the line of hits
+  const open = i => i >= 0 && i < 100 && !me.shot[i];
+  const hits = []; for (let i = 0; i < 100; i++) if (me.shot[i] && me.cell[i] >= 0 && !sunk(me, i)) hits.push(i);
+  if (hits.length && smart) {
+    const cands = [];
+    for (const h of hits) for (const [d, ok] of [[-10, true], [10, true], [-1, h % 10 > 0], [1, h % 10 < 9]]) if (ok && open(h + d)) {
+      // prefer continuing a line
+      const lined = hits.includes(h - d) ? 2 : 0; cands.push({ i: h + d, w: 1 + lined });
+    }
+    if (cands.length) { const m = Math.max(...cands.map(c => c.w)); const best = cands.filter(c => c.w === m); return best[Math.floor(Math.random() * best.length)].i; }
+  }
+  if (hits.length && !smart) { const h = hits[0]; for (const d of [-10, 10, -1, 1]) if (open(h + d) && Math.abs((h % 10) - ((h + d) % 10)) <= 1) return h + d; }
+  // otherwise search: checkerboard parity, avoid cells next to sunk ships
+  const free = []; for (let i = 0; i < 100; i++) {
+    if (me.shot[i]) continue;
+    if (smart) { if (((i / 10 | 0) + i % 10) % 2) continue; let near = false; for (const d of [-10, 10, -1, 1]) { const j = i + d; if (j >= 0 && j < 100 && Math.abs(i % 10 - j % 10) <= 1 && sunk(me, j)) near = true; } if (near) continue; }
+    free.push(i);
+  }
+  if (!free.length) for (let i = 0; i < 100; i++) if (!me.shot[i]) free.push(i);
+  return free[Math.floor(Math.random() * free.length)];
+}
+function aiTurn() {
+  if (over) return;
+  const i = aiPick(), r = fire(me, i);
+  draw();
+  if (allSunk(me)) { over = true; score.l++; save(); $('status').textContent = 'The enemy sank your fleet. Their ships are shown.'; draw(); return; }
+  if (r === 'miss') { turn = 0; $('status').textContent = 'They missed. Your shot.'; }
+  else { $('status').textContent = r === 'hit' ? '💥 They hit one of your ships!' : `💥 They sank your ${r}!`; setTimeout(aiTurn, 800); }
+}
+setup();
+</script>
+</body>
+</html>

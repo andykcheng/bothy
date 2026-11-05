@@ -1,0 +1,10 @@
+{
+  "id": "sudoku",
+  "title": "Sudoku",
+  "description": "Endless puzzles in four difficulties, each with exactly one solution. Notes, undo and autosave.",
+  "players": "1",
+  "version": 2,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg"
+}
