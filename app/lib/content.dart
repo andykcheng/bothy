@@ -34,11 +34,14 @@ class Component {
         continent = j['continent'] as String?,
         country = j['country'] as String?,
         countryTitle = j['country_title'] as String?,
+        replaces = [for (final r in (j['replaces'] as List? ?? [])) r as String],
         files = [for (final f in j['files'] as List) CatalogFile(f as Map<String, dynamic>)];
   final String id, title, group, description;
   final String? cover;
   /// Map regions: short name, continent, and for parts of a big country its id and name
   final String? name, continent, country, countryTitle;
+  /// Older component ids this one takes over (per-site semantic indexes merged into one)
+  final List<String> replaces;
   final int size;
   final List<String> requires;
   final List<CatalogFile> files;
@@ -50,6 +53,7 @@ class Component {
         if (continent != null) 'continent': continent,
         if (country != null) 'country': country,
         if (countryTitle != null) 'country_title': countryTitle,
+        if (replaces.isNotEmpty) 'replaces': replaces,
       };
 
   /// A map region's name for lists: "California", or "United Kingdom".
@@ -109,6 +113,25 @@ class ContentStore {
   /// Installed collections (`col:ID` without a sub-component).
   Iterable<String> get collections => installed.keys.where((k) => k.startsWith('col:') && k.indexOf(':', 4) < 0);
   bool get hasLibrary => collections.isNotEmpty;
+
+  /// A component that replaces older ones counts as installed when all of them are (same files), so
+  /// nothing is downloaded again. Returns the ids it took over, for the Content tab's choice.
+  Future<Map<String, List<String>>> migrate(Catalog cat) async {
+    final took = <String, List<String>>{};
+    for (final c in cat.components.where((c) => c.replaces.isNotEmpty)) {
+      final have = c.replaces.where(installed.containsKey).toList();
+      if (have.isEmpty) continue;
+      took[c.id] = have;
+      if (have.length == c.replaces.length) {
+        for (final o in have) {
+          installed.remove(o);
+        }
+        installed[c.id] = c;
+      }
+    }
+    if (took.isNotEmpty) await _save();
+    return took;
+  }
   bool get hasMaps => installed.keys.any((k) => k.startsWith('map:'));
   bool get hasLlm => installed.containsKey('llm');
 

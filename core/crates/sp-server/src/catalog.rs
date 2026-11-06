@@ -10,7 +10,9 @@
 //! Components (nothing is required: a phone may hold only games, or only maps):
 //!   col:<id>             one collection's articles + titles + keyword (BM25) index
 //!   col:<id>:images      its images
-//!   col:<id>:vec:<name>  one of its semantic (vector) indexes; needs the collection and `model`
+//!   col:<id>:vec:<name>  one of its semantic (vector) indexes; needs the collection and `model`. A collection
+//!                        with several sources gets one per tier and size (`col:practical-qa:vec:core.d256`),
+//!                        listing the per-source ids it `replaces`
 //!   model                query embedding model, shared by every semantic index
 //!   map-assets           map renderer, style, fonts, sprites (needed by any map region)
 //!   map:<id>             one map region with its place-search index
@@ -65,6 +67,102 @@ fn file(prefix: &str, rel: &str, p: &Path, blake3: Option<String>) -> Result<Val
     }))
 }
 
+/// File hashes remembered by size + mtime in `<dir>/.hashes.json` (big dirs: maps, books).
+struct HashCache {
+    path: std::path::PathBuf,
+    old: BTreeMap<String, Value>,
+    new: BTreeMap<String, Value>,
+}
+
+impl HashCache {
+    fn open(dir: &Path) -> HashCache {
+        let path = dir.join(".hashes.json");
+        let old = std::fs::read(&path).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default();
+        HashCache { path, old, new: BTreeMap::new() }
+    }
+
+    fn file(&mut self, prefix: &str, rel: &str, p: &Path) -> Result<Value> {
+        let md = std::fs::metadata(p)?;
+        let mtime = md.modified().ok().and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map_or(0, |d| d.as_nanos() as u64);
+        let key = json!([md.len(), mtime]);
+        let h = match self.old.get(rel) {
+            Some(v) if v["k"] == key => v["h"].as_str().map(str::to_string),
+            _ => None,
+        };
+        let f = file(prefix, rel, p, h)?;
+        self.new.insert(rel.to_string(), json!({"k": key, "h": f["blake3"]}));
+        Ok(f)
+    }
+
+    fn save(&self) {
+        if self.new != self.old {
+            let _ = serde_json::to_vec(&self.new).map(|b| std::fs::write(&self.path, b)); // read-only dirs just hash again
+        }
+    }
+}
+
+/// The ebook shelf as downloads for hubs (group "shelf"): the list and search, then the books in
+/// bundles by popularity (each with its covers), and the illustrated editions.
+fn shelf_components(dir: &Path) -> Result<Vec<Value>> {
+    let shelf: Value = serde_json::from_slice(&std::fs::read(dir.join("shelf.json"))?)?;
+    let mut hc = HashCache::open(dir);
+    let mut list = Vec::new();
+    for rel in ["shelf.json", "shelf.json.gz", "shelf-text.jsonl"] {
+        let p = dir.join(rel);
+        if p.is_file() {
+            list.push(hc.file("books", rel, &p)?);
+        }
+    }
+    let mut books: Vec<(u64, u64)> = shelf["books"].as_array().into_iter().flatten().filter_map(|b| Some((b["r"].as_u64().unwrap_or(u64::MAX), b["id"].as_u64()?))).collect();
+    books.sort();
+    let n = books.len();
+    let tiers: [(&str, std::ops::Range<usize>); 3] = [("top1000", 0..1000.min(n)), ("top10000", 1000.min(n)..10000.min(n)), ("rest", 10000.min(n)..n)];
+    let mut out = vec![component("shelf", &format!("Book list and search ({} books)", fmt_count(n)), "shelf", list, json!({}))];
+    for (name, range) in tiers {
+        if range.is_empty() {
+            continue;
+        }
+        let mut files = Vec::new();
+        for &(_, id) in &books[range.clone()] {
+            for rel in [format!("epub/{id}.epub"), format!("covers/{id}.jpg")] {
+                let p = dir.join(&rel);
+                if p.is_file() {
+                    files.push(hc.file("books", &rel, &p)?);
+                }
+            }
+        }
+        let title = match name {
+            "top1000" => "The 1,000 most-read books".to_string(),
+            "top10000" => "The next 9,000 most-read books".to_string(),
+            _ => format!("The other {} books", fmt_count(range.len())),
+        };
+        out.push(component(&format!("shelf:{name}"), &title, "shelf", files, json!({"requires": ["shelf"], "books": range.len()})));
+    }
+    let mut ill = Vec::new();
+    let ill_dir = dir.join("epub-images");
+    for (rel, p) in if ill_dir.is_dir() { walk(&ill_dir)? } else { Vec::new() } {
+        ill.push(hc.file("books", &format!("epub-images/{rel}"), &p)?);
+    }
+    if !ill.is_empty() {
+        let k = ill.len();
+        out.push(component("shelf:illustrated", &format!("Illustrated editions of {} classics", fmt_count(k)), "shelf", ill, json!({"requires": ["shelf"], "books": k})));
+    }
+    hc.save();
+    Ok(out)
+}
+
+fn fmt_count(n: usize) -> String {
+    let s = n.to_string();
+    let mut out = String::new();
+    for (i, c) in s.chars().enumerate() {
+        if i > 0 && (s.len() - i) % 3 == 0 {
+            out.push(',');
+        }
+        out.push(c);
+    }
+    out
+}
+
 fn component(id: &str, title: &str, group: &str, files: Vec<Value>, extra: Value) -> Value {
     let size: u64 = files.iter().filter_map(|f| f["size"].as_u64()).sum();
     let mut c = json!({"id": id, "title": title, "group": group, "size": size, "files": files});
@@ -74,16 +172,16 @@ fn component(id: &str, title: &str, group: &str, files: Vec<Value>, extra: Value
     c
 }
 
+/// "Semantic search · full" / "· compact", from an index name `[{source}.]{tier}.d{dims}`.
 fn vec_title(name: &str) -> String {
-    // {source}.{tier}.d{dims}
     let parts: Vec<&str> = name.rsplitn(3, '.').collect();
-    if let [d, tier, source] = parts[..] {
-        let _ = source;
-        let tier = match tier { "core" => "most-read articles", "rest" | "tail" => "remaining articles", _ => "all articles" };
-        let len = if d == "d128" { "compact" } else { "full" };
-        format!("Semantic search · {tier} · {len}")
-    } else {
-        format!("Semantic index · {name}")
+    match parts[..] {
+        [d, tier, ..] => {
+            let len = if d == "d128" { "compact (smaller, a little less accurate)" } else { "full" };
+            let part = if matches!(tier, "rest" | "tail") { " · remaining articles" } else { "" };
+            format!("Semantic search · {len}{part}")
+        }
+        _ => format!("Semantic index · {name}"),
     }
 }
 
@@ -103,6 +201,7 @@ impl Catalog {
         maps: Option<&Path>,
         games: Option<&crate::games::Games>,
         llm: Option<&Path>,
+        books: Option<&Path>,
     ) -> Result<Catalog> {
         let t0 = std::time::Instant::now();
         let mut comps = Vec::new();
@@ -140,8 +239,24 @@ impl Catalog {
             if !images.is_empty() {
                 comps.push(component(&format!("{g}:images"), "Images", &g, images, json!({"requires": [g]})));
             }
+            // a collection made of several sources (Practical Q&A: 16 Stack Exchange sites) has an index per
+            // source; offer one "full" and one "compact" for the whole collection, not one per site
+            let mut merged: BTreeMap<String, (Vec<String>, Vec<Value>)> = BTreeMap::new();
             for (name, files) in vecs {
-                comps.push(component(&format!("{g}:vec:{name}"), &vec_title(&name), &g, files, json!({"requires": [g, "model"]})));
+                let key: Vec<&str> = name.rsplitn(3, '.').take(2).collect();
+                let key = key.into_iter().rev().collect::<Vec<_>>().join(".");
+                let e = merged.entry(key).or_default();
+                e.0.push(name);
+                e.1.extend(files);
+            }
+            for (key, (names, files)) in merged {
+                let (id, extra) = if names.len() == 1 {
+                    (format!("{g}:vec:{}", names[0]), json!({"requires": [g, "model"]}))
+                } else {
+                    let old: Vec<String> = names.iter().map(|n| format!("{g}:vec:{n}")).collect();
+                    (format!("{g}:vec:{key}"), json!({"requires": [g, "model"], "replaces": old}))
+                };
+                comps.push(component(&id, &vec_title(&key), &g, files, extra));
             }
         }
         if let Some(m) = model.filter(|_| lib.has_dense()) {
@@ -158,23 +273,9 @@ impl Catalog {
                     .collect::<Result<Vec<_>>>()?;
                 comps.push(component("map-assets", "Map renderer, style and fonts (needed by maps)", "maps", files, json!({})));
             }
-            // hashing ~150 GB of maps on every start is too slow: remember hashes by size + mtime
-            let cache_path = mdir.join(".hashes.json");
-            let old: BTreeMap<String, Value> =
-                std::fs::read(&cache_path).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default();
-            let mut new: BTreeMap<String, Value> = BTreeMap::new();
-            let mut cached = |rel: &str, p: &Path| -> Result<Value> {
-                let md = std::fs::metadata(p)?;
-                let mtime = md.modified().ok().and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map_or(0, |d| d.as_nanos() as u64);
-                let key = json!([md.len(), mtime]);
-                let h = match old.get(rel) {
-                    Some(v) if v["k"] == key => v["h"].as_str().map(str::to_string),
-                    _ => None,
-                };
-                let f = file("maps", rel, p, h)?;
-                new.insert(rel.to_string(), json!({"k": key, "h": f["blake3"]}));
-                Ok(f)
-            };
+            // hashing ~150 GB of maps on every start is too slow
+            let mut hc = HashCache::open(mdir);
+            let mut cached = |rel: &str, p: &Path| hc.file("maps", rel, p);
             let mut regions = Vec::new();
             for (rel, p) in walk(mdir)? {
                 if rel.contains('/') || !rel.ends_with(".pmtiles") || rel.contains(".tmp.") {
@@ -205,9 +306,10 @@ impl Catalog {
             // the world first, then by continent and name
             regions.sort_by(|a, b| ((a.0 != "World"), &a.0, &a.1).cmp(&((b.0 != "World"), &b.0, &b.1)));
             comps.extend(regions.into_iter().map(|r| r.2));
-            if new != old {
-                let _ = std::fs::write(&cache_path, serde_json::to_vec(&new)?); // read-only dirs just hash again
-            }
+            hc.save();
+        }
+        if let Some(b) = books {
+            comps.extend(shelf_components(b)?);
         }
         for g in games.map(|g| g.list.as_slice()).unwrap_or_default() {
             let files = walk(&g.dir)?
@@ -286,6 +388,12 @@ pub fn export(cat: &Catalog, roots: &[(String, std::path::PathBuf)], out: &Path)
             n += 1;
             bytes += f["size"].as_u64().unwrap_or(0);
         }
+    }
+    // the book list for the app's Books tab (a hub serves it at /api/books)
+    if let Some((_, dir)) = roots.iter().find(|(p, _)| p == "books")
+        && dir.join("shelf.json").is_file()
+    {
+        std::fs::copy(dir.join("shelf.json"), out.join("api/books"))?;
     }
     std::fs::write(out.join("api/catalog"), serde_json::to_vec(&cat.json)?)?;
     Ok((n, bytes))

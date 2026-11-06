@@ -12,7 +12,7 @@
 <body>
 <header class="top"><div class="wrap">
   <a class="brand" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#2F6B4F"/><path d="M6 16 16 7l10 9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 14.5V25h14V14.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/><rect x="14" y="18" width="4" height="7" rx="1" fill="#fff"/></svg>Bothy</a>
-  <nav><a class="opt" href="#install">Install</a><a class="opt" href="#maps">Maps</a><a class="opt" href="#ready">Be ready</a><a class="opt" href="#help">Help</a><a href="/">Home</a></nav>
+  <nav><a class="opt" href="#install">Install</a><a class="opt" href="#maps">Maps</a><a class="opt" href="#books">Books</a><a class="opt" href="#ready">Be ready</a><a class="opt" href="#help">Help</a><a href="/">Home</a></nav>
 </div></header>
 
 <main class="wrap"><div class="prose guide">
@@ -38,9 +38,9 @@
 <h3>Choose how much to keep</h3>
 <table class="credits">
   <tr><th>Choice</th><th>Size</th><th>What's in it</th></tr>
-  <tr><td><b>small</b></td><td>2.6 GB</td><td>All 440,000 articles, guides and answers, search by meaning, first aid, 23 games, a world map. No pictures.</td></tr>
-  <tr><td><b>standard</b> (recommended)</td><td>4.4 GB</td><td>Everything in small, plus pictures for Wikipedia, the survival guides and Appropedia, and AI answers.</td></tr>
-  <tr><td><b>everything</b></td><td>10 GB</td><td>Everything in standard, plus all the wikiHow and iFixit photos, and compact indexes for phones that copy from the hub.</td></tr>
+  <tr><td><b>small</b></td><td>3.2 GB</td><td>All 440,000 articles, guides and answers, search by meaning, first aid, 23 games, a world map, and the 1,000 most-read books. No pictures.</td></tr>
+  <tr><td><b>standard</b> (recommended)</td><td>8.6 GB</td><td>Everything in small, plus pictures for Wikipedia, the survival guides and Appropedia, AI answers, and 10,000 books.</td></tr>
+  <tr><td><b>everything</b></td><td>30 GB</td><td>Everything in standard, plus all the wikiHow and iFixit photos, all 54,000 books with illustrated editions of the classics, and compact indexes for phones that copy from the hub.</td></tr>
 </table>
 <p>Then add street maps for the places you need (<a href="#maps">below</a>): from a few MB for a small country to a few GB for a big one.</p>
 <p class="muted">AI answers need about 3 GB of free memory and a reasonably fast processor. They work on a mini PC or laptop; on a Raspberry Pi they're slow, so you may want to leave them out (see <a href="#options">options</a>). Everything else runs well on a Pi.</p>
@@ -136,6 +136,9 @@ docker restart bothy</code></pre>
 <p><code>maps</code> on its own lists everything; <code>maps add us</code> adds every US state, <code>maps add california</code> just one; <code>maps remove ireland</code> takes one off. To choose maps when you first start the hub, add <code>-e BOTHY_ADD=map:uk,map:ireland</code> to the <code>docker run</code> command.</p>
 </details>
 <p>Phones can then copy the maps from the hub in the app's Content tab.</p>
+
+<h2 id="books">Books</h2>
+<p>The hub holds Project Gutenberg's public-domain books with their covers: the 1,000 most read with any choice, 10,000 with standard, all 54,000 with everything. Anyone on the Wi-Fi can read them in the browser (<b>Books</b> on the hub's home page, which remembers the page you're on), or copy them to their phone in the app's Books tab. Add or remove book bundles, and illustrated editions of the classics, on the <a href="#maps">Manage page</a>.</p>
 
 <h2 id="update">Keeping it up to date</h2>
 <p>Content changes now and then. To fetch whatever's new or changed (only the differences are downloaded):</p>

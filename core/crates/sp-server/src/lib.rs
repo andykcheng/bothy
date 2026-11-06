@@ -467,6 +467,9 @@ pub fn download_roots(app: &App, cfg: &Config) -> Vec<(String, PathBuf)> {
     if let Some(l) = &cfg.llm {
         v.push(("llm".into(), ask::llm_dir(l)));
     }
+    if let Some(b) = cfg.books.as_ref().filter(|b| b.join("shelf.json").is_file()) {
+        v.push(("books".into(), b.clone()));
+    }
     v
 }
 
@@ -510,7 +513,8 @@ pub fn load(cfg: &Config) -> anyhow::Result<Arc<App>> {
         eprintln!("llm: {} (loaded on the first question)", p.display());
     }
     let catalog = if cfg.downloads {
-        let mut c = catalog::Catalog::build(&lib, model_path(cfg).as_deref(), cfg.maps.as_deref(), games.as_ref(), llm.path.as_deref())?;
+        let shelf = cfg.books.as_deref().filter(|b| b.join("shelf.json").is_file());
+        let mut c = catalog::Catalog::build(&lib, model_path(cfg).as_deref(), cfg.maps.as_deref(), games.as_ref(), llm.path.as_deref(), shelf)?;
         if cfg.books.as_ref().is_some_and(|b| b.join("shelf.json").is_file()) {
             // the shelf is its own index (one entry per book), not catalog components
             c.json["books"] = serde_json::json!({"index": "/api/books", "download": "/download/books"});
@@ -609,7 +613,11 @@ pub fn router(app: Arc<App>, cfg: &Config) -> Router {
         }
         if let Some(b) = &cfg.books {
             // ~10 MB of JSON for 50k books; shelf.json.gz is sent to clients that accept gzip
-            r = r.route_service("/api/books", tower_http::services::ServeFile::new(b.join("shelf.json")).precompressed_gzip());
+            if app.books.as_ref().is_some_and(|ix| ix.filtered.is_some()) {
+                r = r.route("/api/books", get(books::shelf)); // only some of the shelf is here
+            } else {
+                r = r.route_service("/api/books", tower_http::services::ServeFile::new(b.join("shelf.json")).precompressed_gzip());
+            }
             r = r.route("/api/books/search", get(books::search)).route("/api/books/{id}", get(books::details));
             r = r.nest_service("/download/books", tower_http::services::ServeDir::new(b));
         }

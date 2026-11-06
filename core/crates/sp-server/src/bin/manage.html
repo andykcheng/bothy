@@ -178,6 +178,13 @@ function render() {
       oninput: (e) => { q = e.target.value; const pos = e.target.selectionStart; render(); const f = document.querySelector('input.find'); f.focus(); f.setSelectionRange(pos, pos); } });
     app.append(find, mapsBox(regions));
   }
+  const shelf = list.filter((c) => c.group === 'shelf').map(take);
+  if (shelf.length) {
+    app.append(el('h2', {}, 'Books'));
+    app.append(el('div', { class: 'box' },
+      el('div', { class: 'head' }, el('p', {}, 'Project Gutenberg’s public-domain books, with covers. People read them in the browser at /books, or copy them to the app.')),
+      shelf.map((c) => row(c, c.id === 'shelf' ? 'Book list and search' : c.title))));
+  }
   const games = list.filter((c) => c.group === 'games').map(take);
   if (games.length) {
     app.append(el('h2', {}, 'Games'));

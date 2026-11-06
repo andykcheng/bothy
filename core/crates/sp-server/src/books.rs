@@ -44,6 +44,9 @@ pub struct BookIndex {
     pub(crate) categories: Vec<(String, Vec<u32>)>,
     /// groups of categories (Fiction, Practical…): name, category indices
     pub(crate) groups: Vec<(String, Vec<usize>)>,
+    /// shelf.json cut down to the books that are here, when some aren't (a hub holding only the
+    /// most-read books); served at /api/books instead of the file
+    pub filtered: Option<Value>,
     terms: BTreeMap<String, Vec<(u32, f32)>>, // term -> (book index, weighted tf)
     len: Vec<f32>,
     avg_len: f32,
@@ -83,8 +86,25 @@ impl BookIndex {
         let mut terms: BTreeMap<String, Vec<(u32, f32)>> = BTreeMap::new();
         let mut len = Vec::new();
         let mut cat_books: HashMap<usize, Vec<u32>> = HashMap::new();
+        let mut kept: Vec<Value> = Vec::new();
+        let mut cut = false;
         for b in shelf["books"].as_array().into_iter().flatten() {
             let id = b["id"].as_u64().unwrap_or(0);
+            // only books whose EPUB is here; drop editions and covers that aren't
+            if !dir.join(format!("epub/{id}.epub")).is_file() {
+                cut = true;
+                continue;
+            }
+            let mut b = b.clone();
+            if b.get("si").is_some() && !dir.join(format!("epub-images/{id}.epub")).is_file() {
+                b.as_object_mut().map(|o| o.remove("si"));
+                cut = true;
+            }
+            if b.get("cs").is_some() && !dir.join(format!("covers/{id}.jpg")).is_file() {
+                b.as_object_mut().map(|o| o.remove("cs"));
+                cut = true;
+            }
+            let b = &b;
             let (summary, subjects) = text.remove(&id).unwrap_or_default();
             let mut tf: HashMap<String, f32> = HashMap::new();
             let mut n = 0.0;
@@ -118,10 +138,11 @@ impl BookIndex {
                 summary,
                 subjects,
             });
+            kept.push(b.clone());
         }
         let avg_len = len.iter().sum::<f32>() / len.len().max(1) as f32;
         let by_id = books.iter().enumerate().map(|(i, b)| (b.id, i)).collect();
-        let categories = shelf["categories"]
+        let categories: Vec<(String, Vec<u32>)> = shelf["categories"]
             .as_array()
             .into_iter()
             .flatten()
@@ -141,7 +162,17 @@ impl BookIndex {
                 (g["name"].as_str().unwrap_or("").to_string(), cats)
             })
             .collect();
-        Ok(BookIndex { dir: dir.to_path_buf(), books, by_id, categories, groups, terms, len, avg_len })
+        let filtered = cut.then(|| {
+            let mut f = shelf.clone();
+            if let Some(cs) = f["categories"].as_array_mut() {
+                for (ci, c) in cs.iter_mut().enumerate() {
+                    c["count"] = json!(categories.get(ci).map_or(0, |c| c.1.len()));
+                }
+            }
+            f["books"] = Value::Array(kept);
+            f
+        });
+        Ok(BookIndex { dir: dir.to_path_buf(), books, by_id, categories, groups, filtered, terms, len, avg_len })
     }
 
     pub fn len(&self) -> usize {
@@ -228,5 +259,14 @@ mod tests {
         assert_eq!(tokens("The Horses of Dr. Jekyll's"), vec!["horse", "dr", "jekyll"]);
         assert_eq!(tokens("glass"), vec!["glass"]);
         assert_eq!(tokens("Growing"), vec!["grow"]);
+    }
+}
+
+/// GET /api/books when the hub holds only some of the shelf: the shelf cut down to them.
+pub async fn shelf(State(app): State<AppState>) -> axum::response::Response {
+    use axum::response::IntoResponse;
+    match app.books.as_ref().and_then(|b| b.filtered.as_ref()) {
+        Some(f) => Json(f.clone()).into_response(),
+        None => StatusCode::NOT_FOUND.into_response(),
     }
 }

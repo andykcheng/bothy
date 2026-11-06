@@ -416,7 +416,14 @@ class _ContentPageState extends State<ContentPage> {
     try {
       final c = await ContentStore.fetchCatalog(hub);
       (await SharedPreferences.getInstance()).setString('hub', hubCtl.text.trim());
-      setState(() => catalog = c);
+      final took = await widget.store.migrate(c);
+      setState(() {
+        for (final e in took.entries) {
+          want.removeAll(e.value);
+          want.add(e.key);
+        }
+        catalog = c;
+      });
     } catch (e) {
       setState(() => error = 'Could not reach the hub: $e');
     }

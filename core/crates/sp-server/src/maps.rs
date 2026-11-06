@@ -249,8 +249,26 @@ const style = {{
   sprite: o + '/maps/assets/sprites/v4/' + flavor,
   sources: {{ protomaps: {{ type: 'vector', tiles: [o + '/tiles/{{z}}/{{x}}/{{y}}'], maxzoom: {maxz},
     attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>' }} }},
-  layers: basemaps.layers('protomaps', basemaps.namedFlavor(flavor), {{ lang }}),
+  layers: shields(basemaps.layers('protomaps', basemaps.namedFlavor(flavor), {{ lang }})),
 }};
+// Road shields: the tiles' shield_text is the E-road number where a road is also a European route
+// (the M1 shows E13, which isn't signed in the UK), and roads in no route get no shield. Use the
+// road's own number (ref) for those instead.
+function shields(layers) {{
+  const sh = layers.find((l) => l.id === 'roads_shields');
+  if (!sh) return layers;
+  const label = ['case',
+    ['all', ['has', 'ref'], ['any', ['!', ['has', 'shield_text']], ['==', ['get', 'network'], 'e-road']]], ['get', 'ref'],
+    ['coalesce', ['get', 'shield_text'], '']];
+  const len = ['length', label];
+  sh.filter = ['all', ['in', ['get', 'kind'], ['literal', ['highway', 'major_road']]],
+    ['any', ['has', 'shield_text'], ['has', 'ref']], ['>', len, 0], ['<=', len, 5]];
+  sh.layout['text-field'] = label;
+  sh.layout['icon-image'] = ['match', ['get', 'network'],
+    'US:I', ['concat', 'US:I-', len, 'char'], 'NL:S-road', ['concat', 'NL:S-road-', len, 'char'],
+    ['concat', 'generic_shield-', len, 'char']];
+  return layers;
+}}
 const map = new maplibregl.Map({{
   container: 'map', style, center: [{lon}, {lat}], zoom: {zoom}, hash: true,
   localIdeographFontFamily: '"Noto Sans CJK SC", "Noto Sans CJK JP", "Hiragino Sans", "PingFang SC", sans-serif',

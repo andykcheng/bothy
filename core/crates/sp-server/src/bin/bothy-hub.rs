@@ -72,7 +72,7 @@ enum Cmd {
 
 #[derive(clap::Args, Clone, Default)]
 struct GetArgs {
-    /// small (~3 GB), standard (~4.5 GB) or everything (~10 GB); asked when not given and there's a terminal. Maps come separately (bothy-hub maps)
+    /// small (~3 GB), standard (~9 GB) or everything (~30 GB); asked when not given and there's a terminal. Maps come separately (bothy-hub maps)
     #[arg(long, env = "BOTHY_PRESET")]
     preset: Option<String>,
     /// Extra components, by id or id prefix (e.g. col:ifixit:images), or maps by id, country or name (map:fr, map:us, map:california)
@@ -221,6 +221,9 @@ fn preset(cat: &Value, name: &str) -> Result<BTreeSet<String>> {
             id == "map:world"
         } else if id == "llm" {
             level >= 2
+        } else if id.starts_with("shelf:") {
+            // books: the 1,000 most read in every preset, 10,000 in standard, all of them in everything
+            id == "shelf:top1000" || (level >= 2 && id == "shelf:top10000") || level == 3
         } else {
             true // articles, the search model, map assets, games
         };
@@ -244,6 +247,33 @@ fn map_ids(cat: &Value, name: &str) -> Vec<String> {
     })
     .filter_map(|c| c["id"].as_str().map(String::from))
     .collect()
+}
+
+/// Components that `replaces` older ones (per-site indexes merged into one): chosen when any of those is.
+fn with_replacements(cat: &Value, mut ids: BTreeSet<String>) -> BTreeSet<String> {
+    for c in cat["components"].as_array().into_iter().flatten() {
+        if c["replaces"].as_array().into_iter().flatten().any(|o| o.as_str().is_some_and(|o| ids.contains(o))) {
+            ids.extend(c["id"].as_str().map(String::from));
+        }
+    }
+    ids
+}
+
+/// A component that replaces older ones counts as installed when all of them are (same files), so
+/// nothing is downloaded again or removed. Returns whether `installed` changed.
+fn migrate(cat: &Value, installed: &mut BTreeMap<String, Value>) -> bool {
+    let mut changed = false;
+    for c in cat["components"].as_array().into_iter().flatten() {
+        let old: Vec<&str> = c["replaces"].as_array().into_iter().flatten().filter_map(|o| o.as_str()).collect();
+        if !old.is_empty() && old.iter().all(|o| installed.contains_key(*o)) {
+            for o in &old {
+                installed.remove(*o);
+            }
+            installed.insert(c["id"].as_str().unwrap_or_default().to_string(), c.clone());
+            changed = true;
+        }
+    }
+    changed
 }
 
 fn matches(id: &str, pats: &[String]) -> bool {
@@ -314,6 +344,8 @@ fn describe_choice(cat: &Value, ids: &BTreeSet<String>) -> Vec<String> {
             "search by meaning".to_string()
         } else if id.starts_with("col:") {
             "articles".to_string()
+        } else if id.starts_with("shelf:") {
+            c["title"].as_str().unwrap_or(id).trim_start_matches("The ").to_string()
         } else if id.starts_with("map:") {
             c["name"].as_str().or(id.strip_prefix("map:")).unwrap_or_default().to_string()
         } else {
@@ -336,6 +368,7 @@ fn describe_choice(cat: &Value, ids: &BTreeSet<String>) -> Vec<String> {
                 format!("Maps ({})", p.join(", "))
             }
             "games" => "Games".to_string(),
+            "shelf" => format!("Books ({})", parts.join(", ")),
             "ai" => "AI answers (needs about 3 GB of free memory)".to_string(),
             _ => format!("{} ({})", groups.get(&g).cloned().unwrap_or(g.clone()), parts.join(", ")),
         };
@@ -478,6 +511,9 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
     println!("Fetching the catalog from {} …", a.from);
     let cat = fetch_catalog(&agent, &a.from)?;
     let mut installed = load_installed(dir);
+    if migrate(&cat, &mut installed) {
+        save_installed(dir, &installed)?;
+    }
     let free = fs4::available_space(dir).unwrap_or(0);
 
     let name = match &a.preset {
@@ -489,9 +525,9 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
             let sizes: Vec<u64> = ["small", "standard", "everything"].iter().map(|p| total(&cat, &resolve(&cat, preset(&cat, p).unwrap(), a))).collect();
             println!();
             println!("What should this hub hold? Free space here: {}", gb(free));
-            println!("  1) Small       {:>8}  all articles and guides, search by meaning, first aid, games, world map", gb(sizes[0]));
-            println!("  2) Standard    {:>8}  + pictures for Wikipedia and the survival guides, AI answers", gb(sizes[1]));
-            println!("  3) Everything  {:>8}  + all pictures (wikiHow, iFixit), compact indexes for phones", gb(sizes[2]));
+            println!("  1) Small       {:>8}  all articles and guides, search by meaning, first aid, games, world map, 1,000 books", gb(sizes[0]));
+            println!("  2) Standard    {:>8}  + pictures for Wikipedia and the survival guides, AI answers, 10,000 books", gb(sizes[1]));
+            println!("  3) Everything  {:>8}  + all pictures (wikiHow, iFixit), all 54,000 books, compact indexes for phones", gb(sizes[2]));
             ask("Choose 1, 2 or 3 [2]: ")
         }
         None => "standard".into(),
@@ -510,7 +546,7 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
         ids.extend(installed.keys().filter(|k| k.starts_with("map:")).cloned());
         ids
     };
-    let ids = resolve(&cat, ids, a);
+    let ids = resolve(&cat, with_replacements(&cat, ids), a);
     let comps: Vec<&Value> = cat["components"].as_array().into_iter().flatten().filter(|c| c["id"].as_str().is_some_and(|i| ids.contains(i))).collect();
 
     // what's missing or changed (a component is current when its files match the catalog's)
@@ -578,7 +614,17 @@ fn summary(app: &sp_server::App, cfg: &sp_server::Config) -> Vec<String> {
         v.push("AI answers".into());
     }
     if let Some(m) = &app.maps {
-        v.push(format!("Maps: {}", m.regions.iter().map(|r| r.title.as_str()).collect::<Vec<_>>().join(", ")));
+        let mut names: Vec<&str> = m.regions.iter().map(|r| r.title.as_str()).collect();
+        if names.len() > 8 {
+            let more = names.len() - 6;
+            names.truncate(6);
+            v.push(format!("Maps: {} and {more} more", names.join(", ")));
+        } else {
+            v.push(format!("Maps: {}", names.join(", ")));
+        }
+    }
+    if let Some(b) = &app.books {
+        v.push(format!("{} books to read or copy to phones", b.len()));
     }
     if let Some(g) = &app.games {
         v.push(format!("{} games", g.list.len()));
@@ -726,6 +772,7 @@ fn layout(dir: &Path) -> sp_server::Config {
         maps: some(dir.join("maps")).filter(|m| m.join("assets").is_dir()),
         games: some(dir.join("games")),
         llm,
+        books: some(dir.join("books")).filter(|b| b.join("shelf.json").is_file()),
         ..Default::default()
     }
 }
@@ -909,7 +956,14 @@ mod web {
         let fresh = q.contains_key("fresh");
         let m2 = m.clone();
         let cat = tokio::task::spawn_blocking(move || m2.catalog(fresh)).await.map_err(anyhow::Error::from).and_then(|r| r);
-        let installed: Vec<String> = load_installed(&m.dir).into_keys().collect();
+        let mut inst = load_installed(&m.dir);
+        if let Ok(c) = &cat
+            && !m.job.running.load(Ordering::SeqCst)
+            && migrate(c, &mut inst)
+        {
+            let _ = save_installed(&m.dir, &inst);
+        }
+        let installed: Vec<String> = inst.into_keys().collect();
         let free = fs4::available_space(&m.dir).unwrap_or(0);
         Json(serde_json::json!({
             "from": m.start.get.from,
@@ -1147,6 +1201,21 @@ mod tests {
         let a = GetArgs { add: vec!["map:uk".into()], skip: vec!["map-assets".into()], ..Default::default() };
         let s = resolve(&c, preset(&c, "small").unwrap(), &a);
         assert!(!s.contains("map:uk") && !s.contains("map:world"), "maps need their assets");
+    }
+
+    #[test]
+    fn merged_indexes_replace_old_ones() {
+        let cat = json!({"components": [
+            {"id": "col:q", "size": 1},
+            {"id": "col:q:vec:core.d256", "size": 2, "requires": ["col:q"], "replaces": ["col:q:vec:a.core.d256", "col:q:vec:b.core.d256"],
+             "files": [{"path": "a"}, {"path": "b"}]},
+        ]});
+        let mut inst: BTreeMap<String, Value> =
+            [("col:q", json!({})), ("col:q:vec:a.core.d256", json!({})), ("col:q:vec:b.core.d256", json!({}))].into_iter().map(|(k, v)| (k.to_string(), v)).collect();
+        assert!(migrate(&cat, &mut inst));
+        assert_eq!(inst.keys().cloned().collect::<Vec<_>>(), ["col:q", "col:q:vec:core.d256"]);
+        let ids = with_replacements(&cat, ["col:q".to_string(), "col:q:vec:a.core.d256".to_string()].into());
+        assert!(ids.contains("col:q:vec:core.d256"), "one old index chosen: the merged one is chosen");
     }
 
     #[test]

@@ -139,6 +139,9 @@ enum Cmd {
         layers: Vec<String>,
         #[arg(long, default_value_t = 5)]
         per_layer: usize,
+        /// Unnamed features too (e.g. motorways, whose label is their ref)
+        #[arg(long)]
+        all: bool,
     },
     /// Search a pack
     Search {
@@ -293,7 +296,7 @@ fn main() -> Result<()> {
             }
             println!("{} hits in {:.2} ms", hits.len(), t.elapsed().as_secs_f64() * 1e3);
         }
-        Cmd::MapDump { file, z, x, y, layers, per_layer } => {
+        Cmd::MapDump { file, z, x, y, layers, per_layer, all } => {
             let a = sp_maps::pmt::Archive::open(&file)?;
             let raw = a.tile(z, x, y)?.context("no such tile")?;
             let data = sp_maps::pmt::decompress(raw, a.header.tile_compression)?;
@@ -301,7 +304,7 @@ fn main() -> Result<()> {
             for l in sp_maps::mvt::decode(&data, &want)? {
                 let named = l.features.iter().filter(|f| f.get("name").is_some()).count();
                 println!("== {} ({} features, {named} named, extent {})", l.name, l.features.len(), l.extent);
-                for f in l.features.iter().filter(|f| f.get("name").is_some()).take(per_layer) {
+                for f in l.features.iter().filter(|f| all || f.get("name").is_some()).take(per_layer) {
                     let (lon, lat) = sp_maps::mvt::to_lonlat(z, x, y, l.extent, f.point);
                     let props: Vec<String> = f.props.iter().map(|(k, v)| format!("{k}={v:?}")).collect();
                     println!("  [{lat:.5},{lon:.5}] type {} {}", f.geom_type, props.join(" "));
