@@ -5,9 +5,11 @@
 
   uv run scripts/play_assets.py
 
-The icon comes from site/icon.svg (square: Play rounds it), the phone screenshots from the app's golden
-screens (app/test/screens, 1080x2280), framed at 1080x1920 (9:16) with a caption, because Play wants the
-long side at most twice the short one. Real phone captures can replace them later (same size rules).
+The icon comes from site/icon.svg (square: Play rounds it). The phone screenshots come from
+app/play/screens (1080x2280 app screens), framed at 1080x1920 (9:16) with a caption, because Play wants
+the long side at most twice the short one. Those screens are the app's golden screens (app/test/screens,
+`flutter test test/screens_test.dart --update-goldens`) and, for the WebView tabs, the server's pages
+captured at the phone's size (393x749 CSS px at 2.75x) pasted above the frame-library/frame-map goldens.
 """
 import io
 import re
@@ -21,11 +23,15 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "app/play/listing"
 GREEN, WHITE, PALE = (47, 107, 79), (255, 255, 255), (214, 232, 222)
-SHOTS = [  # golden screen, caption
-    ("books-light", "Classic books to read offline"),
-    ("games-light", "22 games, no internet needed"),
-    ("notes-checklist-light", "Checklists and notes, always at hand"),
-    ("share-on-light", "Share with people nearby, without the internet"),
+SHOTS = [  # app/play/screens/<name>.png (1080x2280 app screens), caption; Play shows at most 8
+    ("home", "440,000 articles in your pocket"),
+    ("meaning", "Search by meaning, not just keywords"),
+    ("ask", "Offline AI chat, backed by facts"),
+    ("map", "Offline maps with place search"),
+    ("chat", "Chat with people nearby, no internet"),
+    ("firstaid", "First aid, step by step"),
+    ("books", "Classic books to read offline"),
+    ("games", "22 games, no internet needed"),
 ]
 
 
@@ -73,6 +79,15 @@ def wrap(d: ImageDraw.ImageDraw, text: str, f, width: int) -> list[str]:
     return lines + [cur]
 
 
+def balanced(d: ImageDraw.ImageDraw, text: str, f, width: int) -> list[str]:
+    """One line if it fits, else two lines of about equal width (no lone word on the second line)."""
+    if d.textlength(text, font=f) <= width:
+        return [text]
+    w = text.split()
+    splits = [(" ".join(w[:i]), " ".join(w[i:])) for i in range(1, len(w))]
+    return list(min(splits, key=lambda s: max(d.textlength(x, font=f) for x in s)))
+
+
 def rounded(im: Image.Image, r: int) -> Image.Image:
     m = Image.new("L", im.size, 0)
     ImageDraw.Draw(m).rounded_rectangle((0, 0, *im.size), r, fill=255)
@@ -86,11 +101,12 @@ def phone(src: Path, caption: str) -> Image.Image:
     im = Image.new("RGB", (W, H), GREEN)
     d = ImageDraw.Draw(im)
     f = font("Bold", 64)
-    y = 90
-    for line in wrap(d, caption, f, W - 160):
+    lines = balanced(d, caption, f, W - 160)
+    y = 90 + (2 - len(lines)) * 40  # room for two lines on every shot, so the phones line up
+    for line in lines:
         d.text((W // 2, y), line, font=f, fill=WHITE, anchor="ma")
         y += 80
-    top = y + 50
+    top = 90 + 2 * 80 + 50
     shot = Image.open(src).convert("RGB")
     h = H - top - 0
     w = round(shot.width * h / shot.height)
@@ -122,7 +138,7 @@ def main() -> None:
     svg_png(512, square=True).convert("RGB").save(OUT / "icon-512.png")
     feature().save(OUT / "feature-1024x500.png")
     for i, (name, cap) in enumerate(SHOTS, 1):
-        phone(ROOT / f"app/test/screens/{name}.png", cap).save(OUT / f"phone-{i}.png")
+        phone(ROOT / f"app/play/screens/{name}.png", cap).save(OUT / f"phone-{i}.png")
     for p in sorted(OUT.glob("*.png")):
         print(p.relative_to(ROOT), Image.open(p).size, f"{p.stat().st_size // 1024} KB")
 

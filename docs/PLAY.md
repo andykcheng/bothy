@@ -15,9 +15,9 @@ The app is **Bothy**, application ID **`com.pocketbothy.app`** (permanent once u
 The `android` workflow builds an APK and an AAB on every push to `master`. Its artifacts are `survivalpedia-apk` and `bothy-aab`. The versionCode is the workflow run number, so it always grows; the versionName comes from `app/pubspec.yaml`.
 
 ```
-gh run download -R andykcheng/survivalpedia -n bothy-aab                    # newest AAB, for a manual upload
-gh workflow run android.yml -R andykcheng/survivalpedia -f play_track=internal   # build + upload (draft)
-gh workflow run android.yml -R andykcheng/survivalpedia -f play_track=alpha      # alpha = the closed testing track
+gh run download -R penpapertech/survivalpedia -n bothy-aab                    # newest AAB, for a manual upload
+gh workflow run android.yml -R penpapertech/survivalpedia -f play_track=internal   # build + upload (draft)
+gh workflow run android.yml -R penpapertech/survivalpedia -f play_track=alpha      # alpha = the closed testing track
 ```
 
 The upload step needs the `PLAY_SERVICE_ACCOUNT_JSON` secret. Its release status defaults to `draft`, which is required while the app is unpublished; you then roll it out in Console. Release notes come from `app/play/whatsnew/whatsnew-en-GB`.
@@ -41,7 +41,7 @@ The upload step needs the `PLAY_SERVICE_ACCOUNT_JSON` secret. Its release status
    4. Save the key as a secret:
 
       ```
-      gh secret set PLAY_SERVICE_ACCOUNT_JSON -R andykcheng/survivalpedia < key.json
+      gh secret set PLAY_SERVICE_ACCOUNT_JSON -R penpapertech/survivalpedia < key.json
       ```
 
       Then delete `key.json`.
@@ -60,9 +60,15 @@ The upload step needs the `PLAY_SERVICE_ACCOUNT_JSON` secret. Its release status
 |---|---|
 | `icon-512.png` | the icon |
 | `feature-1024x500.png` | the feature graphic |
-| `phone-1..4.png` | screenshots, 1080×1920 |
+| `phone-1..8.png` | screenshots, 1080×1920, captioned |
 
-Play needs 2 to 8 phone screenshots. The current ones are the app's golden test screens (books, games, notes, share). Real captures from a phone would show the most important screens better: search results, an article, the map, first aid. Each capture's long side must be at most twice the short side, and a phone's full-height screenshot is taller than that, so crop or frame it.
+The eight screenshots, in order: home (440,000 articles), search by meaning, an AI answer with its first-aid card, the offline map, nearby chat, first aid, books and games. Play shows at most eight.
+
+The source screens are in `app/play/screens/` (1080×2280):
+- **Books and Games** are the app's golden screens.
+- **The other six** are WebView tabs. Each is the server's page captured at the phone's size (393×749 CSS px at 2.75×) and pasted above the `frame-library` or `frame-map` golden. The captures came from a temporary sp-server holding only the English collections, with a few sample chat messages.
+
+Real captures from a phone also work. Each one's long side must be at most twice the short side, and a phone's full-height screenshot is taller than that, so crop or frame it.
 
 **Category:** Books & Reference. **Tags:** reference, education, travel.
 

@@ -15,7 +15,7 @@ env:
 jobs:
   build:
     # only the public repo publishes the image (AGPL: the image's source must be public too)
-    if: github.repository == 'andykcheng/bothy'
+    if: github.repository == 'penpapertech/bothy'
     strategy:
       matrix:
         include:

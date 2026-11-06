@@ -192,7 +192,7 @@ docker run -d --name bothy --restart unless-stopped -p 8090:8080 -p 8444:8444 -e
 <p>Browsers only allow the microphone and GPS on secure pages, so the chat sends people to the hub's https address on port 8443 for those. The browser warns once about the hub's own certificate; that's expected on a local network, and the chat explains how to continue.</p></details>
 
 <h2 id="source">Without Docker</h2>
-<p>The hub is one program, <code>bothy-hub</code>, with three commands: <code>get</code> (download or update), <code>check</code> (is it ready?) and <code>start</code>. Ready-made downloads for Windows, Mac and Linux are planned. Until then you can build it from the <a href="https://github.com/andykcheng/bothy">source code</a> (GNU AGPL-3.0): install <a href="https://rustup.rs">Rust</a>, CMake and Clang, then run <code>cargo build --release -p sp-server --bin bothy-hub</code> in the <code>core</code> folder.</p>
+<p>The hub is one program, <code>bothy-hub</code>, with three commands: <code>get</code> (download or update), <code>check</code> (is it ready?) and <code>start</code>. Ready-made downloads for Windows, Mac and Linux are planned. Until then you can build it from the <a href="https://github.com/penpapertech/bothy">source code</a> (GNU AGPL-3.0): install <a href="https://rustup.rs">Rust</a>, CMake and Clang, then run <code>cargo build --release -p sp-server --bin bothy-hub</code> in the <code>core</code> folder.</p>
 </div></main>
 
 <footer class="bottom"><div class="wrap">

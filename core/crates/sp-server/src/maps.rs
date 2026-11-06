@@ -233,7 +233,7 @@ html,body{{margin:0;height:100%;font:15px system-ui,sans-serif}}
 #pick button.go{{background:#2F6B4F;border-color:#2F6B4F;color:#fff}} #pick button:disabled{{opacity:.45}}
 @media (prefers-color-scheme: dark){{#bar a,#bar button,#q{{background:#222;color:#7fb6ff;border-color:#444}}#q{{color:#e8e8e8}}#res{{background:#222;border-color:#444}}#res div{{border-color:#333}}#res div:hover,#res div.sel{{background:#2c3442}}#res small{{color:#9a9a9a}}}}
 </style></head><body>
-<div id="bar"><a href="/" id="home">← Bothy</a><div id="search"><input id="q" type="search" autocomplete="off" placeholder="Search places… / 地名 / 搜索地点"><div id="res"></div></div>{regions}</div>
+<div id="bar"><a href="/" id="home">← Bothy</a><div id="search"><input id="q" type="search" autocomplete="off" placeholder="Search places…"><div id="res"></div></div>{regions}</div>
 <div id="map"></div>
 <div id="pick"><p>Tap the map at the place to share. Search above to find it.</p><div class="row"><button id="pickNo">Cancel</button><button id="pickGo" class="go" disabled>Send this place</button></div></div>
 <script src="/maps/assets/basemaps/basemaps.js"></script>

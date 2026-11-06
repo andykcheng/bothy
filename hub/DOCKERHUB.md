@@ -69,4 +69,4 @@ Other commands, all run with `docker exec -it bothy bothy-hub …`:
 
 - **Images:** `linux/amd64` and `linux/arm64` (Raspberry Pi 4/5, Apple silicon). The image holds only the program (about 120 MB); content goes into `/data`.
 - **Content** downloads from https://data.pocketbothy.com. Each source keeps its licence and attribution: Wikipedia, Appropedia and Stack Exchange are CC BY-SA; wikiHow and iFixit are CC BY-NC-SA (non-commercial); maps are © OpenStreetMap contributors (ODbL); the books are public domain from Project Gutenberg, with its licence inside each book. The full list is in the source repository.
-- **Source:** https://github.com/andykcheng/bothy (AGPL-3.0)
+- **Source:** https://github.com/penpapertech/bothy (AGPL-3.0)

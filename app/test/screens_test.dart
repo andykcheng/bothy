@@ -45,7 +45,8 @@ void main() {
       home: Scaffold(
         body: SafeArea(child: page),
         bottomNavigationBar: NavigationBar(
-            selectedIndex: name.startsWith('games') ? 4 : name.startsWith('books') ? 1 : name.startsWith('notes') ? 3 : 5, destinations: const [
+            selectedIndex: name.startsWith('games') ? 4 : name.startsWith('books') ? 1 : name.startsWith('notes') ? 3
+                : name.startsWith('frame-library') ? 0 : name.startsWith('frame-map') ? 2 : 5, destinations: const [
           NavigationDestination(icon: Icon(Icons.travel_explore_outlined), label: 'Library'),
           NavigationDestination(icon: Icon(Icons.auto_stories_outlined), selectedIcon: Icon(Icons.auto_stories), label: 'Books'),
           NavigationDestination(icon: Icon(Icons.map_outlined), label: 'Map'),
@@ -118,6 +119,11 @@ void main() {
         ..port = 8080
         ..addresses = ['192.168.43.1'];
       await shot(tester, 'share-on-$tag', b, SharePage(share: share), wait: Duration.zero);
+    });
+    // empty frames with the Library / Map tab selected, for the store screenshots (scripts/play_assets.py)
+    testWidgets('frames $tag', (tester) async {
+      await shot(tester, 'frame-library-$tag', b, const SizedBox.expand(), wait: Duration.zero);
+      await shot(tester, 'frame-map-$tag', b, const SizedBox.expand(), wait: Duration.zero);
     });
     testWidgets('content $tag', (tester) async {
       HttpOverrides.global = null; // allow the real hub
