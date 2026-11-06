@@ -78,7 +78,7 @@ sudo usermod -aG docker $USER</code></pre></li>
 </details>
 
 <details class="os"><summary>NAS or home server (Synology, Unraid, TrueNAS, CasaOS)</summary>
-<p>Use your system's container app (Synology: Container Manager) and create a container from the image <code>andykcheng/bothy</code> with:</p>
+<p>Use your system's container app (Synology: Container Manager) and create a container from the image <code>penpapertech/bothy</code> with:</p>
 <ul>
   <li>ports <b>8080</b> → 8080 and <b>8443</b> → 8443</li>
   <li>a volume or folder mounted at <b>/data</b>, on a disk with enough space</li>
@@ -90,7 +90,7 @@ sudo usermod -aG docker $USER</code></pre></li>
 
 <h2 id="start">Step 2: Start the hub</h2>
 <p>Copy this into PowerShell or Terminal and press Enter. It's the same on every system:</p>
-<pre><code>docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data -e BOTHY_PRESET=standard andykcheng/bothy</code></pre>
+<pre><code>docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data -e BOTHY_PRESET=standard penpapertech/bothy</code></pre>
 <p>Change <code>standard</code> to <code>small</code> or <code>everything</code> if you prefer. Docker picks the right version for your computer (Intel/AMD or ARM) by itself.</p>
 <div class="card note"><b>If the command fails, or you want to change something in it:</b> remove the container first, then run the corrected command. Docker keeps a container called <code>bothy</code> even when it fails to start, and a second <code>docker run</code> with the same name stops with <i>"The container name "/bothy" is already in use"</i>. Removing it is safe: the library stays in the <code>bothy-data</code> volume.
 <pre><code>docker rm -f bothy</code></pre></div>
@@ -145,9 +145,9 @@ docker restart bothy</code></pre>
 <pre><code>docker exec -it bothy bothy-hub get</code></pre>
 <p>To switch to a bigger or smaller choice later: <code>docker exec -it bothy bothy-hub get --preset everything</code></p>
 <p>To update the hub program itself (your downloaded library is kept):</p>
-<pre><code>docker pull andykcheng/bothy
+<pre><code>docker pull penpapertech/bothy
 docker rm -f bothy
-docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data andykcheng/bothy</code></pre>
+docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data penpapertech/bothy</code></pre>
 
 <h2 id="options">Options</h2>
 <p>Add any of these to the <code>docker run</code> command, before the image name. To change the options of a hub that already exists, run <code>docker rm -f bothy</code> first, then the new <code>docker run</code> command (the downloaded library is kept).</p>
@@ -163,7 +163,7 @@ docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v
 <p>With Docker Compose, save this as <code>compose.yaml</code> and run <code>docker compose up -d</code>:</p>
 <pre><code>services:
   bothy:
-    image: andykcheng/bothy
+    image: penpapertech/bothy
     restart: unless-stopped
     ports: ["8080:8080", "8443:8443"]
     volumes: ["bothy-data:/data"]
@@ -178,7 +178,7 @@ volumes:
 <details class="faq-q"><summary>"Port is already allocated" or "address already in use"</summary>
 <p>Something else on the computer already uses port 8080 (or 8443). Docker has still created the <code>bothy</code> container, so remove it first, then start again on other ports:</p>
 <pre><code>docker rm -f bothy
-docker run -d --name bothy --restart unless-stopped -p 8090:8080 -p 8444:8444 -e BOTHY_HTTPS_PORT=8444 -v bothy-data:/data -e BOTHY_PRESET=standard andykcheng/bothy</code></pre>
+docker run -d --name bothy --restart unless-stopped -p 8090:8080 -p 8444:8444 -e BOTHY_HTTPS_PORT=8444 -v bothy-data:/data -e BOTHY_PRESET=standard penpapertech/bothy</code></pre>
 <p>Then open the hub at <code>:8090</code> instead of <code>:8080</code>. For the main port, only the number on the left of <code>-p</code> changes. The secure port (used for chat voice messages and locations) must be the same number on both sides and in <code>BOTHY_HTTPS_PORT</code>, because the chat sends people straight to it.</p></details>
 <details class="faq-q"><summary>"The container name "/bothy" is already in use"</summary>
 <p>A container from an earlier attempt is still there. Remove it with <code>docker rm -f bothy</code>, then run your <code>docker run</code> command again. The downloaded library is kept.</p></details>

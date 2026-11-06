@@ -19,7 +19,7 @@ It's free, has no ads and no accounts, and it doesn't track anyone. The full gui
 Install Docker ([Docker Desktop](https://www.docker.com/products/docker-desktop/) on Windows or Mac; `curl -fsSL https://get.docker.com | sh` on Linux or a Raspberry Pi), then run:
 
 ```
-docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data -e BOTHY_PRESET=standard andykcheng/bothy
+docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data -e BOTHY_PRESET=standard penpapertech/bothy
 ```
 
 On the first start it downloads the library into the `bothy-data` volume. Watch it with `docker logs -f bothy`. The download resumes if it's interrupted, and every file is checked.
@@ -42,7 +42,7 @@ Port 8443 is HTTPS (with a self-signed certificate), which chat needs for voice 
 
 ```
 docker exec -it bothy bothy-hub get                       # fetch new or changed content
-docker pull andykcheng/bothy && docker rm -f bothy        # new program version, then run the docker run command again
+docker pull penpapertech/bothy && docker rm -f bothy        # new program version, then run the docker run command again
 ```
 
 Your library stays in the `bothy-data` volume in both cases.

@@ -27,7 +27,7 @@ It is free and always will be: no accounts, no ads, no tracking.
 Step-by-step guide for Windows, Mac, Linux, Raspberry Pi and NAS: [pocketbothy.com/hub](https://www.pocketbothy.com/hub).
 
 ```sh
-docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data -e BOTHY_PRESET=standard andykcheng/bothy
+docker run -d --name bothy --restart unless-stopped -p 8080:8080 -p 8443:8443 -v bothy-data:/data -e BOTHY_PRESET=standard penpapertech/bothy
 ```
 
 The image (amd64 and arm64, so a Raspberry Pi works) holds only the `bothy-hub` program. On first start it downloads the library into the `bothy-data` volume: `small` 3.2 GB, `standard` 8.6 GB or `everything` 30 GB (with 1,000, 10,000 or all 54,000 Gutenberg books), resumable and checked file by file. Street maps, books and more are added from the hub's Manage page (an admin password is chosen on the first visit) or with `bothy-hub maps add uk`. `docker exec bothy bothy-hub check` confirms it's ready. See `hub/Dockerfile`.

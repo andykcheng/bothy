@@ -19,6 +19,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ vars.HUB_IMAGE || 'andykcheng/bothy' }}
+          repository: ${{ vars.HUB_IMAGE || 'penpapertech/bothy' }}
           short-description: "Offline library hub for your Wi-Fi: articles, maps, books, first aid, AI answers, chat"
           readme-filepath: hub/DOCKERHUB.md

@@ -1,7 +1,7 @@
 # The Bothy hub Docker image (hub/Dockerfile) for amd64 and arm64, pushed to Docker Hub as one
 # multi-arch tag. Each architecture builds natively on its own runner (no emulation), then a
 # manifest joins them. Needs secrets DOCKERHUB_USERNAME and DOCKERHUB_TOKEN, and optionally the
-# variable HUB_IMAGE (default andykcheng/bothy). Run it by hand, or by pushing a tag hub-v1.2.3.
+# variable HUB_IMAGE (default penpapertech/bothy). Run it by hand, or by pushing a tag hub-v1.2.3.
 name: hub-image
 
 on:
@@ -10,7 +10,7 @@ on:
     tags: ["hub-v*"]
 
 env:
-  IMAGE: ${{ vars.HUB_IMAGE || 'andykcheng/bothy' }}
+  IMAGE: ${{ vars.HUB_IMAGE || 'penpapertech/bothy' }}
 
 jobs:
   build:
