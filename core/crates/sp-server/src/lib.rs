@@ -83,6 +83,8 @@ pub struct Config {
     /// Chat for people on this Wi-Fi: the directory for its messages (chat.rs). Without it, no chat.
     #[serde(default)]
     pub chat: Option<PathBuf>,
+    /// bothy-hub: link its Manage content page (/manage) from the navigation
+    pub manage: bool,
     /// App only: its installed.json. The books on the phone are offered to browsers at /books (reading.rs),
     /// and everything installed to other phones running the app (offer.rs).
     #[serde(default)]
@@ -108,6 +110,7 @@ pub struct App {
     pub chat: Option<Arc<chat::Chat>>,
     pub installed: Option<PathBuf>,
     pub apk: Option<PathBuf>,
+    pub manage: bool,
 }
 
 pub type AppState = Arc<App>;
@@ -533,7 +536,7 @@ pub fn load(cfg: &Config) -> anyhow::Result<Arc<App>> {
         None => None,
     };
     let chat = cfg.chat.as_deref().map(chat::Chat::open).transpose()?.map(Arc::new);
-    Ok(Arc::new(App { lib, embedder, query_prefix, maps, games, catalog, llm, browse, books, chat, installed: cfg.installed.clone(), apk: cfg.apk.clone() }))
+    Ok(Arc::new(App { lib, embedder, query_prefix, maps, games, catalog, llm, browse, books, chat, installed: cfg.installed.clone(), apk: cfg.apk.clone(), manage: cfg.manage }))
 }
 
 pub fn router(app: Arc<App>, cfg: &Config) -> Router {

@@ -161,6 +161,7 @@ fn nav(app: &App) -> String {
     if app.maps.is_some() { n.push_str("<a href=\"/map\">Map</a>"); }
     if app.games.is_some() { n.push_str("<a href=\"/games\">Games</a>"); }
     if app.chat.is_some() { n.push_str("<a href=\"/chat\">Chat</a>"); }
+    if app.manage { n.push_str("<a href=\"/manage\">Manage</a>"); }
     n.push_str("</nav>");
     n
 }
@@ -197,6 +198,7 @@ pub fn home(app: &App) -> String {
     if app.maps.is_some() { card("/map", "Offline map", "Streets, places and search"); }
     if app.games.is_some() { card("/games", "Games", "Play in the browser, no internet needed"); }
     if app.chat.is_some() { card("/chat", "Chat", "Talk with everyone on this Wi-Fi, or privately with one person"); }
+    if app.manage { card("/manage", "Manage", "Add maps, books and more to this hub (needs the admin password)"); }
     if !more.is_empty() {
         body.push_str(&format!("<div class=\"section-title\">More</div><div class=\"cards\">{more}</div>"));
     }

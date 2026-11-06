@@ -62,7 +62,7 @@ async fn main() -> anyhow::Result<()> {
     if a.export_catalog.is_some() {
         a.downloads = true;
     }
-    let cfg = sp_server::Config { library: a.library, packs: a.packs, model: a.model, threads: a.threads, maps: a.maps, games: a.games, downloads: a.downloads, llm: a.llm, books: a.books, chat: a.chat, installed: a.installed, apk: a.apk };
+    let cfg = sp_server::Config { library: a.library, packs: a.packs, model: a.model, threads: a.threads, maps: a.maps, games: a.games, downloads: a.downloads, llm: a.llm, books: a.books, chat: a.chat, installed: a.installed, apk: a.apk, manage: false };
     let app = sp_server::load(&cfg)?;
     if let Some(out) = &a.export_catalog {
         let cat = app.catalog.as_ref().ok_or_else(|| anyhow::anyhow!("no catalog"))?;

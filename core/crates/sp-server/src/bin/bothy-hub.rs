@@ -7,9 +7,9 @@
 //!   bothy-hub start [--port 8080] serve the hub; with nothing downloaded yet, it runs `get` first
 //!   bothy-hub                     the same as `start` (so double-clicking it works)
 //!   bothy-hub maps [search|add|remove]   map regions
-//!   bothy-hub admin               the link to the hub's Manage content page
+//!   bothy-hub reset-password      forget the Manage page's admin password
 //!
-//! A running hub has a Manage content page (`/manage?key=…`, the key in `admin-key`): pick what to keep,
+//! A running hub has a Manage content page (`/manage`, behind an admin password set on the first visit): pick what to keep,
 //! as in the app's Content tab; it downloads in the background, then reloads the content in place.
 //!
 //! The data folder is `--data DIR`, else $BOTHY_DATA, else `bothy-data` next to the program. It uses
@@ -50,11 +50,8 @@ enum Cmd {
     },
     /// Start the hub
     Start(StartArgs),
-    /// Print the link to the hub's Manage content page (download maps and more from a browser)
-    Admin {
-        #[arg(long, env = "BOTHY_PORT", default_value_t = 8080)]
-        port: u16,
-    },
+    /// Forget the Manage page's admin password, so the next visit to /manage sets a new one
+    ResetPassword,
     /// List the map regions, or add and remove them: maps; maps france; maps add fr us-ca; maps remove fr
     Maps {
         /// list [SEARCH], add NAME…, or remove NAME… (a name is an id like fr or us-ca, a country, or a place name)
@@ -597,7 +594,7 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
     remove_unchosen(dir, &mut installed, &ids)?;
     let _ = std::fs::remove_file(dir.join("pending.json"));
     if !first_run && a.job.is_none() {
-        println!("If the hub is running, restart it to use the new content (with Docker: docker restart bothy), or use its Manage content page next time (bothy-hub admin).");
+        println!("If the hub is running, restart it to use the new content (with Docker: docker restart bothy), or next time use Manage on the hub's home page, which needs no restart.");
     }
     Ok(())
 }
@@ -848,29 +845,50 @@ fn lan_addresses() -> Vec<String> {
 
 // ---------- the Manage content page ----------
 
-/// The secret in the Manage page's link: only someone with the link can change what the hub holds.
-fn admin_key(dir: &Path) -> Result<String> {
-    let p = dir.join("admin-key");
-    if let Ok(k) = std::fs::read_to_string(&p)
-        && k.trim().len() >= 16
-    {
-        return Ok(k.trim().to_string());
-    }
-    let mut b = [0u8; 16];
+const PW_ITER: u32 = 200_000;
+
+fn random_hex(n: usize) -> Result<String> {
+    let mut b = vec![0u8; n];
     ring::rand::SecureRandom::fill(&ring::rand::SystemRandom::new(), &mut b).map_err(|_| anyhow::anyhow!("no system randomness"))?;
-    let k: String = b.iter().map(|x| format!("{x:02x}")).collect();
-    std::fs::create_dir_all(dir)?;
-    std::fs::write(&p, &k)?;
-    Ok(k)
+    Ok(b.iter().map(|x| format!("{x:02x}")).collect())
 }
 
-fn admin_links(port: u16, key: &str) -> Vec<String> {
-    let path = format!("/manage?key={key}");
+fn unhex(s: &str) -> Option<Vec<u8>> {
+    (0..s.len()).step_by(2).map(|i| s.get(i..i + 2).and_then(|h| u8::from_str_radix(h, 16).ok())).collect()
+}
+
+/// The Manage page's password, set on the first visit: PBKDF2-SHA256 with a random salt, in
+/// `<data>/admin-password`.
+fn password_path(dir: &Path) -> PathBuf {
+    dir.join("admin-password")
+}
+
+fn set_password(dir: &Path, pw: &str) -> Result<()> {
+    let salt = random_hex(16)?;
+    let mut hash = [0u8; 32];
+    ring::pbkdf2::derive(ring::pbkdf2::PBKDF2_HMAC_SHA256, std::num::NonZeroU32::new(PW_ITER).unwrap(), salt.as_bytes(), pw.as_bytes(), &mut hash);
+    let rec = serde_json::json!({"kdf": "pbkdf2-sha256", "iter": PW_ITER, "salt": salt, "hash": hash.iter().map(|x| format!("{x:02x}")).collect::<String>()});
+    let tmp = dir.join("admin-password.tmp");
+    std::fs::write(&tmp, serde_json::to_vec(&rec)?)?;
+    std::fs::rename(tmp, password_path(dir))?;
+    Ok(())
+}
+
+/// None when no password is set yet.
+fn check_password(dir: &Path, pw: &str) -> Option<bool> {
+    let rec: Value = serde_json::from_slice(&std::fs::read(password_path(dir)).ok()?).ok()?;
+    let iter = std::num::NonZeroU32::new(rec["iter"].as_u64()? as u32)?;
+    let hash = unhex(rec["hash"].as_str()?)?;
+    let salt = rec["salt"].as_str()?;
+    Some(ring::pbkdf2::verify(ring::pbkdf2::PBKDF2_HMAC_SHA256, iter, salt.as_bytes(), pw.as_bytes(), &hash).is_ok())
+}
+
+fn manage_links(port: u16) -> Vec<String> {
     if in_docker() {
-        return vec![format!("http://<this computer's address>:{port}{path}")];
+        return vec![format!("http://<this computer's address>:{port}/manage")];
     }
-    let mut v: Vec<String> = lan_addresses().iter().map(|ip| format!("http://{ip}:{port}{path}")).collect();
-    v.push(format!("http://localhost:{port}{path}"));
+    let mut v: Vec<String> = lan_addresses().iter().map(|ip| format!("http://{ip}:{port}/manage")).collect();
+    v.push(format!("http://localhost:{port}/manage"));
     v
 }
 
@@ -878,6 +896,7 @@ fn admin_links(port: u16, key: &str) -> Vec<String> {
 fn build(dir: &Path, a: &StartArgs, chat: Option<Arc<sp_server::chat::Chat>>) -> Result<(Arc<sp_server::App>, axum::Router, sp_server::Config)> {
     let mut cfg = layout(dir);
     cfg.downloads = !a.no_downloads;
+    cfg.manage = true;
     if !a.no_chat && chat.is_none() {
         cfg.chat = Some(dir.join("chat"));
     }
@@ -892,7 +911,10 @@ fn build(dir: &Path, a: &StartArgs, chat: Option<Arc<sp_server::chat::Chat>>) ->
 struct Manage {
     dir: PathBuf,
     start: StartArgs,
-    key: String,
+    /// signed-in browsers (random tokens, forgotten on restart)
+    sessions: Mutex<BTreeSet<String>>,
+    /// wrong passwords in a row, and when the last one was
+    fails: Mutex<(u32, Option<Instant>)>,
     job: Arc<Job>,
     catalog: Mutex<Option<(Instant, Value)>>,
     live: Arc<std::sync::RwLock<axum::Router>>,
@@ -901,7 +923,7 @@ struct Manage {
 
 impl Manage {
     fn authed(&self, h: &axum::http::HeaderMap) -> bool {
-        h.get("x-bothy-key").and_then(|v| v.to_str().ok()).is_some_and(|k| k == self.key)
+        h.get("x-bothy-session").and_then(|v| v.to_str().ok()).is_some_and(|k| self.sessions.lock().unwrap().contains(k))
     }
 
     fn catalog(&self, fresh: bool) -> Result<Value> {
@@ -951,7 +973,7 @@ mod web {
 
     pub async fn state(State(m): State<Arc<Manage>>, h: HeaderMap, q: axum::extract::Query<BTreeMap<String, String>>) -> Response {
         if !m.authed(&h) {
-            return (StatusCode::FORBIDDEN, "This page needs the hub's admin link (run: bothy-hub admin)").into_response();
+            return (StatusCode::FORBIDDEN, "Sign in with the admin password").into_response();
         }
         let fresh = q.contains_key("fresh");
         let m2 = m.clone();
@@ -974,6 +996,80 @@ mod web {
             "job": job_json(&m.job),
         }))
         .into_response()
+    }
+
+    pub async fn status(State(m): State<Arc<Manage>>, h: HeaderMap) -> Json<Value> {
+        Json(serde_json::json!({"password_set": password_path(&m.dir).is_file(), "signed_in": m.authed(&h)}))
+    }
+
+    fn session(m: &Manage) -> Response {
+        match random_hex(24) {
+            Ok(t) => {
+                m.sessions.lock().unwrap().insert(t.clone());
+                Json(serde_json::json!({"token": t})).into_response()
+            }
+            Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
+        }
+    }
+
+    /// First visit: choose the admin password (only while none is set).
+    pub async fn setup(State(m): State<Arc<Manage>>, Json(body): Json<Value>) -> Response {
+        let pw = body["password"].as_str().unwrap_or_default().to_string();
+        if pw.chars().count() < 6 {
+            return (StatusCode::BAD_REQUEST, "Use at least 6 characters").into_response();
+        }
+        let m2 = m.clone();
+        let r = tokio::task::spawn_blocking(move || {
+            let _guard = m2.fails.lock().unwrap(); // one setup at a time
+            if password_path(&m2.dir).is_file() {
+                return Ok(false);
+            }
+            set_password(&m2.dir, &pw).map(|_| true)
+        })
+        .await;
+        match r {
+            Ok(Ok(true)) => {
+                println!("Admin password set on the Manage page.");
+                session(&m)
+            }
+            Ok(Ok(false)) => (StatusCode::CONFLICT, "A password is already set: sign in instead").into_response(),
+            Ok(Err(e)) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Couldn't save the password: {e:#}")).into_response(),
+            Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
+        }
+    }
+
+    pub async fn login(State(m): State<Arc<Manage>>, Json(body): Json<Value>) -> Response {
+        {
+            let f = m.fails.lock().unwrap();
+            if f.0 >= 5 && f.1.is_some_and(|t| t.elapsed() < Duration::from_secs(60)) {
+                return (StatusCode::TOO_MANY_REQUESTS, "Too many wrong passwords: wait a minute and try again").into_response();
+            }
+        }
+        let pw = body["password"].as_str().unwrap_or_default().to_string();
+        let dir = m.dir.clone();
+        let ok = tokio::task::spawn_blocking(move || check_password(&dir, &pw)).await.ok().flatten();
+        match ok {
+            Some(true) => {
+                *m.fails.lock().unwrap() = (0, None);
+                session(&m)
+            }
+            Some(false) => {
+                {
+                    let mut f = m.fails.lock().unwrap();
+                    *f = (f.0 + 1, Some(Instant::now()));
+                }
+                tokio::time::sleep(Duration::from_secs(1)).await;
+                (StatusCode::FORBIDDEN, "Wrong password").into_response()
+            }
+            None => (StatusCode::CONFLICT, "No password is set yet").into_response(),
+        }
+    }
+
+    pub async fn logout(State(m): State<Arc<Manage>>, h: HeaderMap) -> StatusCode {
+        if let Some(t) = h.get("x-bothy-session").and_then(|v| v.to_str().ok()) {
+            m.sessions.lock().unwrap().remove(t);
+        }
+        StatusCode::NO_CONTENT
     }
 
     pub async fn job(State(m): State<Arc<Manage>>, h: HeaderMap) -> Response {
@@ -1043,12 +1139,12 @@ async fn start(dir: &Path, a: &StartArgs) -> Result<()> {
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", a.port))
         .await
         .with_context(|| format!("port {} is in use: is a hub already running? Try --port 8081", a.port))?;
-    let key = admin_key(dir)?;
     let live = Arc::new(std::sync::RwLock::new(router));
     let m = Arc::new(Manage {
         dir: dir.to_path_buf(),
         start: a.clone(),
-        key: key.clone(),
+        sessions: Mutex::new(BTreeSet::new()),
+        fails: Mutex::new((0, None)),
         job: Arc::new(Job::default()),
         catalog: Mutex::new(None),
         live: live.clone(),
@@ -1063,6 +1159,10 @@ async fn start(dir: &Path, a: &StartArgs) -> Result<()> {
         .route("/manage", axum::routing::get(web::page))
         .route("/api/manage", axum::routing::get(web::state))
         .route("/api/manage/job", axum::routing::get(web::job))
+        .route("/api/manage/status", axum::routing::get(web::status))
+        .route("/api/manage/setup", axum::routing::post(web::setup))
+        .route("/api/manage/login", axum::routing::post(web::login))
+        .route("/api/manage/logout", axum::routing::post(web::logout))
         .route("/api/manage/apply", axum::routing::post(web::apply))
         .route("/api/manage/cancel", axum::routing::post(web::cancel))
         .with_state(m)
@@ -1101,8 +1201,12 @@ async fn start(dir: &Path, a: &StartArgs) -> Result<()> {
         }
         println!("On this computer: http://localhost:{}", a.port);
     }
-    println!("\nTo add maps and more, open the Manage content page (keep this link to yourself):");
-    for l in admin_links(a.port, &key) {
+    let first = !password_path(dir).is_file();
+    println!(
+        "\nTo add maps, books and more, open Manage on the hub's home page{}:",
+        if first { " and choose an admin password (the first visit sets it, so do it now)" } else { " (it asks for the admin password)" }
+    );
+    for l in manage_links(a.port) {
         println!("  {l}");
     }
     println!("{}", if in_docker() { "Stop it with: docker stop bothy" } else { "Stop it with Ctrl+C." });
@@ -1121,12 +1225,17 @@ fn main() {
         Some(Cmd::Get(a)) => get(&dir, a, false),
         Some(Cmd::Check { full }) => check(&dir, *full).map(|_| ()),
         Some(Cmd::Maps { action, names, from, yes }) => maps(&dir, action, names, from, *yes),
-        Some(Cmd::Admin { port }) => admin_key(&dir).map(|k| {
-            println!("The hub's Manage content page (download maps and more; keep this link to yourself):");
-            for l in admin_links(*port, &k) {
-                println!("  {l}");
+        Some(Cmd::ResetPassword) => match std::fs::remove_file(password_path(&dir)) {
+            Ok(()) => {
+                println!("The admin password is forgotten. Open the hub's Manage page and choose a new one.");
+                Ok(())
             }
-        }),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                println!("No admin password is set: the first visit to the Manage page sets one.");
+                Ok(())
+            }
+            Err(e) => Err(e.into()),
+        },
         Some(Cmd::Start(a)) => tokio::runtime::Runtime::new().map_err(Into::into).and_then(|rt| rt.block_on(start(&dir, a))),
         None => {
             let Some(Cmd::Start(a)) = Cli::parse_from(["bothy-hub", "start"]).cmd else { unreachable!() };

@@ -110,6 +110,7 @@ sudo usermod -aG docker $USER</code></pre></li>
   <li><b>Linux and Raspberry Pi:</b> run <code>hostname -I</code> and take the first address.</li>
 </ul>
 <p>So a phone would open something like <code>http://192.168.1.23:8080</code>. If the computer asks whether to allow Docker to accept incoming connections, allow it on <b>private</b> networks.</p>
+<p><b>Then choose an admin password:</b> on the hub's page, open <b>Manage</b>. The first visit asks you to choose a password, which you'll need to add maps, books and more (<a href="#maps">see below</a>). Do it straight away, because until it's set, whoever opens Manage first chooses it.</p>
 <p class="muted">Tip: in your router's settings, give the hub a fixed (reserved) address, so the link never changes. Then print it on a card or turn it into a QR code and stick it on the wall.</p>
 
 <h2 id="ready">Step 4: Make sure it's ready</h2>
@@ -126,9 +127,8 @@ sudo usermod -aG docker $USER</code></pre></li>
 <h2 id="maps">Maps and more: the Manage page</h2>
 <p>Every hub has the world overview. Street-level maps, with place search, come country by country, cut along the borders. The biggest countries (the United States, Canada, Russia, China, Brazil, Germany and France) come in states or regions. There are about 500 to choose from, 150 GB for the whole world, so pick where you live and where you travel.</p>
 <p>Choose them on the hub's <b>Manage content</b> page, which works like the app's Content tab: search or browse maps by continent, add or remove pictures, AI answers and games, and press Download. The hub keeps working while it downloads and switches over by itself when it's done. No restart needed.</p>
-<p>The page has a secret link, so only you can change what the hub holds. Get it with:</p>
-<pre><code>docker exec bothy bothy-hub admin</code></pre>
-<p>Open the link it shows, replacing <code>&lt;this computer's address&gt;</code> as in step 3. Keep it to yourself, and bookmark it. (The link is also in <code>docker logs bothy</code>.)</p>
+<p>Open the hub in a browser and choose <b>Manage</b>. The first time, it asks you to choose an admin password; after that it asks for it. Do this soon after starting the hub: until a password is set, the first person to open Manage sets it. Anyone on the Wi-Fi can still read, search, use the map and chat; only adding or removing content needs the password.</p>
+<p class="muted">Forgot the password? <code>docker exec bothy bothy-hub reset-password</code>, then open Manage and choose a new one.</p>
 <details class="os"><summary>Or use commands</summary>
 <pre><code>docker exec -it bothy bothy-hub maps germany
 docker exec -it bothy bothy-hub maps add uk ireland

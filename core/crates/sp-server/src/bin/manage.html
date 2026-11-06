@@ -32,7 +32,7 @@ details label.row { padding-left: 34px; }
 input.find { width: 100%; box-sizing: border-box; padding: 11px 16px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
   background: var(--surface); color: var(--fg); font: inherit; margin: 0 0 10px; outline: none; }
 input.find:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-.bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg);
+.bar { z-index: 10; position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg);
   border-top: 1px solid color-mix(in srgb, var(--muted) 20%, transparent); padding: 12px 16px; }
 .bar .in { max-width: 760px; margin: 0 auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .bar .msg { flex: 1; min-width: 200px; font-size: 14px; }
@@ -44,29 +44,28 @@ input.find:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--acce
 .prog i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .4s; }
 .err { color: #b3261e; }
 .note { padding: 12px 16px; color: var(--muted); font-size: 14px; }
+form.auth { padding: 18px 16px; display: grid; gap: 10px; max-width: 380px; }
+form.auth input { padding: 11px 14px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--muted) 30%, transparent); background: var(--bg); color: var(--fg); font: inherit; }
+form.auth button { white-space: nowrap; border: 0; border-radius: 999px; padding: 11px 20px; font: inherit; font-weight: 600; cursor: pointer; background: var(--accent); color: #fff; justify-self: start; }
+#out { float: right; font-size: 14px; margin-top: 26px; }
 </style>
 </head>
 <body>
 <header><a class="brand" href="/">Bothy</a><nav><a href="/">Home</a><a href="/map">Map</a></nav></header>
 <main>
+  <a href="#" id="out" hidden>Sign out</a>
   <h1>Manage content</h1>
   <p class="lede">Choose what this hub holds, as in the app's Content tab. New things download in the background; the hub keeps working and switches over when they're ready.</p>
   <div id="app"><p class="note">Loading the catalog…</p></div>
 </main>
-<div class="bar"><div class="in">
+<div class="bar" hidden><div class="in">
   <div class="msg" id="msg"></div>
   <button class="ghost" id="cancel" hidden>Cancel</button>
   <button id="apply" disabled>Up to date</button>
 </div></div>
 <script>
 'use strict';
-const u = new URL(location.href);
-if (u.searchParams.get('key')) {
-  localStorage.setItem('bothyKey', u.searchParams.get('key'));
-  history.replaceState(null, '', '/manage');
-}
-const KEY = localStorage.getItem('bothyKey') || '';
-const H = { 'x-bothy-key': KEY };
+let H = { 'x-bothy-session': localStorage.getItem('bothySession') || '' };
 let cat = null, comps = {}, installed = new Set(), want = new Set(), free = 0, running = false, q = '';
 const $ = (id) => document.getElementById(id);
 
@@ -213,15 +212,52 @@ function bar() {
   $('msg').replaceChildren(`This hub holds ${size(sum([...installed]))}.`, el('small', {}, `Free space: ${size(free)}`));
 }
 
+function authForm(first) {
+  $('msg').textContent = '';
+  document.querySelector('.bar').hidden = true;
+  const pw = el('input', { type: 'password', placeholder: first ? 'New admin password (6 or more characters)' : 'Admin password', autocomplete: first ? 'new-password' : 'current-password', required: true });
+  const pw2 = first ? el('input', { type: 'password', placeholder: 'Type it again', autocomplete: 'new-password', required: true }) : null;
+  const err = el('div', { class: 'err' });
+  const f = el('form', { class: 'auth' },
+    el('b', {}, first ? 'Choose an admin password' : 'Sign in'),
+    el('span', { class: 'note', style: 'padding:0' }, first
+      ? 'Only people with this password can add or remove content. Anyone on the Wi-Fi can still read, search and chat.'
+      : 'Enter the admin password chosen when this hub was set up.'),
+    pw, pw2, err, el('button', {}, first ? 'Save and continue' : 'Sign in'));
+  f.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.textContent = '';
+    if (first && pw.value !== pw2.value) { err.textContent = 'The two passwords differ.'; return; }
+    const r = await fetch(first ? '/api/manage/setup' : '/api/manage/login',
+      { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password: pw.value }) });
+    if (!r.ok) { err.textContent = await r.text(); if (r.status === 409) setTimeout(() => load(false), 1200); return; }
+    const { token } = await r.json();
+    localStorage.setItem('bothySession', token);
+    H = { 'x-bothy-session': token };
+    load(false);
+  });
+  $('app').replaceChildren(el('div', { class: 'box' }, f));
+  pw.focus();
+}
+
+$('out').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await fetch('/api/manage/logout', { method: 'POST', headers: H });
+  localStorage.removeItem('bothySession');
+  H = { 'x-bothy-session': '' };
+  location.reload();
+});
+
 async function load(fresh) {
   const r = await fetch('/api/manage' + (fresh ? '?fresh=1' : ''), { headers: H });
   if (r.status === 403) {
-    $('app').replaceChildren(el('div', { class: 'box' }, el('div', { class: 'note' },
-      'This page needs the hub’s admin link, which has a secret key in it. On the computer running the hub, run ',
-      el('code', {}, 'docker exec bothy bothy-hub admin'), ' (or ', el('code', {}, 'bothy-hub admin'), ' without Docker) and open the link it shows.')));
-    $('msg').textContent = '';
+    const st = await (await fetch('/api/manage/status')).json();
+    $('out').hidden = true;
+    authForm(!st.password_set);
     return;
   }
+  $('out').hidden = false;
+  document.querySelector('.bar').hidden = false;
   const s = await r.json();
   installed = new Set(s.installed);
   free = s.free;
