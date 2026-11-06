@@ -123,16 +123,19 @@ sudo usermod -aG docker $USER</code></pre></li>
   <li><b>Tell people.</b> Put the address (or a QR code) where people will find it: the fridge, the noticeboard, the family group chat. In an emergency nobody will remember a number.</li>
 </ol>
 
-<h2 id="maps">Maps</h2>
+<h2 id="maps">Maps and more: the Manage page</h2>
 <p>Every hub has the world overview. Street-level maps, with place search, come country by country, cut along the borders. The biggest countries (the United States, Canada, Russia, China, Brazil, Germany and France) come in states or regions. There are about 500 to choose from, 150 GB for the whole world, so pick where you live and where you travel.</p>
-<p>See what there is, or search:</p>
-<pre><code>docker exec -it bothy bothy-hub maps
-docker exec -it bothy bothy-hub maps germany</code></pre>
-<p>Add maps by id, country or name, then restart the hub to show them:</p>
-<pre><code>docker exec -it bothy bothy-hub maps add uk ireland
+<p>Choose them on the hub's <b>Manage content</b> page, which works like the app's Content tab: search or browse maps by continent, add or remove pictures, AI answers and games, and press Download. The hub keeps working while it downloads and switches over by itself when it's done. No restart needed.</p>
+<p>The page has a secret link, so only you can change what the hub holds. Get it with:</p>
+<pre><code>docker exec bothy bothy-hub admin</code></pre>
+<p>Open the link it shows, replacing <code>&lt;this computer's address&gt;</code> as in step 3. Keep it to yourself, and bookmark it. (The link is also in <code>docker logs bothy</code>.)</p>
+<details class="os"><summary>Or use commands</summary>
+<pre><code>docker exec -it bothy bothy-hub maps germany
+docker exec -it bothy bothy-hub maps add uk ireland
 docker restart bothy</code></pre>
-<p><code>maps add us</code> adds every US state; <code>maps add california</code> just one. To take a map off and free the space: <code>docker exec -it bothy bothy-hub maps remove ireland</code>.</p>
-<p>To choose maps when you first start the hub, add <code>-e BOTHY_ADD=map:uk,map:ireland</code> to the <code>docker run</code> command. Phones can then copy the maps from the hub in the app's Content tab.</p>
+<p><code>maps</code> on its own lists everything; <code>maps add us</code> adds every US state, <code>maps add california</code> just one; <code>maps remove ireland</code> takes one off. To choose maps when you first start the hub, add <code>-e BOTHY_ADD=map:uk,map:ireland</code> to the <code>docker run</code> command.</p>
+</details>
+<p>Phones can then copy the maps from the hub in the app's Content tab.</p>
 
 <h2 id="update">Keeping it up to date</h2>
 <p>Content changes now and then. To fetch whatever's new or changed (only the differences are downloaded):</p>

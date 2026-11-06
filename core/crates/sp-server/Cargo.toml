@@ -37,3 +37,4 @@ blake3.workspace = true
 # bothy-hub: downloads from the download server, free disk space
 ureq = "3"
 fs4 = "0.13"
+ring = "0.17"

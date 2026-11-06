@@ -367,6 +367,11 @@ Phones update by re-copying the whole pack (~5–10 min over USB 3); no delta up
     - No preset has regional maps (2026-11-05): they're chosen one by one, and a preset run keeps the maps already chosen (Docker passes `BOTHY_PRESET` on every run).
     - `--add` and `--skip` take ids or id prefixes, and maps by id, country or name (`map:us` = every US state, `map:california`). Each option also has a `BOTHY_*` environment variable.
     - `maps [SEARCH]` lists regions by continent (✓ = installed); `maps add|remove NAME…` runs `get` on the current choice plus or minus those maps.
+  - **Manage content page (2026-11-06):** `/manage` on a running hub, like the app's Content tab (collections, model, AI, maps with search and continent → country → parts, games; choosing adds requirements, dropping removes dependents).
+    - **Access:** a secret key in the link (`<data>/admin-key`, 128 random bits), sent as `x-bothy-key` by the page (kept in localStorage); `bothy-hub admin` and the start log print the link. Without it, anyone on the Wi-Fi could delete the library.
+    - **API:** `GET /api/manage` (download-server catalog, cached 10 min; installed ids; free space; job), `GET /api/manage/job`, `POST /api/manage/apply {ids}` (exact choice, one job at a time), `POST /api/manage/cancel`.
+    - **Download:** the same `get` code in a blocking task, with progress and cancel through a shared `Job`; cancelling removes `pending.json` (no resume on the next start) but keeps `.part` files.
+    - **Reload in place:** everything but `/manage` goes through a router held in an `RwLock`, swapped for a freshly loaded app when the download finishes. Chat is an `Arc` carried over, so it keeps its people and messages. Files are replaced by rename and removed by unlink, so the old app's memory maps stay valid until it's dropped.
   - **Docker is the main way to install it.** `hub/Dockerfile` builds a 121 MB image that holds only the program; content goes into the `/data` volume on first start.
     - CPU baselines: armv8-a (Raspberry Pi) and x86-64-v2.
     - `.github/workflows/hub-image.yml` builds amd64 and arm64 on native runners and joins them into one Docker Hub tag. It needs the secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`.

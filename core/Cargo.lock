@@ -1596,6 +1596,7 @@ dependencies = [
  "fs4",
  "futures-util",
  "rcgen",
+ "ring",
  "serde",
  "serde_json",
  "sp-embed",

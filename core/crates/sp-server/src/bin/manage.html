@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage content · Bothy</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+main { max-width: 760px; margin: 0 auto; padding: 8px 16px 140px; }
+h1 { font-size: 28px; margin: 16px 0 4px; }
+h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 28px 4px 8px; }
+.lede { color: var(--muted); margin: 0 0 8px; }
+.box { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); margin: 0 0 12px; overflow: hidden; }
+.box .head { padding: 14px 16px 4px; }
+.box .head b { font-size: 17px; }
+.box .head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+label.row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; cursor: pointer; border-top: 1px solid color-mix(in srgb, var(--muted) 15%, transparent); }
+label.row:first-child { border-top: 0; }
+label.row:hover { background: var(--accent-soft); }
+label.row span.t { flex: 1; }
+label.row small { display: block; color: var(--muted); font-size: 13px; }
+label.row input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+details { border-top: 1px solid color-mix(in srgb, var(--muted) 15%, transparent); }
+details > summary { padding: 12px 16px; cursor: pointer; list-style: none; display: flex; gap: 8px; }
+details > summary::before { content: "›"; color: var(--muted); transition: transform .15s; display: inline-block; width: 10px; }
+details[open] > summary::before { transform: rotate(90deg); }
+details > summary small { color: var(--muted); margin-left: auto; font-size: 13px; }
+details details { margin-left: 18px; }
+details label.row { padding-left: 34px; }
+.games { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.games label.row { border-top: 0; }
+input.find { width: 100%; box-sizing: border-box; padding: 11px 16px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  background: var(--surface); color: var(--fg); font: inherit; margin: 0 0 10px; outline: none; }
+input.find:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg);
+  border-top: 1px solid color-mix(in srgb, var(--muted) 20%, transparent); padding: 12px 16px; }
+.bar .in { max-width: 760px; margin: 0 auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.bar .msg { flex: 1; min-width: 200px; font-size: 14px; }
+.bar .msg small { display: block; color: var(--muted); }
+.bar button { white-space: nowrap; border: 0; border-radius: 999px; padding: 11px 20px; font: inherit; font-weight: 600; cursor: pointer; background: var(--accent); color: #fff; }
+.bar button.ghost { background: var(--accent-soft); color: var(--accent); }
+.bar button:disabled { opacity: .45; cursor: default; }
+.prog { height: 6px; background: var(--accent-soft); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.prog i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .4s; }
+.err { color: #b3261e; }
+.note { padding: 12px 16px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<header><a class="brand" href="/">Bothy</a><nav><a href="/">Home</a><a href="/map">Map</a></nav></header>
+<main>
+  <h1>Manage content</h1>
+  <p class="lede">Choose what this hub holds, as in the app's Content tab. New things download in the background; the hub keeps working and switches over when they're ready.</p>
+  <div id="app"><p class="note">Loading the catalog…</p></div>
+</main>
+<div class="bar"><div class="in">
+  <div class="msg" id="msg"></div>
+  <button class="ghost" id="cancel" hidden>Cancel</button>
+  <button id="apply" disabled>Up to date</button>
+</div></div>
+<script>
+'use strict';
+const u = new URL(location.href);
+if (u.searchParams.get('key')) {
+  localStorage.setItem('bothyKey', u.searchParams.get('key'));
+  history.replaceState(null, '', '/manage');
+}
+const KEY = localStorage.getItem('bothyKey') || '';
+const H = { 'x-bothy-key': KEY };
+let cat = null, comps = {}, installed = new Set(), want = new Set(), free = 0, running = false, q = '';
+const $ = (id) => document.getElementById(id);
+
+function el(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') e.className = v; else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (v === true) e.setAttribute(k, ''); else if (v !== false && v != null) e.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+}
+function size(b) {
+  if (b >= 1e9) return (b / 1e9).toFixed(b >= 1e10 ? 0 : 1) + ' GB';
+  if (b >= 1e6) return Math.ceil(b / 1e6) + ' MB';
+  return Math.ceil(b / 1e3) + ' KB';
+}
+const sum = (ids) => [...ids].reduce((a, id) => a + (comps[id] ? comps[id].size : 0), 0);
+
+// choosing something adds what it needs; dropping it drops what needs it
+function toggle(id, on) {
+  if (on) {
+    const add = (i) => { if (want.has(i) || !comps[i]) return; want.add(i); (comps[i].requires || []).forEach(add); };
+    add(id);
+  } else {
+    const drop = (i) => { if (!want.delete(i)) return; for (const c of Object.values(comps)) if ((c.requires || []).includes(i)) drop(c.id); };
+    drop(id);
+  }
+  render();
+}
+
+function row(c, title, sub) {
+  const note = [size(c.size), sub, installed.has(c.id) ? 'on this hub' : null].filter(Boolean).join(' · ');
+  return el('label', { class: 'row' },
+    el('span', { class: 't' }, title || c.title, el('small', {}, note)),
+    el('input', { type: 'checkbox', checked: want.has(c.id), disabled: running, onchange: (e) => toggle(c.id, e.target.checked) }));
+}
+const mapName = (c) => c.name || c.title.replace(/^Map · /, '');
+const isRegion = (c) => c.id.startsWith('map:') && c.id !== 'map:world';
+
+function mapsBox(maps) {
+  const box = el('div', { class: 'box' });
+  for (const id of ['map-assets', 'map:world']) if (comps[id]) box.append(row(comps[id], id === 'map-assets' ? 'Map renderer, style and fonts' : 'World overview'));
+  for (const c of maps.filter((c) => want.has(c.id) || installed.has(c.id))) box.append(row(c, mapName(c), c.country_title));
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length) {
+    const hits = maps.filter((c) => words.every((w) => `${mapName(c)} ${c.country_title || ''} ${c.id.slice(4)} ${c.continent || ''}`.toLowerCase().includes(w)))
+      .sort((a, b) => mapName(a).localeCompare(mapName(b)));
+    box.append(el('div', { class: 'note' }, hits.length ? `${hits.length} found` : `No map region matches “${q}”.`));
+    hits.slice(0, 200).forEach((c) => box.append(row(c, mapName(c), c.country_title)));
+    return box;
+  }
+  const byCont = {};
+  for (const c of maps) (byCont[c.continent || 'Other'] ||= []).push(c);
+  for (const cont of Object.keys(byCont).sort()) {
+    const cs = byCont[cont];
+    const chosen = cs.filter((c) => want.has(c.id)).length;
+    const d = el('details', {}, el('summary', {}, cont, el('small', {}, `${cs.length} maps · ${size(sum(cs.map((c) => c.id)))}${chosen ? ` · ${chosen} chosen` : ''}`)));
+    d.addEventListener('toggle', () => { if (d.open && d.childElementCount === 1) fill(); });
+    const fill = () => {
+      const whole = cs.filter((c) => !c.country), parts = {};
+      for (const c of cs.filter((c) => c.country)) (parts[c.country_title || c.country] ||= []).push(c);
+      const names = [...whole.map(mapName), ...Object.keys(parts)].sort((a, b) => a.localeCompare(b));
+      for (const n of names) {
+        if (parts[n]) {
+          const ps = parts[n].sort((a, b) => mapName(a).localeCompare(mapName(b)));
+          const k = ps.filter((c) => want.has(c.id)).length;
+          d.append(el('details', {}, el('summary', {}, n, el('small', {}, `in ${ps.length} parts · ${size(sum(ps.map((c) => c.id)))}${k ? ` · ${k} chosen` : ''}`)),
+            ps.map((c) => row(c, mapName(c)))));
+        } else d.append(row(whole.find((c) => mapName(c) === n), n));
+      }
+    };
+    if (openConts.has(cont)) { d.open = true; fill(); }
+    d.addEventListener('toggle', () => d.open ? openConts.add(cont) : openConts.delete(cont));
+    box.append(d);
+  }
+  return box;
+}
+const openConts = new Set();
+
+function render() {
+  const app = $('app');
+  const scroll = scrollY;
+  app.replaceChildren();
+  if (!cat) return;
+  const used = new Set();
+  const take = (c) => { used.add(c.id); return c; };
+  const list = Object.values(comps);
+  if ((cat.groups || []).length) app.append(el('h2', {}, 'Library'));
+  for (const g of cat.groups || []) {
+    const cs = list.filter((c) => c.group === g.id).map(take);
+    const main = cs.find((c) => c.id === g.id);
+    const box = el('div', { class: 'box' }, el('div', { class: 'head' }, el('b', {}, g.title), g.description ? el('p', {}, g.description) : null));
+    if (main) box.append(row(main, `Articles + keyword search`, g.docs ? `${g.docs.toLocaleString()} ${g.kind === 'books' ? 'chapters' : 'articles'}` : null));
+    for (const c of cs.filter((c) => c !== main)) box.append(row(c, c.id.endsWith(':images') ? 'Pictures' : c.title));
+    app.append(box);
+  }
+  const extra = ['model', 'llm'].map((id) => comps[id]).filter(Boolean).map(take);
+  if (extra.length) {
+    app.append(el('h2', {}, 'Search model and AI'));
+    app.append(el('div', { class: 'box' }, extra.map((c) => row(c, c.id === 'model' ? 'Search-by-meaning model' : 'Offline AI answers',
+      c.id === 'model' ? 'needed by every “search by meaning” index' : 'writes answers from the library; needs about 3 GB of free memory'))));
+  }
+  const maps = list.filter((c) => c.group === 'maps').map(take);
+  if (maps.length) {
+    app.append(el('h2', {}, 'Maps'));
+    const regions = maps.filter(isRegion);
+    const find = el('input', { class: 'find', type: 'search', placeholder: `Search ${regions.length} countries and regions…`, value: q,
+      oninput: (e) => { q = e.target.value; const pos = e.target.selectionStart; render(); const f = document.querySelector('input.find'); f.focus(); f.setSelectionRange(pos, pos); } });
+    app.append(find, mapsBox(regions));
+  }
+  const games = list.filter((c) => c.group === 'games').map(take);
+  if (games.length) {
+    app.append(el('h2', {}, 'Games'));
+    app.append(el('div', { class: 'box games' }, games.map((c) => row(c, c.title))));
+  }
+  const rest = list.filter((c) => !used.has(c.id));
+  if (rest.length) {
+    app.append(el('h2', {}, 'Other'));
+    app.append(el('div', { class: 'box' }, rest.map((c) => row(c))));
+  }
+  scrollTo(0, scroll);
+  bar();
+}
+
+function bar() {
+  const get = [...want].filter((id) => !installed.has(id));
+  const drop = [...installed].filter((id) => !want.has(id) && comps[id]);
+  const b = $('apply');
+  if (running) return;
+  $('cancel').hidden = true;
+  const parts = [];
+  if (get.length) parts.push(`Download ${size(sum(get))}`);
+  if (drop.length) parts.push(`remove ${drop.length}`);
+  b.textContent = parts.length ? parts.join(' · ') : 'Up to date';
+  b.disabled = !parts.length;
+  $('msg').replaceChildren(`This hub holds ${size(sum([...installed]))}.`, el('small', {}, `Free space: ${size(free)}`));
+}
+
+async function load(fresh) {
+  const r = await fetch('/api/manage' + (fresh ? '?fresh=1' : ''), { headers: H });
+  if (r.status === 403) {
+    $('app').replaceChildren(el('div', { class: 'box' }, el('div', { class: 'note' },
+      'This page needs the hub’s admin link, which has a secret key in it. On the computer running the hub, run ',
+      el('code', {}, 'docker exec bothy bothy-hub admin'), ' (or ', el('code', {}, 'bothy-hub admin'), ' without Docker) and open the link it shows.')));
+    $('msg').textContent = '';
+    return;
+  }
+  const s = await r.json();
+  installed = new Set(s.installed);
+  free = s.free;
+  if (s.error) {
+    $('app').replaceChildren(el('div', { class: 'box' }, el('div', { class: 'note err' }, s.error)));
+    return;
+  }
+  cat = s.catalog;
+  comps = Object.fromEntries(cat.components.map((c) => [c.id, c]));
+  if (!running) want = new Set([...installed].filter((id) => comps[id]));
+  render();
+  if (s.job.running) watch();
+  else if (s.job.outcome && s.job.outcome !== 'done' && s.job.outcome !== 'cancelled') $('msg').replaceChildren(el('span', { class: 'err' }, 'The last download failed: ' + s.job.outcome));
+}
+
+async function watch() {
+  running = true;
+  render();
+  const b = $('apply'), c = $('cancel');
+  b.disabled = true; b.textContent = 'Downloading…';
+  c.hidden = false; c.disabled = false;
+  for (;;) {
+    const j = await (await fetch('/api/manage/job', { headers: H })).json();
+    const pct = j.total ? Math.floor(j.done * 100 / j.total) : 0;
+    $('msg').replaceChildren(j.step || 'Working…',
+      el('small', {}, j.total ? `${size(j.done)} of ${size(j.total)} (${pct}%)` : ''),
+      el('div', { class: 'prog' }, el('i', { style: `width:${pct}%` })));
+    if (!j.running) {
+      running = false;
+      await load(true);
+      if (j.outcome === 'done') $('msg').replaceChildren('Done. Everything is checked and the hub is using it now.', el('small', {}, `Free space: ${size(free)}`));
+      else if (j.outcome === 'cancelled') $('msg').replaceChildren('Cancelled. Finished parts are kept; nothing else changed.');
+      else $('msg').replaceChildren(el('span', { class: 'err' }, 'The download failed: ' + j.outcome));
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+}
+
+$('apply').addEventListener('click', async () => {
+  const drop = [...installed].filter((id) => !want.has(id) && comps[id]);
+  if (drop.length && !confirm(`Remove ${drop.length} item${drop.length > 1 ? 's' : ''} from this hub (${size(sum(drop))})?\n\n` +
+      drop.map((id) => comps[id].title).slice(0, 12).join('\n'))) return;
+  const r = await fetch('/api/manage/apply', { method: 'POST', headers: { ...H, 'content-type': 'application/json' }, body: JSON.stringify({ ids: [...want] }) });
+  if (r.status === 202 || r.status === 409) watch();
+  else $('msg').replaceChildren(el('span', { class: 'err' }, `Couldn't start: ${await r.text()}`));
+});
+$('cancel').addEventListener('click', async () => {
+  $('cancel').disabled = true;
+  await fetch('/api/manage/cancel', { method: 'POST', headers: H });
+});
+load(false);
+</script>
+</body>
+</html>

@@ -104,7 +104,8 @@ pub struct App {
     pub browse: Vec<browse::Browse>,
     /// The ebook shelf's title/description search (hub with --books)
     pub books: Option<books::BookIndex>,
-    pub chat: Option<chat::Chat>,
+    /// Shared, so a hub reloading its content keeps the same chat
+    pub chat: Option<Arc<chat::Chat>>,
     pub installed: Option<PathBuf>,
     pub apk: Option<PathBuf>,
 }
@@ -527,7 +528,7 @@ pub fn load(cfg: &Config) -> anyhow::Result<Arc<App>> {
         }
         None => None,
     };
-    let chat = cfg.chat.as_deref().map(chat::Chat::open).transpose()?;
+    let chat = cfg.chat.as_deref().map(chat::Chat::open).transpose()?.map(Arc::new);
     Ok(Arc::new(App { lib, embedder, query_prefix, maps, games, catalog, llm, browse, books, chat, installed: cfg.installed.clone(), apk: cfg.apk.clone() }))
 }
 

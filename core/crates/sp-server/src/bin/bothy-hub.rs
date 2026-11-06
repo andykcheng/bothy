@@ -6,6 +6,11 @@
 //!   bothy-hub check [--full]      is everything there and ready? (--full re-hashes every file)
 //!   bothy-hub start [--port 8080] serve the hub; with nothing downloaded yet, it runs `get` first
 //!   bothy-hub                     the same as `start` (so double-clicking it works)
+//!   bothy-hub maps [search|add|remove]   map regions
+//!   bothy-hub admin               the link to the hub's Manage content page
+//!
+//! A running hub has a Manage content page (`/manage?key=…`, the key in `admin-key`): pick what to keep,
+//! as in the app's Content tab; it downloads in the background, then reloads the content in place.
 //!
 //! The data folder is `--data DIR`, else $BOTHY_DATA, else `bothy-data` next to the program. It uses
 //! the app's layout (collections/, models/, maps/, games/, llm/), and `installed.json` records what
@@ -17,6 +22,8 @@ use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
 use std::io::{IsTerminal, Read, Write};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 const DEFAULT_FROM: &str = "https://data.pocketbothy.com/v1";
@@ -43,6 +50,11 @@ enum Cmd {
     },
     /// Start the hub
     Start(StartArgs),
+    /// Print the link to the hub's Manage content page (download maps and more from a browser)
+    Admin {
+        #[arg(long, env = "BOTHY_PORT", default_value_t = 8080)]
+        port: u16,
+    },
     /// List the map regions, or add and remove them: maps; maps france; maps add fr us-ca; maps remove fr
     Maps {
         /// list [SEARCH], add NAME…, or remove NAME… (a name is an id like fr or us-ca, a country, or a place name)
@@ -75,6 +87,24 @@ struct GetArgs {
     /// Don't ask before downloading
     #[arg(long, short)]
     yes: bool,
+    /// Exactly these components (the Manage page's choice), instead of a preset or the current choice
+    #[arg(skip)]
+    exact: Option<BTreeSet<String>>,
+    /// Report progress here (the Manage page) and stop when it's cancelled
+    #[arg(skip)]
+    job: Option<Arc<Job>>,
+}
+
+/// A download started from the Manage page.
+#[derive(Default)]
+struct Job {
+    running: AtomicBool,
+    cancel: AtomicBool,
+    total: AtomicU64,
+    done: AtomicU64,
+    /// what happened last: "", "done", "cancelled" or an error
+    outcome: Mutex<String>,
+    step: Mutex<String>,
 }
 
 #[derive(clap::Args, Clone)]
@@ -342,10 +372,15 @@ struct Progress {
     done: u64,
     t0: Instant,
     last: Instant,
+    job: Option<Arc<Job>>,
 }
 
 impl Progress {
     fn show(&mut self, extra: u64, force: bool) {
+        if let Some(j) = &self.job {
+            j.total.store(self.total, Ordering::Relaxed);
+            j.done.store(self.done + extra, Ordering::Relaxed);
+        }
         let tty = std::io::stdout().is_terminal();
         if !force && self.last.elapsed() < Duration::from_millis(if tty { 700 } else { 15_000 }) {
             return;
@@ -394,6 +429,9 @@ fn download(agent: &ureq::Agent, from: &str, dir: &Path, f: &Value, prog: &mut P
                 let mut rd = r.body_mut().as_reader();
                 let mut buf = vec![0u8; 1 << 20];
                 loop {
+                    if prog.job.as_ref().is_some_and(|j| j.cancel.load(Ordering::Relaxed)) {
+                        bail!("cancelled");
+                    }
                     let n = rd.read(&mut buf)?;
                     if n == 0 {
                         break;
@@ -416,9 +454,10 @@ fn download(agent: &ureq::Agent, from: &str, dir: &Path, f: &Value, prog: &mut P
             std::fs::rename(&part, &dst)?;
             Ok(())
         })();
+        let cancelled = prog.job.as_ref().is_some_and(|j| j.cancel.load(Ordering::Relaxed));
         match res {
             Ok(()) => return Ok(()),
-            Err(e) if tries < 8 => {
+            Err(e) if tries < 8 && !cancelled => {
                 tries += 1;
                 println!("\n  {rel}: {e:#}; retrying ({tries}/8)…");
                 std::thread::sleep(Duration::from_secs(2u64.pow(tries.min(5))));
@@ -442,6 +481,7 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
     let free = fs4::available_space(dir).unwrap_or(0);
 
     let name = match &a.preset {
+        _ if a.exact.is_some() => "__exact".into(),
         Some(p) => p.clone(),
         None if pending(dir).is_some() => "__pending".into(),
         None if !installed.is_empty() => "__update".into(),
@@ -456,7 +496,9 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
         }
         None => "standard".into(),
     };
-    let ids = if name == "__pending" {
+    let ids = if let Some(e) = &a.exact {
+        e.clone()
+    } else if name == "__pending" {
         // an earlier download didn't finish: carry on with what was chosen then
         pending(dir).unwrap_or_default()
     } else if name == "__update" {
@@ -488,7 +530,7 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
     if need + 200_000_000 > free {
         bail!("not enough free space in {}: need {}, have {}. Free some space, choose a smaller preset, or use --data to pick another disk", dir.display(), gb(need), gb(free));
     }
-    if interactive() && !a.yes && !first_run {
+    if interactive() && !a.yes && !first_run && a.job.is_none() {
         let y = ask("Start downloading? [Y/n]: ");
         if y.eq_ignore_ascii_case("n") || y.eq_ignore_ascii_case("no") {
             return Ok(());
@@ -496,9 +538,12 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
     }
     std::fs::write(dir.join("pending.json"), serde_json::to_vec(&ids)?)?;
     println!("Downloading into {} (you can stop with Ctrl+C and run this again to resume)", dir.display());
-    let mut prog = Progress { total: need, done: 0, t0: Instant::now(), last: Instant::now() };
+    let mut prog = Progress { total: need, done: 0, t0: Instant::now(), last: Instant::now(), job: a.job.clone() };
     for c in &todo {
         let id = c["id"].as_str().unwrap_or_default();
+        if let Some(j) = &a.job {
+            *j.step.lock().unwrap() = c["title"].as_str().unwrap_or(id).to_string();
+        }
         for f in c["files"].as_array().into_iter().flatten() {
             let current = file_ok(dir, f) && installed.values().any(|i| i["files"].as_array().is_some_and(|fs| fs.contains(f)));
             if current {
@@ -515,8 +560,8 @@ fn get(dir: &Path, a: &GetArgs, first_run: bool) -> Result<()> {
     println!("\nDone. Every file was checked against its fingerprint.");
     remove_unchosen(dir, &mut installed, &ids)?;
     let _ = std::fs::remove_file(dir.join("pending.json"));
-    if !first_run {
-        println!("If the hub is running, restart it to use the new content (with Docker: docker restart bothy).");
+    if !first_run && a.job.is_none() {
+        println!("If the hub is running, restart it to use the new content (with Docker: docker restart bothy), or use its Manage content page next time (bothy-hub admin).");
     }
     Ok(())
 }
@@ -754,6 +799,184 @@ fn lan_addresses() -> Vec<String> {
     v
 }
 
+// ---------- the Manage content page ----------
+
+/// The secret in the Manage page's link: only someone with the link can change what the hub holds.
+fn admin_key(dir: &Path) -> Result<String> {
+    let p = dir.join("admin-key");
+    if let Ok(k) = std::fs::read_to_string(&p)
+        && k.trim().len() >= 16
+    {
+        return Ok(k.trim().to_string());
+    }
+    let mut b = [0u8; 16];
+    ring::rand::SecureRandom::fill(&ring::rand::SystemRandom::new(), &mut b).map_err(|_| anyhow::anyhow!("no system randomness"))?;
+    let k: String = b.iter().map(|x| format!("{x:02x}")).collect();
+    std::fs::create_dir_all(dir)?;
+    std::fs::write(&p, &k)?;
+    Ok(k)
+}
+
+fn admin_links(port: u16, key: &str) -> Vec<String> {
+    let path = format!("/manage?key={key}");
+    if in_docker() {
+        return vec![format!("http://<this computer's address>:{port}{path}")];
+    }
+    let mut v: Vec<String> = lan_addresses().iter().map(|ip| format!("http://{ip}:{port}{path}")).collect();
+    v.push(format!("http://localhost:{port}{path}"));
+    v
+}
+
+/// The hub's content: the library app and its router, keeping `chat` if given (so a reload keeps it).
+fn build(dir: &Path, a: &StartArgs, chat: Option<Arc<sp_server::chat::Chat>>) -> Result<(Arc<sp_server::App>, axum::Router, sp_server::Config)> {
+    let mut cfg = layout(dir);
+    cfg.downloads = !a.no_downloads;
+    if !a.no_chat && chat.is_none() {
+        cfg.chat = Some(dir.join("chat"));
+    }
+    let mut app = sp_server::load(&cfg)?;
+    if chat.is_some() {
+        Arc::get_mut(&mut app).context("app is shared")?.chat = chat;
+    }
+    let router = sp_server::router(app.clone(), &cfg);
+    Ok((app, router, cfg))
+}
+
+struct Manage {
+    dir: PathBuf,
+    start: StartArgs,
+    key: String,
+    job: Arc<Job>,
+    catalog: Mutex<Option<(Instant, Value)>>,
+    live: Arc<std::sync::RwLock<axum::Router>>,
+    chat: Option<Arc<sp_server::chat::Chat>>,
+}
+
+impl Manage {
+    fn authed(&self, h: &axum::http::HeaderMap) -> bool {
+        h.get("x-bothy-key").and_then(|v| v.to_str().ok()).is_some_and(|k| k == self.key)
+    }
+
+    fn catalog(&self, fresh: bool) -> Result<Value> {
+        if let Some((t, c)) = self.catalog.lock().unwrap().as_ref()
+            && !fresh
+            && t.elapsed() < Duration::from_secs(600)
+        {
+            return Ok(c.clone());
+        }
+        let c = fetch_catalog(&agent(), &self.start.get.from)?;
+        *self.catalog.lock().unwrap() = Some((Instant::now(), c.clone()));
+        Ok(c)
+    }
+
+    /// Re-open the content after a download and serve it from now on.
+    fn reload(&self) -> Result<()> {
+        let (app, router, cfg) = build(&self.dir, &self.start, self.chat.clone())?;
+        *self.live.write().unwrap() = router;
+        println!("Content reloaded:");
+        for l in summary(&app, &cfg) {
+            println!("  - {l}");
+        }
+        Ok(())
+    }
+}
+
+mod web {
+    use super::*;
+    use axum::Json;
+    use axum::extract::State;
+    use axum::http::{HeaderMap, StatusCode};
+    use axum::response::{Html, IntoResponse, Response};
+
+    pub async fn page() -> Html<&'static str> {
+        Html(include_str!("manage.html"))
+    }
+
+    fn job_json(j: &Job) -> Value {
+        serde_json::json!({
+            "running": j.running.load(Ordering::Relaxed),
+            "total": j.total.load(Ordering::Relaxed),
+            "done": j.done.load(Ordering::Relaxed),
+            "step": *j.step.lock().unwrap(),
+            "outcome": *j.outcome.lock().unwrap(),
+        })
+    }
+
+    pub async fn state(State(m): State<Arc<Manage>>, h: HeaderMap, q: axum::extract::Query<BTreeMap<String, String>>) -> Response {
+        if !m.authed(&h) {
+            return (StatusCode::FORBIDDEN, "This page needs the hub's admin link (run: bothy-hub admin)").into_response();
+        }
+        let fresh = q.contains_key("fresh");
+        let m2 = m.clone();
+        let cat = tokio::task::spawn_blocking(move || m2.catalog(fresh)).await.map_err(anyhow::Error::from).and_then(|r| r);
+        let installed: Vec<String> = load_installed(&m.dir).into_keys().collect();
+        let free = fs4::available_space(&m.dir).unwrap_or(0);
+        Json(serde_json::json!({
+            "from": m.start.get.from,
+            "catalog": cat.as_ref().ok(),
+            "error": cat.as_ref().err().map(|e| format!("Couldn't reach the download server {}: {e:#}", m.start.get.from)),
+            "installed": installed,
+            "free": free,
+            "job": job_json(&m.job),
+        }))
+        .into_response()
+    }
+
+    pub async fn job(State(m): State<Arc<Manage>>, h: HeaderMap) -> Response {
+        if !m.authed(&h) {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+        Json(job_json(&m.job)).into_response()
+    }
+
+    pub async fn apply(State(m): State<Arc<Manage>>, h: HeaderMap, Json(body): Json<Value>) -> Response {
+        if !m.authed(&h) {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+        let ids: BTreeSet<String> = body["ids"].as_array().into_iter().flatten().filter_map(|v| v.as_str().map(String::from)).collect();
+        if m.job.running.swap(true, Ordering::SeqCst) {
+            return (StatusCode::CONFLICT, "A download is already running").into_response();
+        }
+        let j = &m.job;
+        j.cancel.store(false, Ordering::SeqCst);
+        j.total.store(0, Ordering::Relaxed);
+        j.done.store(0, Ordering::Relaxed);
+        *j.outcome.lock().unwrap() = String::new();
+        *j.step.lock().unwrap() = "Starting".into();
+        let m2 = m.clone();
+        tokio::task::spawn_blocking(move || {
+            let a = GetArgs { from: m2.start.get.from.clone(), yes: true, exact: Some(ids), job: Some(m2.job.clone()), ..Default::default() };
+            let r = get(&m2.dir, &a, false).and_then(|_| {
+                *m2.job.step.lock().unwrap() = "Loading the new content".into();
+                m2.reload()
+            });
+            let cancelled = m2.job.cancel.load(Ordering::SeqCst);
+            let outcome = match r {
+                Ok(()) => "done".to_string(),
+                Err(_) if cancelled => {
+                    let _ = std::fs::remove_file(m2.dir.join("pending.json")); // don't resume it on the next start
+                    "cancelled".to_string()
+                }
+                Err(e) => {
+                    eprintln!("Download from the Manage page failed: {e:#}");
+                    format!("{e:#}")
+                }
+            };
+            *m2.job.outcome.lock().unwrap() = outcome;
+            m2.job.running.store(false, Ordering::SeqCst);
+        });
+        StatusCode::ACCEPTED.into_response()
+    }
+
+    pub async fn cancel(State(m): State<Arc<Manage>>, h: HeaderMap) -> Response {
+        if !m.authed(&h) {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+        m.job.cancel.store(true, Ordering::SeqCst);
+        StatusCode::ACCEPTED.into_response()
+    }
+}
+
 async fn start(dir: &Path, a: &StartArgs) -> Result<()> {
     if pending(dir).is_some() {
         println!("The last download didn't finish, so let's finish it first.\n");
@@ -762,16 +985,34 @@ async fn start(dir: &Path, a: &StartArgs) -> Result<()> {
         println!("Welcome to Bothy. Nothing is downloaded yet, so let's fetch the library first.\n");
         get(dir, &a.get, true)?;
     }
-    let mut cfg = layout(dir);
-    cfg.downloads = !a.no_downloads;
-    if !a.no_chat {
-        cfg.chat = Some(dir.join("chat"));
-    }
-    let app = sp_server::load(&cfg)?;
+    let (app, router, cfg) = build(dir, a, None)?;
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", a.port))
         .await
         .with_context(|| format!("port {} is in use: is a hub already running? Try --port 8081", a.port))?;
-    let router = sp_server::router(app.clone(), &cfg);
+    let key = admin_key(dir)?;
+    let live = Arc::new(std::sync::RwLock::new(router));
+    let m = Arc::new(Manage {
+        dir: dir.to_path_buf(),
+        start: a.clone(),
+        key: key.clone(),
+        job: Arc::new(Job::default()),
+        catalog: Mutex::new(None),
+        live: live.clone(),
+        chat: app.chat.clone(),
+    });
+    // the Manage page stays put; everything else goes to the current content, swapped on reload
+    let content = tower::service_fn(move |req: axum::extract::Request| {
+        let r = live.read().unwrap().clone();
+        async move { tower::ServiceExt::oneshot(r, req).await }
+    });
+    let router = axum::Router::new()
+        .route("/manage", axum::routing::get(web::page))
+        .route("/api/manage", axum::routing::get(web::state))
+        .route("/api/manage/job", axum::routing::get(web::job))
+        .route("/api/manage/apply", axum::routing::post(web::apply))
+        .route("/api/manage/cancel", axum::routing::post(web::cancel))
+        .with_state(m)
+        .fallback_service(content);
     if a.https_port != 0
         && let Some(chat) = app.chat.as_ref()
     {
@@ -792,6 +1033,7 @@ async fn start(dir: &Path, a: &StartArgs) -> Result<()> {
     for l in summary(&app, &cfg) {
         println!("  - {l}");
     }
+    drop(app);
     println!();
     if in_docker() {
         println!("Open http://<this computer's address>:{} on any phone or computer on the same network.", a.port);
@@ -804,6 +1046,10 @@ async fn start(dir: &Path, a: &StartArgs) -> Result<()> {
             println!("Open http://{ip}:{} on any phone or computer on the same network.", a.port);
         }
         println!("On this computer: http://localhost:{}", a.port);
+    }
+    println!("\nTo add maps and more, open the Manage content page (keep this link to yourself):");
+    for l in admin_links(a.port, &key) {
+        println!("  {l}");
     }
     println!("{}", if in_docker() { "Stop it with: docker stop bothy" } else { "Stop it with Ctrl+C." });
     axum::serve(listener, router)
@@ -821,6 +1067,12 @@ fn main() {
         Some(Cmd::Get(a)) => get(&dir, a, false),
         Some(Cmd::Check { full }) => check(&dir, *full).map(|_| ()),
         Some(Cmd::Maps { action, names, from, yes }) => maps(&dir, action, names, from, *yes),
+        Some(Cmd::Admin { port }) => admin_key(&dir).map(|k| {
+            println!("The hub's Manage content page (download maps and more; keep this link to yourself):");
+            for l in admin_links(*port, &k) {
+                println!("  {l}");
+            }
+        }),
         Some(Cmd::Start(a)) => tokio::runtime::Runtime::new().map_err(Into::into).and_then(|rt| rt.block_on(start(&dir, a))),
         None => {
             let Some(Cmd::Start(a)) = Cli::parse_from(["bothy-hub", "start"]).cmd else { unreachable!() };
