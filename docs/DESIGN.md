@@ -380,7 +380,7 @@ Phones update by re-copying the whole pack (~5–10 min over USB 3); no delta up
     - **Image name: `andykcheng/bothy`** (2026-11-05). It's free on a personal account, and Docker Hub organisations now need a paid plan. Docker Hub can't rename an image, so this name stays.
     - The setup guide for Windows, Mac, Linux, Raspberry Pi and NAS is `site/hub.html` (www.pocketbothy.com/hub).
     - Native downloads for Windows and Mac can come later.
-  - **What kept the old name:** only what people see changed. Wire formats (`survivalpedia-pack`, `survivalpedia-catalog`, the `survivalpedia` key in map metadata), crate names, method channels and the Android application ID `org.survivalpedia.app` are unchanged.
+  - **What kept the old name:** only what people see changed. Wire formats (`survivalpedia-pack`, `survivalpedia-catalog`, the `survivalpedia` key in map metadata), crate names, method channels and the Kotlin package/namespace `org.survivalpedia.survivalpedia` are unchanged. The Android application ID became `com.pocketbothy.app` on 2026-11-06, before the first Play Store upload (it can never change after that); test installs under the old ID `org.survivalpedia.app` are a separate app and need uninstalling.
     - The application ID can still change before the first Play Store release. After that, it never can.
 - **Primary host: Cloudflare R2** behind a custom domain (domain DNS on Cloudflare).
   - no egress fees, no rate limit on a custom domain

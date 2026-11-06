@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.survivalpedia.app"
+        applicationId = "com.pocketbothy.app"
         // Android 8+; arm64 only (the Rust core is built for aarch64-linux-android, see .github/workflows)
         minSdk = 26
         ndk { abiFilters += listOf("arm64-v8a") }

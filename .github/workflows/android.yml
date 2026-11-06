@@ -1,6 +1,9 @@
 # Builds the Android app: Rust core (sp-ffi) for arm64 via cargo-ndk, then the Flutter APK.
 # The GB10 build box is aarch64 Linux, where Google's Android build tools don't run, so APKs
-# are built here. Download the artifact with: gh run download -n survivalpedia-apk
+# are built here. Download the artifacts with: gh run download -n survivalpedia-apk (or -n bothy-aab)
+# Each run also builds the Play bundle (AAB). A manual run with a play_track uploads it to Google Play
+# (needs the PLAY_SERVICE_ACCOUNT_JSON secret; see docs/PLAY.md):
+#   gh workflow run android.yml -f play_track=internal
 name: android
 
 on:
@@ -8,6 +11,13 @@ on:
     branches: [master]
     paths: ["app/**", "core/**", ".github/workflows/android.yml"]
   workflow_dispatch:
+    inputs:
+      play_track:
+        description: "Upload the AAB to this Google Play track (internal, alpha = closed testing, beta, production); empty = don't upload"
+        default: ""
+      play_status:
+        description: "Release status: draft (required while the app is unpublished; finish it in Play Console) or completed"
+        default: "draft"
 
 concurrency:
   group: android-${{ github.ref }}
@@ -78,7 +88,7 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Build APK
+      - name: Build APK and AAB
         working-directory: app
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
@@ -87,16 +97,38 @@ jobs:
           if [ -n "$KEYSTORE_B64" ]; then
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
             export SP_KEYSTORE="$RUNNER_TEMP/release.jks"
+          elif [ -n "${{ inputs.play_track }}" ]; then
+            echo "::error::no signing secrets: refusing to build for Google Play with a debug key"; exit 1
           else
             echo "::warning::no signing secrets: APK is signed with a throwaway debug key"
           fi
           flutter pub get
           flutter analyze
-          flutter build apk --release --target-platform android-arm64 --dart-define=SP_DEFAULT_HUB=${{ vars.SP_DEFAULT_HUB }}
-          ls -la build/app/outputs/flutter-apk/
+          # versionCode = the run number: it only grows, as Play requires for every upload
+          B=(--release --target-platform android-arm64 --build-number=${{ github.run_number }} --dart-define=SP_DEFAULT_HUB=${{ vars.SP_DEFAULT_HUB }})
+          flutter build apk "${B[@]}"
+          flutter build appbundle "${B[@]}"
+          ls -la build/app/outputs/flutter-apk/ build/app/outputs/bundle/release/
 
       - uses: actions/upload-artifact@v4
         with:
           name: survivalpedia-apk
           path: app/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bothy-aab
+          path: app/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      - name: Upload to Google Play
+        if: ${{ inputs.play_track != '' }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.pocketbothy.app
+          releaseFiles: app/build/app/outputs/bundle/release/app-release.aab
+          track: ${{ inputs.play_track }}
+          status: ${{ inputs.play_status }}
+          whatsNewDirectory: app/play/whatsnew
