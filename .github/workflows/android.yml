@@ -129,6 +129,6 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.pocketbothy.app
           releaseFiles: app/build/app/outputs/bundle/release/app-release.aab
-          track: ${{ inputs.play_track }}
+          tracks: ${{ inputs.play_track }}
           status: ${{ inputs.play_status }}
           whatsNewDirectory: app/play/whatsnew
