@@ -1,0 +1,24 @@
+# The Docker Hub page of the hub image: its overview is hub/DOCKERHUB.md, published whenever that file
+# changes (or by hand). Uses the same secrets as hub-image.yml; the Docker Hub token needs the
+# "Read, Write, Delete" scope to change a repository's description.
+name: hub-description
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["hub/DOCKERHUB.md", ".github/workflows/hub-description.yml"]
+
+jobs:
+  description:
+    if: github.repository == 'andykcheng/bothy'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ vars.HUB_IMAGE || 'andykcheng/bothy' }}
+          short-description: "Offline library hub for your Wi-Fi: articles, maps, books, first aid, AI answers, chat"
+          readme-filepath: hub/DOCKERHUB.md
