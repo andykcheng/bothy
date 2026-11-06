@@ -1,4 +1,4 @@
-//! Survivalpedia pack format (DESIGN §5): writer and reader.
+//! Bothy pack format (DESIGN §5): writer and reader.
 //!
 //! Layout of a pack directory:
 //!

@@ -317,7 +317,7 @@ def main():
         "source": a.source, "lang": "en", "site": "gutenberg", "docs": stats["docs"], "chunks": stats["chunks"],
         "redirects": stats["docs"], "images_unique": len(seen_img),
         "zim_metadata": {"Title": a.title, "Creator": "Project Gutenberg volunteers (public-domain texts)",
-                         "Publisher": "Survivalpedia", "Source": "www.gutenberg.org"},
+                         "Publisher": "Bothy", "Source": "www.gutenberg.org"},
         "stats": stats, "rights_rule": f"no author died after {DEATH_CUTOFF}; unknown dates / anonymous / corporate only without a copyright notice after {DEATH_CUTOFF}; Gutenberg 'Copyrighted' books excluded",
     }, indent=1))
     print("done:", json.dumps(stats), f"images {len(seen_img)}")

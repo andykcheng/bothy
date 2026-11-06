@@ -70,9 +70,10 @@ Play needs 2 to 8 phone screenshots. The current ones are the app's golden test 
 
 **Privacy policy:** https://pocketbothy.com/privacy
 
-**App name** (30 characters max):
+**App name** (30 characters max). DESIGN §14's "Pocket Bothy: Offline Knowledge & First Aid" is 43 characters, too long, so use one of:
 
-> Bothy: Offline Library
+> Pocket Bothy: Offline Library (29)
+> Pocket Bothy: Offline Guides (28)
 
 **Short description** (80 characters max):
 

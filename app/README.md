@@ -1,3 +1,3 @@
-# survivalpedia
+# Bothy app
 
-A new Flutter project.
+The Flutter app for Android. See the top-level README and docs/DESIGN.md.

@@ -1,6 +1,6 @@
 # Bothy
 
-*Formerly Survivalpedia. Website: [pocketbothy.com](https://pocketbothy.com). A bothy is a free shelter in the hills that is never locked; this app is a free shelter of knowledge you carry.*
+*Website: [pocketbothy.com](https://pocketbothy.com). A bothy is a free shelter in the hills that is never locked; this app is a free shelter of knowledge you carry.*
 
 **An offline library of practical knowledge for when the internet is gone.** It holds Wikipedia articles chosen for survival, wikiHow guides, survival and first-aid manuals, 54,000 public-domain books, offline maps and games. You can search all of it by keyword or by meaning on an ordinary Android phone, or from any browser on a small Wi-Fi hub, with no network at all.
 

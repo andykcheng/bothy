@@ -1,6 +1,6 @@
 # Data formats
 
-This page describes every file Survivalpedia reads or writes, so you can use our data in your own project or produce data our tools accept. The formats are open (CC0); the content inside them keeps its own licence (see "Licences" at the end).
+This page describes every file Bothy reads or writes, so you can use our data in your own project or produce data our tools accept. The formats are open (CC0); the content inside them keeps its own licence (see "Licences" at the end).
 
 The pipeline has four kinds of data:
 

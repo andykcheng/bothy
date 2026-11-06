@@ -1,6 +1,6 @@
 # Make your own collection
 
-You can turn your own documents into a Survivalpedia collection: notes, a community handbook, local first-aid instructions, a farm's procedures. You get the same search (keywords plus meaning), article pages, images, links between articles and browse pages as the built-in collections. It works on a hub and in the app.
+You can turn your own documents into a Bothy collection: notes, a community handbook, local first-aid instructions, a farm's procedures. You get the same search (keywords plus meaning), article pages, images, links between articles and browse pages as the built-in collections. It works on a hub and in the app.
 
 A complete example is in [`examples/my-notes/`](../examples/my-notes): three short articles, one image and two folders.
 

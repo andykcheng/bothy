@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reference reader for Survivalpedia packs (docs/DATA-FORMATS.md), in plain Python.
+"""Reference reader for Bothy packs (docs/DATA-FORMATS.md), in plain Python.
 
 Needs only `zstandard` (pip install zstandard). The search indexes are not read here: BM25 is a Tantivy
 index (use tantivy-py or the Rust code) and the vector index layout is described in DATA-FORMATS.md.

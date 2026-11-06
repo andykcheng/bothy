@@ -1,4 +1,4 @@
-# Bothy (formerly Survivalpedia) — Design
+# Bothy — Design
 
 Offline, searchable library of practical human knowledge for when the internet is gone.
 Runs on a phone (Android app) and on a small Wi-Fi hub (any phone's browser). No network needed after setup.
@@ -350,7 +350,7 @@ Phones update by re-copying the whole pack (~5–10 min over USB 3); no delta up
   - reference readers, so anyone can write their own: Rust (`core/crates/sp-pack`) and Python (`tools/sp_pack.py`, 2026-11-02)
   - people can build their own collections from Markdown/HTML/text (`ingest/docs_extract.py`, `docs/MAKE-A-COLLECTION.md`)
 - **Name and domain (2026-11-05):** the app is **Bothy**; the store name is "Pocket Bothy: Offline Knowledge & First Aid".
-  - **Why the change:** "Survivalpedia" is one letter from Survivopedia, a known prepper blog, and undersold an app that also covers repair, cooking, books, maps and chat. A bothy is a free shelter that's never locked.
+  - **Why the name:** a bothy is a free shelter in the hills that's never locked. The app covers repair, cooking, books, maps and chat as well as survival, so the name shouldn't be about survival alone.
   - **Domain:** `pocketbothy.com`, on its own Cloudflare account. The website explains the app and offers the Android APK (besides the Play Store) and the hub server for people who run a hub.
   - **Downloads:** `data.pocketbothy.com`, the custom domain of R2 bucket `bothy-data`, connected and serving.
     - **Layout (2026-11-05):** `/v1` is a static copy of a hub's download API: `/v1/api/catalog` (the catalog JSON, DATA-FORMATS §4) and `/v1/download/<path>`. So the app and `bothy-hub` can treat `https://data.pocketbothy.com/v1` exactly like a hub.
@@ -380,8 +380,7 @@ Phones update by re-copying the whole pack (~5–10 min over USB 3); no delta up
     - **Image name: `andykcheng/bothy`** (2026-11-05). It's free on a personal account, and Docker Hub organisations now need a paid plan. Docker Hub can't rename an image, so this name stays.
     - The setup guide for Windows, Mac, Linux, Raspberry Pi and NAS is `site/hub.html` (www.pocketbothy.com/hub).
     - Native downloads for Windows and Mac can come later.
-  - **What kept the old name:** only what people see changed. Wire formats (`survivalpedia-pack`, `survivalpedia-catalog`, the `survivalpedia` key in map metadata), crate names, method channels and the Kotlin package/namespace `org.survivalpedia.survivalpedia` are unchanged. The Android application ID became `com.pocketbothy.app` on 2026-11-06, before the first Play Store upload (it can never change after that); test installs under the old ID `org.survivalpedia.app` are a separate app and need uninstalling.
-    - The application ID can still change before the first Play Store release. After that, it never can.
+  - **Code names:** the code keeps the project's working title, `survivalpedia`: wire formats (`survivalpedia-pack`, `survivalpedia-catalog`, the `survivalpedia` key in map metadata), the `sp-*` crates, method channels and the Kotlin package/namespace `org.survivalpedia.survivalpedia`. Changing them would break files and builds for no visible gain. The Android application ID is `com.pocketbothy.app` (2026-11-06, before the first Play Store upload; it can never change after that). Test installs under the earlier ID `org.survivalpedia.app` are a separate app and need uninstalling.
 - **Primary host: Cloudflare R2** behind a custom domain (domain DNS on Cloudflare).
   - no egress fees, no rate limit on a custom domain
   - files over 512 MB are not edge-cached on the free plan; that's fine

@@ -1,6 +1,6 @@
 # Architecture
 
-Survivalpedia has three parts:
+Bothy has three parts:
 - a **build pipeline** that turns sources into packs (Python, then Rust);
 - a **core** that reads and searches packs (Rust);
 - two **front ends** over the same core: a server for any browser, and an Android app.

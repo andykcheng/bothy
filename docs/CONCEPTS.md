@@ -1,10 +1,10 @@
 # Concepts
 
-The ideas behind Survivalpedia, and the words the rest of the documentation uses.
+The ideas behind Bothy, and the words the rest of the documentation uses.
 
 ## Why it exists
 
-When the internet is gone, after a disaster or during a long power cut, people still need to know how to purify water, treat a wound, keep food safe, fix a pump or find the nearest hospital. Survivalpedia is a library of that knowledge that works with **no network at all**, on the phones people already have.
+When the internet is gone, after a disaster or during a long power cut, people still need to know how to purify water, treat a wound, keep food safe, fix a pump or find the nearest hospital. Bothy is a library of that knowledge that works with **no network at all**, on the phones people already have.
 
 The design follows from that goal:
 - **Offline after setup.** Everything a feature needs (text, images, indexes, models, maps) is downloaded beforehand. Nothing calls the internet.

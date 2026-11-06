@@ -1,7 +1,7 @@
 [project]
 name = "sp-ingest"
 version = "0.1.0"
-description = "Survivalpedia ingest: ZIM -> cleaned docs, chunks, images, embeddings"
+description = "Bothy ingest: ZIM -> cleaned docs, chunks, images, embeddings"
 requires-python = ">=3.12"
 dependencies = [
   "libzim>=3.6",

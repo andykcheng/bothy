@@ -86,7 +86,7 @@ a = '''    var name = prompt(navigator.mozL10n.get('prompt-name'));
     }
 '''
 assert a in s, 'DopeWars.js changed upstream: re-check the name prompt patch'
-s = s.replace(a, '''    // Survivalpedia: no endless re-asking when the prompt is cancelled (the app's WebView answers '').
+s = s.replace(a, '''    // Bothy: no endless re-asking when the prompt is cancelled (the app's WebView answers '').
     var name = prompt(navigator.mozL10n.get('prompt-name')) || 'Player';
 ''')
 open(p, 'w').write(s)
@@ -105,7 +105,7 @@ JSON
 cat > "$G/README.txt" <<TXT
 DopeWars.js (commit $DC) by Nicolas Hurtubise. https://github.com/316k/DopeWars.js. Licence: MIT (LICENSE).
 Bundled libraries: jQuery, Bootstrap (incl. Glyphicons Halflings font) and readmore.js (MIT), l10n.js (webL10n).
-Changed for Survivalpedia: assets/js/controller.js no longer re-asks for a name forever when the prompt
+Changed for Bothy: assets/js/controller.js no longer re-asks for a name forever when the prompt
 is cancelled (it uses "Player"). Development files (screenshots, .xcf, source maps) are left out.
 TXT
 

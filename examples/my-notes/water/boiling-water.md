@@ -1,7 +1,7 @@
 ---
 title: Boiling water to make it safe
 license: CC BY 4.0
-author: Survivalpedia example
+author: Bothy example
 categories: Water, Hygiene
 ---
 # Boiling water to make it safe

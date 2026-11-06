@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 #[derive(Parser)]
-#[command(name = "sp", about = "Survivalpedia pack tool")]
+#[command(name = "sp", about = "Bothy pack tool")]
 struct Cli {
     #[command(subcommand)]
     cmd: Cmd,

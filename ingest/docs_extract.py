@@ -1,4 +1,4 @@
-"""Your own documents -> a Survivalpedia extract (docs/MAKE-A-COLLECTION.md), ready for embed.py and `sp build`.
+"""Your own documents -> a Bothy extract (docs/MAKE-A-COLLECTION.md), ready for embed.py and `sp build`.
 
     uv run python docs_extract.py <input dir> <out dir> --source my-notes [--license "CC BY 4.0"]
         [--title "My notes"] [--author "…"] [--url "https://…"]
