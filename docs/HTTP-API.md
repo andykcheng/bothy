@@ -87,7 +87,7 @@ One article as JSON. `record` is the doc record (DATA-FORMATS §3): `html`, `lic
 Lists the collections (id, title, description, kind, counts, sources, vector indexes) and what else the server offers:
 
 ```json
-{"collections": [...], "docs": 240000, "dense": true, "llm": "LFM2-1.2B-RAG-Q4_0", "maps": true, "games": true, ...}
+{"collections": [...], "docs": 240000, "dense": true, "llm": "Qwen3.5-2B-Q4_K_M", "maps": true, "games": true, ...}
 ```
 
 ### `POST /api/embed`

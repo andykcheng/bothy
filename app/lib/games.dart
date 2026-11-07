@@ -15,7 +15,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import 'content.dart';
 
-const bundledGames = ['balloons', 'chess', 'dots', 'draughts', 'emberdeep', 'estates', 'four', 'freecell', 'greenhollow', 'leap', 'mancala', 'morris', 'party', 'reversi', 'seabattle', 'snake', 'solitaire', 'sudoku', 'tinkerworks', 'yacht'];
+const bundledGames = ['balloons', 'chess', 'dots', 'draughts', 'emberdeep', 'estates', 'flipside', 'four', 'freecell', 'greenhollow', 'leap', 'mancala', 'morris', 'party', 'reversi', 'seabattle', 'snake', 'solitaire', 'sudoku', 'tinkerworks', 'yacht'];
 const _port = 47801;
 
 class GameInfo {

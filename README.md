@@ -137,6 +137,6 @@ Every article carries its own licence and attribution, and shows them on its pag
 | Project Gutenberg books | public domain, with the Project Gutenberg licence inside each book |
 | OpenStreetMap map data | ODbL 1.0, © OpenStreetMap contributors |
 | Qwen3-Embedding-0.6B | Apache-2.0 |
-| LFM2-1.2B-RAG (optional) | LFM Open License v1.0 |
+| Qwen3.5-2B (optional, AI answers) | Apache-2.0 |
 
 Third-party games keep their own licences (MIT, GPL-2.0-or-later), which are included with them.

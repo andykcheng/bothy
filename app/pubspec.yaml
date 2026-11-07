@@ -32,6 +32,7 @@ flutter:
     - assets/games/dots/
     - assets/games/draughts/
     - assets/games/estates/
+    - assets/games/flipside/
     - assets/games/four/
     - assets/games/freecell/
     - assets/games/emberdeep/

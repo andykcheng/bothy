@@ -109,7 +109,7 @@ Without the embedding model or vector indexes, search is BM25 only. Everything s
 
 `/ask` is a fixed pipeline, not a free-running agent:
 1. Search, and take the best passage of each of the top 4 articles.
-2. A small local model (LFM2-1.2B-RAG, Q4_0, ~700 MB, CPU) answers only from those passages.
+2. A small local model (Qwen3.5-2B, Q4_K_M, ~1.3 GB, CPU) answers only from those passages.
 
 Sources are always listed under the answer. Follow-up questions carry the last few turns.
 

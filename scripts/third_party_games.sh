@@ -4,7 +4,6 @@
 #   scripts/third_party_games.sh OUT [WORK]
 #  - puzzles:  Simon Tatham's Portable Puzzle Collection, prebuilt web version (MIT) + source tarball
 #  - farmhand: Farmhand by Jeremy Kahn (GPL-2.0-or-later), built with vite + source tarball
-#  - dopewars: DopeWars.js by Nicolas Hurtubise (MIT), static files, one small patch
 # Needs curl, git, node/npm, python3.
 set -euo pipefail
 OUT=$(realpath -m "$1"); WORK=$(realpath -m "${2:-$OUT/.work}")
@@ -69,48 +68,8 @@ service worker. Its complete source is in farmhand-source.tar.gz. Rebuild it wit
   npm ci && npx vite build --base=./
 Online features (multiplayer, shared market) need the internet and are unavailable offline.
 TXT
-# ---- DopeWars.js ----------------------------------------------------------------------------------
-D="$WORK/dopewars"
-[ -d "$D" ] || git clone -q --depth 1 https://github.com/316k/DopeWars.js.git "$D"
-DC=$(git -C "$D" rev-parse --short HEAD)
-G="$OUT/dopewars"; rm -rf "$G"; mkdir -p "$G"
-rsync -a --exclude .git --exclude '*.xcf' --exclude 'screen*.png' --exclude '*.map' --exclude README.md --exclude TODO.md --exclude manifest.webapp "$D/" "$G/"
-# it re-asks for a name until it gets one; the app's WebView answers a cancelled prompt with '' (endless loop)
-python3 - "$G/assets/js/controller.js" <<'PY'
-import sys
-p = sys.argv[1]; s = open(p).read()
-a = '''    var name = prompt(navigator.mozL10n.get('prompt-name'));
-
-    while(!name) {
-        name = prompt(navigator.mozL10n.get('prompt-name-again'));
-    }
-'''
-assert a in s, 'DopeWars.js changed upstream: re-check the name prompt patch'
-s = s.replace(a, '''    // Bothy: no endless re-asking when the prompt is cancelled (the app's WebView answers '').
-    var name = prompt(navigator.mozL10n.get('prompt-name')) || 'Player';
-''')
-open(p, 'w').write(s)
-PY
-cat > "$G/game.json" <<JSON
-{
-  "id": "dopewars",
-  "title": "DopeWars",
-  "description": "The classic trading game: 30 days to buy low and sell high around the city, dodge the cops and pay off the loan shark. Adult theme (drugs).",
-  "players": "1",
-  "version": 1,
-  "license": "MIT",
-  "author": "Nicolas Hurtubise (github.com/316k/DopeWars.js), after John E. Dell's Drug Wars"
-}
-JSON
-cat > "$G/README.txt" <<TXT
-DopeWars.js (commit $DC) by Nicolas Hurtubise. https://github.com/316k/DopeWars.js. Licence: MIT (LICENSE).
-Bundled libraries: jQuery, Bootstrap (incl. Glyphicons Halflings font) and readmore.js (MIT), l10n.js (webL10n).
-Changed for Bothy: assets/js/controller.js no longer re-asks for a name forever when the prompt
-is cancelled (it uses "Player"). Development files (screenshots, .xcf, source maps) are left out.
-TXT
-
-du -sh "$OUT"/puzzles "$OUT"/farmhand "$OUT"/dopewars
+du -sh "$OUT"/puzzles "$OUT"/farmhand
 
 # Cover images for the Games grid (these game.json files are rewritten above, so covers are made again):
 #   (cd "$OUT" && python3 -m http.server 47900 --bind 127.0.0.1 &)
-#   node scripts/gameshot.js <playwright-core dir> http://127.0.0.1:47900/ "$OUT" puzzles farmhand dopewars
+#   node scripts/gameshot.js <playwright-core dir> http://127.0.0.1:47900/ "$OUT" puzzles farmhand

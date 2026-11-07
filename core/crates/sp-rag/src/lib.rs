@@ -1,4 +1,4 @@
-//! Local answers from library passages (DESIGN §8): a small chat model (LFM2.5-2.6B GGUF) in
+//! Local answers from library passages (DESIGN §8): a small chat model (Qwen3.5-2B GGUF) in
 //! llama.cpp, CPU only, answering only from the numbered passages it is given.
 //!
 //! The pipeline is fixed, not an agent: the caller searches, picks passages, and calls
@@ -188,11 +188,19 @@ impl Llm {
         };
         // a reasoning model's generation prompt opens the reply with <think>; the token alone is not
         // enough (LFM2.5 instruct models share the vocabulary and mention <think> for past turns)
-        let reasoning = self.template.to_str().is_ok_and(|t| t.contains("assistant\\n<think>"))
-            && self.special_token("<think>").is_some();
+        let tpl = self.template.to_str().unwrap_or("");
+        // Qwen3 / Qwen3.5 are hybrid: their Jinja template switches thinking with enable_thinking, which
+        // the built-in (non-Jinja) template code here can't pass, so write what the template would.
+        let hybrid = tpl.contains("enable_thinking") && self.special_token("<think>").is_some();
+        let reasoning = hybrid || (tpl.contains("assistant\\n<think>") && self.special_token("<think>").is_some());
         let think = think && reasoning;
         let mut banned = vec!["<|tool_list_start|>", "<|tool_call_start|>", "<|tool_call_end|>"];
-        if reasoning && !think {
+        if hybrid {
+            prompt.push_str(if think { "<think>\n" } else { "<think>\n\n</think>\n\n" });
+            if !think {
+                banned.push("<think>");
+            }
+        } else if reasoning && !think {
             // Reasoning models (LFM2.5) open every reply with <think>. Answering from given passages
             // mostly needs no reasoning, and on a phone it costs 30 s or more: close the block at once.
             let base = prompt.strip_suffix("<think>").unwrap_or(&prompt).to_string();
@@ -283,7 +291,7 @@ impl Llm {
         }
         stats.prompt_ms = t.elapsed().as_secs_f64() * 1e3;
 
-        // the model card's settings for LFM2.5: temp 0.1, top-k 50, repeat penalty 1.1
+        // low temperature for answers grounded in the passages (LFM2.5's card settings; fine for Qwen3.5 too)
         let banned: Vec<LlamaLogitBias> = banned
             .iter()
             .filter_map(|s| self.special_token(s))

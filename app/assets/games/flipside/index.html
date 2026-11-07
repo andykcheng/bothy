@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Flipside</title>
+<style>
+  :root { --bg: #f6efe2; --ink: #2a2118; --dim: #7d6f60; --card: #fffaf1; --line: #e3d6c2; --green: #1f6b4f; --red: #c2402f;
+    --gold: #e0a526; --navy: #23395b; --good: #2e8a4f; --bad: #c2402f; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 15px system-ui, sans-serif; user-select: none; -webkit-user-select: none; }
+  #app { max-width: 520px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+  button { font: inherit; border: 0; border-radius: 10px; padding: 10px 14px; background: #eadfcb; color: var(--ink); cursor: pointer; }
+  button.go { background: var(--green); color: #fff; font-weight: 700; }
+  button.warn { background: var(--red); color: #fff; font-weight: 700; }
+  button:disabled { opacity: .35; }
+  h1, h2, h3 { margin: 0; }
+  .muted { color: var(--dim); }
+  .money { font-variant-numeric: tabular-nums; }
+  /* title */
+  .title { padding: 18px 18px 26px; text-align: center; }
+  .title h1 { font-size: 52px; letter-spacing: -1px; color: var(--navy); line-height: 1; margin-top: 6px; }
+  .title h1 span { color: var(--red); }
+  .title .tag { font-weight: 700; color: var(--green); margin-top: 4px; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; }
+  .title .story { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; line-height: 1.45; margin: 12px 0; }
+  .title .btns { display: grid; gap: 8px; }
+  .hero { position: relative; height: 150px; }
+  .hero svg { height: 100%; width: 100%; }
+  /* awning */
+  .awning { height: 16px; background: repeating-linear-gradient(90deg, var(--c1) 0 28px, #fff8ec 28px 56px); }
+  .scallop { height: 10px; background: radial-gradient(circle at 14px 0, var(--c1) 9.5px, transparent 10px) 0 0 / 56px 10px repeat-x,
+    radial-gradient(circle at 42px 0, #fff8ec 9.5px, transparent 10px) 0 0 / 56px 10px repeat-x; }
+  .sign { background: var(--c1); color: #fff; padding: 10px 14px 6px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+  .sign h2 { font-size: 24px; }
+  .sign .mk { font-size: 13px; opacity: .9; }
+  .stats { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 10px 0; }
+  .chip { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  .stars { color: var(--gold); letter-spacing: 1px; }
+  .goal { margin: 8px 10px 0; height: 8px; background: #e7dbc6; border-radius: 99px; overflow: hidden; }
+  .goal i { display: block; height: 100%; background: linear-gradient(90deg, var(--green), #4fb27f); }
+  .goaltxt { font-size: 12px; padding: 3px 12px 0; color: var(--dim); }
+  .news { margin: 8px 10px 0; background: #fff3cf; border: 1px solid #f0d58a; border-radius: 10px; padding: 8px 10px; font-size: 14px; }
+  .list { padding: 8px 10px 92px; display: grid; gap: 7px; }
+  .row { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 8px; display: grid; grid-template-columns: 52px 1fr auto; gap: 10px; align-items: center; }
+  .ico { width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; }
+  .ico svg { width: 44px; height: 44px; }
+  .row .nm { font-weight: 700; }
+  .row .have { font-size: 12px; color: var(--dim); }
+  .row .pr { font-size: 17px; font-weight: 800; text-align: right; }
+  .tagb { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 1px 6px; margin-left: 4px; vertical-align: 2px; }
+  .tagb.lo { background: #d8f0df; color: var(--good); } .tagb.hi { background: #fbe0dc; color: var(--bad); } .tagb.no { background: #eee; color: #888; }
+  .row .acts { display: flex; gap: 5px; margin-top: 4px; justify-content: flex-end; }
+  .row .acts button { padding: 6px 12px; font-size: 14px; }
+  .bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fffaf1ee; border-top: 1px solid var(--line); backdrop-filter: blur(6px); }
+  .bar .in { max-width: 520px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 6px; }
+  .bar button { padding: 6px 2px; font-size: 12px; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative; }
+  .bar button b { font-size: 22px; line-height: 1; }
+  .badge { position: absolute; top: 0; right: 18%; background: var(--red); color: #fff; font-size: 10px; border-radius: 99px; padding: 1px 5px; }
+  /* sheets */
+  .shade { position: fixed; inset: 0; background: #2a211866; display: flex; align-items: flex-end; justify-content: center; z-index: 5; }
+  .sheet { background: var(--bg); width: 100%; max-width: 520px; border-radius: 18px 18px 0 0; padding: 14px 14px 18px; max-height: 92vh; overflow: auto; }
+  .sheet.center { border-radius: 18px; margin: auto 12px; }
+  .sheet h3 { font-size: 20px; margin-bottom: 6px; }
+  .qty { display: grid; grid-template-columns: 48px 1fr 48px 64px; gap: 6px; align-items: center; margin: 10px 0; }
+  .qty .n { text-align: center; font-size: 26px; font-weight: 800; }
+  .sum { display: flex; justify-content: space-between; font-size: 16px; margin: 6px 0 10px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .msg { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin: 8px 0; font-size: 14px; }
+  .order { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px; display: grid; grid-template-columns: 40px 1fr auto; gap: 8px; align-items: center; margin-bottom: 6px; }
+  .order .ico { width: 40px; height: 40px; } .order .ico svg { width: 32px; height: 32px; }
+  .map { width: 100%; height: auto; display: block; }
+  .city { cursor: pointer; }
+  .event { text-align: center; }
+  .event .big { width: 92px; height: 92px; margin: 4px auto 8px; border-radius: 20px; display: grid; place-items: center; font-size: 52px; }
+  .event .big svg { width: 70px; height: 70px; }
+  table.sc { width: 100%; border-collapse: collapse; font-size: 14px; } table.sc td { padding: 5px 4px; border-bottom: 1px solid var(--line); }
+  .help p { margin: 6px 0; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+// Flipside: an original trading game for Bothy (MIT OR Apache-2.0). Buy rare things cheap, sell them
+// dear around Britain, watch out for fakes, and raise £25,000 in 40 days to save Gran's shop.
+const GOAL = 25000, DAYS = 40, KEY = 'flipside.game', BEST = 'flipside.best';
+
+// ---- art (64x64 SVG) --------------------------------------------------------------------------
+const ART = {
+  trainers: `<path d="M5 41c0-8 3-14 9-16l8-4c4 6 11 9 19 10 9 1 16 5 18 12v2H5z" fill="#fbf8f2" stroke="#23395b" stroke-width="2"/><path d="M4 45h57v4c0 3-2 5-5 5H9c-3 0-5-2-5-5z" fill="#e05a3a"/><path d="M14 25c1-5 5-8 9-6" fill="none" stroke="#23395b" stroke-width="3" stroke-linecap="round"/><path d="M20 41l14-9 6 7 9-5" fill="none" stroke="#e0a526" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><g fill="#23395b"><circle cx="25" cy="27" r="1.7"/><circle cx="30" cy="29.5" r="1.7"/><circle cx="35" cy="31.3" r="1.7"/></g><path d="M8 50h50" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/>`,
+  phone: `<rect x="19" y="5" width="26" height="54" rx="6" fill="#23395b"/><rect x="22" y="10" width="20" height="42" rx="3" fill="url(#gp)"/><rect x="28" y="7" width="8" height="2" rx="1" fill="#0d1726"/><defs><linearGradient id="gp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7fd1ff"/><stop offset="1" stop-color="#b47cff"/></linearGradient></defs><path d="M25 44l6-8 4 5 3-3 4 6z" fill="#fff" opacity=".7"/>`,
+  console: `<path d="M14 22h36c6 0 9 5 10 12l2 12c1 5-4 8-8 5l-8-7H18l-8 7c-4 3-9 0-8-5l2-12c1-7 4-12 10-12z" fill="#2b2f3a"/><path d="M16 30h4v4h4v4h-4v4h-4v-4h-4v-4h4z" fill="#d9dde6"/><circle cx="44" cy="31" r="3" fill="#e05a3a"/><circle cx="50" cy="36" r="3" fill="#e0a526"/><circle cx="38" cy="36" r="3" fill="#4fb27f"/><circle cx="44" cy="41" r="3" fill="#5aa0e6"/>`,
+  camera: `<rect x="6" y="20" width="52" height="32" rx="5" fill="#2f2a25"/><rect x="6" y="27" width="52" height="16" fill="#8b5e3c"/><path d="M20 20l4-6h16l4 6z" fill="#2f2a25"/><circle cx="32" cy="36" r="12" fill="#c9c3b6"/><circle cx="32" cy="36" r="8.5" fill="#23395b"/><circle cx="29" cy="33" r="2.5" fill="#9cc6ff"/><rect x="47" y="23" width="7" height="4" rx="1" fill="#e0a526"/>`,
+  cards: `<g transform="rotate(-16 32 40)"><rect x="12" y="12" width="26" height="38" rx="3" fill="#5aa0e6" stroke="#fff" stroke-width="2"/></g><g transform="rotate(10 32 40)"><rect x="24" y="10" width="26" height="38" rx="3" fill="#e05a3a" stroke="#fff" stroke-width="2"/></g><rect x="18" y="12" width="28" height="40" rx="3" fill="url(#gc)" stroke="#fff" stroke-width="2"/><defs><linearGradient id="gc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset=".5" stop-color="#f6b0ff"/><stop offset="1" stop-color="#7fd1ff"/></linearGradient></defs><path d="M32 22l2.9 6 6.6.8-4.9 4.5 1.3 6.5-5.9-3.3-5.9 3.3 1.3-6.5-4.9-4.5 6.6-.8z" fill="#fff"/>`,
+  handbag: `<path d="M22 24c0-9 4-14 10-14s10 5 10 14" fill="none" stroke="#7a3e1d" stroke-width="4"/><path d="M10 24h44l-4 30c0 2-2 4-4 4H18c-2 0-4-2-4-4z" fill="#c2402f"/><path d="M10 24h44l-2 10H12z" fill="#a33223"/><rect x="28" y="30" width="8" height="7" rx="2" fill="#e0a526"/>`,
+  watch: `<rect x="23" y="2" width="18" height="16" rx="3" fill="#7a5a3a"/><rect x="23" y="46" width="18" height="16" rx="3" fill="#7a5a3a"/><circle cx="32" cy="32" r="17" fill="#e0a526"/><circle cx="32" cy="32" r="13.5" fill="#fffaf1"/><path d="M32 21v11l7 5" fill="none" stroke="#23395b" stroke-width="2.5" stroke-linecap="round"/><g fill="#23395b"><circle cx="32" cy="20.5" r="1.2"/><circle cx="43.5" cy="32" r="1.2"/><circle cx="32" cy="43.5" r="1.2"/><circle cx="20.5" cy="32" r="1.2"/></g><rect x="48" y="29" width="4" height="6" rx="1" fill="#e0a526"/>`,
+  ring: `<ellipse cx="32" cy="42" rx="17" ry="15" fill="none" stroke="#e0a526" stroke-width="6"/><path d="M22 14h20l6 7-16 16-16-16z" fill="#bfe8ff"/><path d="M22 14h20l6 7H16z" fill="#e6f7ff"/><path d="M28 14l-4 7 8 16 8-16-4-7" fill="none" stroke="#7fc4e6" stroke-width="1.5"/><path d="M16 21h32" stroke="#7fc4e6" stroke-width="1.5"/>`,
+};
+const VAN = `<svg viewBox="0 0 220 120"><ellipse cx="110" cy="112" rx="100" ry="6" fill="#00000018"/><path d="M14 30c0-8 6-14 14-14h112v80H14z" fill="#1f6b4f"/><path d="M140 34h34c7 0 12 3 16 9l14 22c2 3 3 7 3 11v20H140z" fill="#2c8a66"/><path d="M148 42h24c4 0 7 2 9 5l10 16h-43z" fill="#bfe3ff"/><rect x="14" y="74" width="193" height="10" fill="#18533d"/><text x="77" y="58" text-anchor="middle" font-family="Georgia, serif" font-size="22" font-style="italic" font-weight="700" fill="#fff8ec">Gran's</text><text x="77" y="72" text-anchor="middle" font-family="system-ui" font-size="7" letter-spacing="1" fill="#e0a526">SECOND HAND • RARE FINDS</text><circle cx="52" cy="96" r="15" fill="#2a2118"/><circle cx="52" cy="96" r="6" fill="#c9c3b6"/><circle cx="168" cy="96" r="15" fill="#2a2118"/><circle cx="168" cy="96" r="6" fill="#c9c3b6"/><rect x="198" y="68" width="10" height="6" rx="2" fill="#ffd36b"/></svg>`;
+const icon = (id, bg) => `<div class="ico" style="background:${bg || ITEMS_BY[id].bg}"><svg viewBox="0 0 64 64">${ART[id]}</svg></div>`;
+
+// ---- world ----------------------------------------------------------------------------------
+const ITEMS = [
+  { id: 'cards',    name: 'Rare trading card', base: 260,  vol: .30, space: 1, bg: '#efe6ff' },
+  { id: 'trainers', name: 'Limited trainers',  base: 320,  vol: .16, space: 2, bg: '#ffe7de' },
+  { id: 'camera',   name: 'Vintage camera',    base: 420,  vol: .18, space: 1, bg: '#efe3d3' },
+  { id: 'console',  name: 'Sold-out console',  base: 520,  vol: .12, space: 2, bg: '#e2e6ef' },
+  { id: 'phone',    name: 'Sealed phone',      base: 950,  vol: .10, space: 1, bg: '#e3efff' },
+  { id: 'handbag',  name: 'Designer handbag',  base: 2200, vol: .14, space: 2, bg: '#fde3df' },
+  { id: 'ring',     name: 'Diamond ring',      base: 3800, vol: .14, space: 1, bg: '#e2f4fb' },
+  { id: 'watch',    name: 'Luxury watch',      base: 6500, vol: .12, space: 1, bg: '#fbf0d6' },
+];
+const ITEMS_BY = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+// m: <1 cheap to buy here, >1 sells well here
+const CITIES = [
+  { id: 'london', name: 'London', market: 'Portobello Road', x: 241, y: 379, l: [12, -10, 'end'], c: '#c2402f', m: { watch: 1.25, handbag: 1.2, camera: .85, ring: 1.05 } },
+  { id: 'brighton', name: 'Brighton', market: 'The Lanes', x: 240, y: 414, l: [0, 22, 'end'], c: '#2b8fb3', m: { ring: .8, camera: .8, phone: 1.15, console: 1.1 } },
+  { id: 'bristol', name: 'Bristol', market: 'St Nicholas Market', x: 168, y: 382, l: [6, 22, 'middle'], c: '#7a4fb3', m: { trainers: .8, cards: 1.2, watch: .9 } },
+  { id: 'cardiff', name: 'Cardiff', market: 'The Arcades', x: 151, y: 381, l: [-12, 4, 'end'], c: '#b3262f', m: { cards: .75, console: .85, handbag: 1.15 } },
+  { id: 'birmingham', name: 'Birmingham', market: 'Jewellery Quarter', x: 188, y: 330, l: [-12, 4, 'end'], c: '#3b5bb3', m: { ring: .75, watch: .85, trainers: 1.15 } },
+  { id: 'manchester', name: 'Manchester', market: 'Northern Quarter', x: 178, y: 280, l: [-12, 4, 'end'], c: '#d07a1f', m: { trainers: 1.25, phone: .85, camera: 1.1 } },
+  { id: 'leeds', name: 'Leeds', market: 'Kirkgate Market', x: 199, y: 263, c: '#2e8a4f', m: { handbag: .8, console: 1.2, cards: 1.1 } },
+  { id: 'edinburgh', name: 'Edinburgh', market: 'Grassmarket', x: 150, y: 154, c: '#23395b', m: { camera: 1.25, ring: 1.2, phone: .9 } },
+  { id: 'glasgow', name: 'Glasgow', market: 'The Barras', x: 119, y: 159, l: [-12, 4, 'end'], c: '#a0336b', m: { console: .8, phone: 1.15, watch: 1.15, handbag: .9 } },
+  { id: 'belfast', name: 'Belfast', market: "St George's Market", x: 70, y: 223, c: '#1f7a7a', m: { cards: 1.25, trainers: .85, ring: 1.1, handbag: .9 }, ferry: 80 },
+];
+const CITY_BY = Object.fromEntries(CITIES.map(c => [c.id, c]));
+const VANS = [{ name: 'Gran\'s old van', space: 12 }, { name: 'Long-wheelbase van', space: 24, cost: 3000 }, { name: 'Luton box van', space: 40, cost: 9000 }];
+const GB = `M174 366L160 378L157 377L151 382L150 385L140 385L134 380L131 374L127 374L127 377L126 377L118 377L118 374L124 373L124 371L117 371L115 368L117 368L116 368L116 365L113 368L107 368L106 372L99 375L94 371L102 369L101 367L102 365L99 366L100 369L92 370L90 368L94 366L93 362L88 361L88 359L94 357L95 353L102 354L105 349L117 344L123 336L125 328L128 327L125 327L123 324L127 317L125 318L122 313L124 308L115 309L111 315L104 315L109 308L116 302L116 298L121 293L131 289L130 287L138 289L146 286L153 292L150 284L154 282L159 289L165 286L158 286L153 276L159 267L154 265L154 258L160 255L161 252L158 252L162 247L160 243L161 243L162 241L158 245L154 242L152 250L149 248L150 240L149 243L147 244L144 239L144 236L137 227L144 209L148 208L147 207L148 205L155 204L139 203L139 208L132 210L132 208L131 210L132 211L126 214L125 211L123 214L120 211L121 209L119 211L115 207L114 210L116 213L115 219L101 209L98 212L101 221L98 220L98 216L92 209L92 202L94 201L95 206L97 207L96 201L97 195L101 191L102 186L108 177L106 172L99 167L101 164L100 156L103 154L112 156L107 154L102 148L104 152L101 153L101 149L104 141L101 146L99 143L100 152L98 152L100 154L98 158L96 158L93 151L95 157L92 154L90 157L91 160L88 159L87 152L99 138L95 140L86 151L84 151L84 154L88 163L83 170L84 173L80 181L82 184L79 187L74 187L74 182L76 180L77 168L84 160L79 164L78 162L77 160L80 155L77 158L77 156L80 150L76 155L80 147L81 148L81 145L82 142L79 145L83 139L80 139L80 135L84 134L81 134L84 130L91 129L94 126L95 123L91 129L86 129L85 126L83 128L84 125L87 126L90 123L85 124L88 118L97 116L90 116L94 110L77 127L74 125L75 123L72 124L67 119L72 120L72 118L75 116L78 117L81 117L75 116L63 118L61 115L75 112L72 110L75 109L78 108L70 107L72 106L71 105L73 101L75 100L78 102L80 102L82 101L79 102L74 97L78 95L81 96L85 96L77 93L80 88L85 90L82 87L84 85L80 87L76 86L78 83L79 84L82 83L84 80L80 83L78 82L79 80L73 83L73 79L71 76L72 72L78 75L82 74L78 74L73 69L74 66L77 65L73 64L73 59L77 57L78 61L79 62L80 59L78 56L79 54L83 58L85 55L91 58L86 55L86 54L95 59L91 55L91 53L84 49L84 46L88 47L88 44L90 43L86 37L93 37L99 39L98 38L99 37L96 37L92 33L93 30L97 31L94 30L97 29L94 25L97 19L102 20L102 24L104 20L107 22L104 28L109 22L114 23L112 28L116 23L120 24L126 21L130 22L138 19L145 20L144 17L145 16L155 18L152 25L154 27L152 32L126 54L124 52L127 55L126 57L118 58L115 55L117 58L125 60L133 58L127 66L125 64L118 67L114 72L121 67L126 66L123 72L119 73L120 74L119 76L125 73L124 72L139 69L138 67L144 65L155 67L158 66L173 67L185 66L190 70L192 77L186 85L183 92L184 95L180 102L180 106L173 114L170 122L164 128L154 129L146 133L159 129L162 130L161 133L162 134L168 138L162 142L157 142L151 149L146 151L131 147L137 151L154 155L158 154L161 149L167 149L168 152L181 156L191 171L196 173L199 195L204 204L207 215L210 218L209 222L211 220L228 229L233 241L242 248L238 252L240 258L248 271L249 273L248 275L248 273L241 272L236 267L225 267L223 268L236 268L251 283L255 297L254 300L244 310L247 309L255 316L258 307L261 305L282 307L292 315L296 323L296 330L292 341L291 350L287 352L283 358L281 355L278 353L282 357L276 357L282 357L279 361L282 361L282 362L275 366L273 362L270 367L265 369L266 370L271 368L271 375L267 378L258 380L255 382L265 381L265 383L260 384L265 386L265 384L267 387L273 388L287 386L285 389L286 394L285 398L275 402L273 406L273 409L267 409L262 412L255 414L252 418L236 414L222 416L221 419L218 417L219 415L216 413L214 413L212 416L213 413L210 413L211 414L210 416L201 409L205 415L198 419L194 418L187 421L184 418L183 420L187 422L186 425L174 423L172 425L172 429L171 426L160 419L148 422L145 425L142 421L143 425L141 429L142 433L140 434L142 435L137 440L136 445L133 445L128 440L125 441L121 436L122 433L121 433L120 436L118 436L121 437L120 437L121 438L121 440L117 437L112 439L106 438L104 440L103 444L97 449L96 446L96 449L93 451L95 453L91 458L88 452L83 449L80 453L76 453L77 448L88 443L93 438L93 436L96 434L97 429L99 427L99 429L102 430L99 426L103 426L104 422L109 417L111 404L117 405L120 401L119 398L120 398L120 395L133 393L145 396L155 395L155 389L157 386L165 379L174 366ZM31 199L37 200L39 193L45 194L54 190L65 192L67 194L66 199L69 200L68 204L71 206L74 212L76 214L74 210L75 210L77 213L76 216L71 219L70 223L75 219L80 219L84 230L82 236L80 233L81 227L76 224L76 226L79 227L77 228L79 231L76 235L80 234L81 238L78 242L72 242L71 248L65 251L57 248L57 250L49 251L48 250L49 245L44 243L42 239L42 236L38 232L33 236L34 242L31 243L30 247L30 245L28 246L29 247L20 246L18 243L13 243L12 239L4 230L17 223L11 218L22 216L26 202L31 199ZM40 64L35 59L36 60L41 57L39 56L43 56L43 54L35 51L40 48L37 49L38 47L35 46L35 41L38 41L37 40L37 38L41 40L40 40L42 45L42 41L47 41L44 36L61 25L63 29L61 32L63 33L57 39L63 38L63 40L61 41L56 40L57 44L49 46L56 45L57 48L56 48L57 49L52 50L54 52L52 55L48 54L47 50L50 48L47 48L45 50L48 57L44 56L46 59L43 59L40 64ZM51 84L47 83L45 78L46 78L47 75L50 79L49 76L51 76L48 73L49 71L59 78L55 69L59 66L63 71L64 77L62 81L64 81L65 84L63 86L71 89L78 88L77 92L67 100L68 95L72 92L68 92L66 90L67 91L65 95L63 91L58 93L60 91L57 92L56 90L57 89L53 86L58 86L54 84L52 80L51 84ZM208 -71L214 -73L211 -70L213 -71L213 -69L210 -68L212 -67L211 -65L212 -64L208 -63L210 -62L209 -60L211 -58L208 -56L210 -54L208 -53L209 -50L207 -51L207 -43L204 -46L207 -56L207 -60L206 -60L207 -63L205 -61L204 -63L203 -64L204 -61L201 -59L199 -60L201 -62L200 -63L196 -62L194 -65L201 -67L201 -65L202 -67L204 -65L205 -68L207 -69L203 -70L202 -76L201 -74L197 -75L199 -79L201 -76L203 -77L201 -78L202 -81L205 -81L206 -83L205 -75L206 -76L204 -71L208 -73L206 -75L208 -76L210 -72L208 -71ZM77 130L78 132L75 131L74 133L76 133L73 136L71 135L71 134L60 139L57 136L60 136L67 133L62 133L67 128L67 126L64 128L58 124L59 123L58 121L63 119L66 120L69 125L74 126L78 129L77 130ZM120 289L125 289L120 295L115 297L115 295L112 295L110 290L110 284L117 283L120 289ZM67 166L66 169L59 173L58 171L60 169L58 166L60 163L58 163L53 168L55 160L58 158L59 161L59 159L64 155L67 166Z`;
+
+// ---- state & random ---------------------------------------------------------------------------
+let S = null, ui = null;
+function rng() { // mulberry32 on S.seed
+  let t = (S.seed = (S.seed + 0x6D2B79F5) | 0);
+  t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const pick = a => a[Math.floor(rng() * a.length)];
+const gauss = () => { let u = 0; for (let i = 0; i < 6; i++) u += rng(); return u - 3; }; // ~N(0, .7)
+const gbp = n => '£' + Math.round(n).toLocaleString('en-GB');
+const $ = id => document.getElementById(id);
+const save = () => { if (S) localStorage.setItem(KEY, JSON.stringify(S)); };
+const used = () => ITEMS.reduce((a, i) => a + (S.inv[i.id].checked + S.inv[i.id].unchecked) * i.space, 0);
+const vanSpace = () => VANS[S.van].space;
+const repFactor = () => .9 + .04 * S.rep;
+
+function newGame() {
+  const inv = {}; for (const i of ITEMS) inv[i.id] = { checked: 0, unchecked: 0, fakes: 0, cost: 0 };
+  S = { seed: (Date.now() ^ (Math.random() * 1e9)) | 0, day: 1, cash: 1500, rep: 2, van: 0, city: 'london', inv,
+        offers: [], orders: [], next: {}, news: [], log: [], over: false };
+  arrive(true);
+  S.news.unshift('Gran\'s notebook, first page: "Buy where it\'s cheap, sell where they love it. And always get the dear stuff checked."');
+}
+
+function arrive(first) {
+  const c = CITY_BY[S.city];
+  S.market = {}; S.haggled = {}; S.walked = {}; S.mood = 1; S.news = [];
+  for (const i of ITEMS) {
+    let p = i.base * taste(c, i.id) * Math.exp(gauss() * i.vol);
+    const trend = S.next[S.city + ':' + i.id]; if (trend) { p *= trend; delete S.next[S.city + ':' + i.id]; S.news.push(`The tip was right: ${i.name.toLowerCase()} prices have jumped here.`); }
+    const big = i.base > 2000;
+    S.market[i.id] = { price: Math.max(5, Math.round(p)), stock: rng() < .87 ? (big ? 1 + Math.floor(rng() * 3) : 2 + Math.floor(rng() * 6)) : 0 };
+  }
+  if (!first) event();
+  newOrder();
+  expireOrders();
+  save();
+}
+
+// ---- events ---------------------------------------------------------------------------------
+function event() {
+  if (rng() > .45) return;
+  const c = CITY_BY[S.city], r = rng(), it = pick(ITEMS);
+  const m = S.market[it.id];
+  if (r < .16) { m.price = Math.round(m.price * (1.8 + rng() * .8)); show('trend', 'Everyone wants one', `A pop star was snapped with a ${it.name.toLowerCase()} last night. Prices in ${c.name} have shot up.`, it.id); }
+  else if (r < .30) { const d = pick(['A new model has just been announced', 'A big restock landed this morning', 'A celebrity said they\'re "so over it"']);
+    m.price = Math.round(m.price * (.45 + rng() * .2)); show('crash', 'Prices crash', `${d}: ${it.name.toLowerCase()} prices in ${c.name} have collapsed. Buying opportunity?`, it.id); }
+  else if (r < .42) { const city = pick(CITIES.filter(x => x.id !== S.city)); S.next[city.id + ':' + it.id] = 1.7 + rng() * .6;
+    show('tip', 'A tip from Gran\'s friend', `Old Maureen from the flower stall whispers: "${it.name}s will be big in ${city.name} soon. Get there before the rush."`, it.id); }
+  else if (r < .56) { const price = Math.round(it.base * (.3 + rng() * .25)); S.offers = [{ item: it.id, price, fake: .35 }];
+    show('boot', 'Car boot sale', `On the way in you pass a car boot sale. Someone's selling a ${it.name.toLowerCase()} for just ${gbp(price)}. It looks real… mostly.`, it.id, true); }
+  else if (r < .64) { const f = Math.min(S.cash, 70); S.cash -= f; show('ticket', 'Parking ticket', `You were only in the loading bay for ten minutes. ${gbp(f)} fine.`); }
+  else if (r < .71) { const f = Math.min(S.cash, Math.round(120 + rng() * 230)); S.cash -= f; show('van', 'Van trouble', `Gran's van coughs, splutters and needs a new part. The garage charges ${gbp(f)}.`); }
+  else if (r < .80) { S.mood = .85; show('rain', 'Pouring with rain', `Hardly anyone's out at ${c.market} today. Buyers are paying about 15% less.`); }
+  else if (r < .90) { S.mood = 1.15; show('fest', 'Festival weekend', `${c.name} is packed with visitors. Buyers are paying about 15% more today.`); }
+  else { if (S.rep < 5) S.rep++; show('deed', 'Good deed', `You hand back a purse someone dropped by the stalls. Word gets round: your reputation goes up.`); }
+}
+const EV = { trend: ['#fff1c7', '📈'], crash: ['#e2f0ff', '📉'], tip: ['#efe6ff', '🌷'], boot: ['#e6f3df', '🚗'], ticket: ['#ffe2dc', '🅿️'],
+             van: ['#ffe2dc', '🔧'], rain: ['#e2ecf5', '🌧️'], fest: ['#fff1c7', '🎪'], deed: ['#e6f3df', '👛'] };
+function show(kind, title, text, item, offer) { S.pending = { kind, title, text, item, offer }; }
+
+// ---- orders (Gran's black book) ---------------------------------------------------------------
+function newOrder() {
+  if (S.orders.filter(o => !o.taken).length >= 3 || rng() > .4) return;
+  const city = pick(CITIES.filter(x => x.id !== S.city)), it = pick(ITEMS);
+  const qty = it.base < 600 && rng() < .5 ? 2 : 1;
+  const who = pick(['Mrs Okafor', 'A film prop buyer', 'Dr Patel', 'A collector', 'Mr Nowak', 'A vintage shop', 'Ailsa from the gallery', 'A wedding planner', 'Mr Hughes', 'A TV producer']);
+  S.orders.push({ id: Date.now() + '' + Math.floor(rng() * 1e6), who, city: city.id, item: it.id, qty, pay: Math.round(it.base * qty * (1.5 + rng() * .3) / 10) * 10,
+                  due: S.day + 5 + Math.floor(rng() * 6), taken: false });
+}
+function expireOrders() {
+  for (const o of S.orders) if (o.due < S.day) { if (o.taken) { S.rep = Math.max(0, S.rep - 1); S.news.push(`You let ${o.who} down in ${CITY_BY[o.city].name}. Your reputation drops.`); } o.gone = true; }
+  S.orders = S.orders.filter(o => !o.gone);
+}
+
+// ---- trading ---------------------------------------------------------------------------------
+const buyPrice = id => S.market[id].price;
+const SPREAD = .93, TASTE = 1.5; // dealers' margin; how strongly each city's tastes move prices
+const taste = (c, id) => 1 + ((c.m[id] || 1) - 1) * TASTE;
+const sellPrice = id => Math.round(S.market[id].price * SPREAD * repFactor() * S.mood);
+function maxBuy(id) {
+  const i = ITEMS_BY[id];
+  return Math.max(0, Math.min(S.market[id].stock, Math.floor(S.cash / buyPrice(id)), Math.floor((vanSpace() - used()) / i.space)));
+}
+function doBuy(id, n, price, fakeP) {
+  const v = S.inv[id], i = ITEMS_BY[id];
+  if (fakeP === undefined) fakeP = price < i.base * taste(CITY_BY[S.city], id) * .8 ? .3 : .05; // too cheap to be true?
+  let f = 0; for (let k = 0; k < n; k++) if (rng() < fakeP) f++;
+  v.cost = (v.cost * (v.checked + v.unchecked) + price * n) / (v.checked + v.unchecked + n);
+  v.unchecked += n; v.fakes += f; S.cash -= price * n;
+}
+function doSell(id, n, price) {
+  const v = S.inv[id]; let fromChecked = Math.min(n, v.checked), fromUn = n - fromChecked, fakesSold = 0;
+  for (let k = 0; k < fromUn; k++) { if (rng() < v.fakes / v.unchecked) { v.fakes--; fakesSold++; } v.unchecked--; }
+  v.checked -= fromChecked;
+  let caught = 0; for (let k = 0; k < fakesSold; k++) if (rng() < .75) caught++;
+  S.cash += price * (n - caught);
+  if (!v.checked && !v.unchecked) v.cost = 0;
+  if (caught) { S.rep = Math.max(0, S.rep - 1); return `The buyer had ${caught > 1 ? caught + ' of them' : 'it'} checked: fake! You refund ${gbp(price * caught)} and your reputation drops.`; }
+  return `Sold ${n} for ${gbp(price * n)}.`;
+}
+const checkFee = id => Math.max(15, Math.round(ITEMS_BY[id].base * .04));
+
+// ---- screens ---------------------------------------------------------------------------------
+const app = $('app');
+function title() {
+  const has = !!localStorage.getItem(KEY);
+  app.innerHTML = `<div class="title">
+    <div class="hero">${VAN}</div>
+    <div class="tag">Buy rare · sell high</div>
+    <h1>Flip<span>side</span></h1>
+    <div class="story">For forty years your gran ran a little second-hand shop off the high street, with an eye for the rare and the wanted. Now she's retiring, and the landlord wants <b>${gbp(GOAL)}</b> to renew the lease, or it becomes another phone repair shop.<br><br>
+    She's given you her van, <b>£1,500</b>, and her black book of collectors. You have <b>${DAYS} days</b> to find watches, rings, handbags, trainers and other hard-to-get things at a good price and sell them where people love them.</div>
+    <div class="btns">${has ? '<button class="go" id="cont">Continue</button>' : ''}<button class="${has ? '' : 'go'}" id="new">New game</button>
+    <div class="two"><button id="how">How to play</button><button id="best">Best runs</button></div></div></div>`;
+  if (has) $('cont').onclick = () => { S = JSON.parse(localStorage.getItem(KEY)); S.over ? end() : main(); };
+  $('new').onclick = () => { if (has && !confirm('Start again? Your current run will be lost.')) return; newGame(); main(); };
+  $('how').onclick = help; $('best').onclick = best;
+}
+
+function main() {
+  const c = CITY_BY[S.city];
+  const open = S.orders.filter(o => o.taken && o.city === S.city);
+  app.innerHTML = `<div style="--c1:${c.c}"><div class="sign"><div><div class="mk">${c.market}</div><h2>${c.name}</h2></div><div class="mk">Day <b>${S.day}</b> of ${DAYS}</div></div><div class="awning"></div><div class="scallop"></div></div>
+    <div class="stats"><span class="chip money">💷 ${gbp(S.cash)}</span><span class="chip">🚐 ${used()}/${vanSpace()}</span><span class="chip"><span class="stars">${'★'.repeat(S.rep)}<span style="color:#d9cbb3">${'★'.repeat(5 - S.rep)}</span></span></span></div>
+    <div class="goal"><i style="width:${Math.min(100, S.cash / GOAL * 100)}%"></i></div><div class="goaltxt">${S.cash >= GOAL ? 'You have enough to save the shop! Keep going for a bigger total, or finish now.' : `Save Gran's shop: ${gbp(GOAL - S.cash)} to go`}</div>
+    ${S.news.map(n => `<div class="news">${n}</div>`).join('')}
+    ${open.map(o => `<div class="news" style="background:#e6f3df;border-color:#b9dcaa">📒 <b>${o.who}</b> is here and wants ${o.qty} × ${ITEMS_BY[o.item].name.toLowerCase()} for <b>${gbp(o.pay)}</b>. <button class="go" style="padding:4px 10px;margin-left:6px" data-deliver="${o.id}">Deliver</button></div>`).join('')}
+    <div class="list">${ITEMS.map(row).join('')}</div>
+    <div class="bar"><div class="in">
+      <button id="bTravel"><b>🗺️</b>Travel</button>
+      <button id="bBook"><b>📒</b>Black book${S.orders.filter(o => !o.taken).length ? `<span class="badge">${S.orders.filter(o => !o.taken).length}</span>` : ''}</button>
+      <button id="bCheck"><b>🔍</b>Get checked</button>
+      <button id="bVan"><b>🚐</b>Van</button>
+      <button id="bMenu"><b>☰</b>${S.cash >= GOAL ? 'Finish' : 'Menu'}</button></div></div>`;
+  for (const b of app.querySelectorAll('[data-buy]')) b.onclick = () => trade(b.dataset.buy, 'buy');
+  for (const b of app.querySelectorAll('[data-sell]')) b.onclick = () => trade(b.dataset.sell, 'sell');
+  for (const b of app.querySelectorAll('[data-deliver]')) b.onclick = () => deliver(b.dataset.deliver);
+  $('bTravel').onclick = travel; $('bBook').onclick = book; $('bCheck').onclick = checks; $('bVan').onclick = van; $('bMenu').onclick = menu;
+  if (S.pending) popEvent();
+}
+function row(i) {
+  const m = S.market[i.id], v = S.inv[i.id], have = v.checked + v.unchecked;
+  const rel = m.price / i.base;
+  const tag = !m.stock ? '<span class="tagb no">none for sale</span>' : rel < .8 ? '<span class="tagb lo">bargain</span>' : rel > 1.25 ? '<span class="tagb hi">hot</span>' : '';
+  const sold = S.walked[i.id];
+  return `<div class="row">${icon(i.id)}<div><div class="nm">${i.name}${tag}</div>
+    <div class="have">${have ? `You have ${have}${v.unchecked ? ` (${v.unchecked} unchecked)` : ' ✓'} · paid ${gbp(v.cost)} each` : (m.stock ? `${m.stock} for sale` : 'none for sale today')}${i.space > 1 ? ' · takes 2 spaces' : ''}</div></div>
+    <div><div class="pr money">${gbp(m.price)}</div><div class="acts">
+      <button data-buy="${i.id}" ${!m.stock || sold === 'buy' || maxBuy(i.id) < 1 ? 'disabled' : ''}>Buy</button>
+      <button class="go" data-sell="${i.id}" ${!have || sold === 'sell' ? 'disabled' : ''}>Sell</button></div></div></div>`;
+}
+
+function sheet(html, center) {
+  const d = document.createElement('div'); d.className = 'shade';
+  d.innerHTML = `<div class="sheet${center ? ' center' : ''}">${html}</div>`;
+  d.onclick = e => { if (e.target === d) close(); };
+  document.body.appendChild(d); ui = d; return d;
+}
+function close() { if (ui) ui.remove(); ui = null; }
+
+function trade(id, side) {
+  const i = ITEMS_BY[id], v = S.inv[id];
+  let price = side === 'buy' ? buyPrice(id) : sellPrice(id), n = 1, note = '';
+  const max = () => side === 'buy' ? Math.max(0, Math.min(S.market[id].stock, Math.floor(S.cash / price), Math.floor((vanSpace() - used()) / i.space))) : v.checked + v.unchecked;
+  const draw = () => {
+    n = Math.max(Math.min(n, max()), max() ? 1 : 0);
+    const k = S.haggled[id + side];
+    ui.querySelector('.sheet').innerHTML = `<div style="display:flex;gap:12px;align-items:center">${icon(id)}<div><h3>${side === 'buy' ? 'Buy' : 'Sell'} ${i.name.toLowerCase()}</h3>
+      <div class="muted">${side === 'buy' ? `${S.market[id].stock} for sale at ${gbp(price)} each` : `Buyers here pay ${gbp(price)} each${v.cost ? ` · you paid ${gbp(v.cost)}` : ''}`}</div></div></div>
+      ${note ? `<div class="msg">${note}</div>` : ''}
+      ${side === 'sell' && v.unchecked ? `<div class="msg">⚠️ ${v.unchecked} unchecked. If one turns out fake, the buyer may find out.</div>` : ''}
+      ${side === 'buy' && price < i.base * taste(CITY_BY[S.city], id) * .8 ? `<div class="msg">🤔 That's a very low price. Could some be fakes?</div>` : ''}
+      <div class="qty"><button id="minus">−</button><div class="n" id="n">${n}</div><button id="plus">+</button><button id="mx">Max</button></div>
+      <div class="sum"><span>Total</span><b class="money">${gbp(price * n)}</b></div>
+      <div class="two"><button id="hag" ${k ? 'disabled' : ''}>${k ? 'Haggled' : 'Haggle'}</button><button class="go" id="ok" ${n ? '' : 'disabled'}>${side === 'buy' ? 'Buy' : 'Sell'}</button></div>`;
+    $('minus').onclick = () => { n--; draw(); }; $('plus').onclick = () => { n++; draw(); }; $('mx').onclick = () => { n = max(); draw(); };
+    $('hag').onclick = () => {
+      S.haggled[id + side] = 1; const r = rng();
+      if (r < .55) { price = Math.round(price * (side === 'buy' ? .88 : 1.12)); note = side === 'buy' ? `"Go on then." The seller knocks it down to ${gbp(price)}.` : `"Fine, fine." The buyer goes up to ${gbp(price)}.`; }
+      else if (r < .85) note = `"That's my best price." No change.`;
+      else { S.walked[id] = side; close(); S.news = [`You pushed too hard: the ${side === 'buy' ? 'seller' : 'buyer'} walked off. No more ${i.name.toLowerCase()} deals here today.`]; save(); main(); return; }
+      draw();
+    };
+    $('ok').onclick = () => {
+      if (side === 'buy') { doBuy(id, n, price); S.market[id].stock -= n; S.news = [`Bought ${n} × ${i.name.toLowerCase()} for ${gbp(price * n)}.`]; }
+      else S.news = [doSell(id, n, price)];
+      close(); save(); main();
+    };
+  };
+  sheet(''); draw();
+}
+
+function popEvent() {
+  const e = S.pending; S.pending = null; save();
+  const [bg, emo] = EV[e.kind];
+  const art = e.item && (e.kind === 'trend' || e.kind === 'crash' || e.kind === 'tip' || e.kind === 'boot') ? `<svg viewBox="0 0 64 64">${ART[e.item]}</svg>` : emo;
+  sheet(`<div class="event"><div class="big" style="background:${bg}">${art}</div><h3>${e.title}</h3><p>${e.text}</p>
+    ${e.offer ? `<div class="two"><button id="no">No thanks</button><button class="go" id="yes">Buy it</button></div>` : `<button class="go" id="ok" style="width:100%">OK</button>`}</div>`, true);
+  if (e.offer) {
+    const o = S.offers[0], it = ITEMS_BY[o.item];
+    $('yes').disabled = S.cash < o.price || vanSpace() - used() < it.space;
+    $('yes').onclick = () => { doBuy(o.item, 1, o.price, o.fake); S.offers = []; S.news.unshift(`Bought a car boot ${it.name.toLowerCase()} for ${gbp(o.price)}. Better get it checked.`); close(); save(); main(); };
+    $('no').onclick = () => { S.offers = []; close(); save(); };
+  } else $('ok').onclick = () => { close(); main(); };
+}
+
+function travel() {
+  const here = CITY_BY[S.city];
+  const cost = c => Math.round(Math.hypot(c.x - here.x, c.y - here.y) * 1.36 * .25 + 10 + (c.ferry || 0) + (here.ferry || 0));
+  sheet(`<h3>Where to?</h3><div class="muted">Each trip takes a day. Fuel and the Belfast ferry cost money.</div>
+    <svg class="map" viewBox="0 0 300 466"><rect width="300" height="466" fill="#cfe6ef" rx="12"/><path d="${GB}" fill="#f1e7d2" stroke="#b9a988" stroke-width="1"/>
+    ${CITIES.map(c => { const me = c.id === S.city, k = cost(c);
+      return `<g class="city" data-go="${c.id}"><circle cx="${c.x}" cy="${c.y}" r="${me ? 9 : 7}" fill="${c.c}" stroke="#fff" stroke-width="2.5"/>${me ? `<circle cx="${c.x}" cy="${c.y}" r="14" fill="none" stroke="${c.c}" stroke-width="2" stroke-dasharray="3 3"/>` : ''}
+      <circle cx="${c.x}" cy="${c.y}" r="18" fill="transparent"/><text x="${c.x + (c.l ? c.l[0] : 12)}" y="${c.y + (c.l ? c.l[1] : 4)}" text-anchor="${c.l ? c.l[2] : 'start'}" font-size="12" font-weight="700" fill="#2a2118" stroke="#f6efe2" stroke-width="3" paint-order="stroke">${c.name}${me ? ' (here)' : ` · ${gbp(k)}`}</text></g>`; }).join('')}</svg>
+    <div class="two" style="margin-top:8px"><button id="stay">Stay here a day</button><button id="x">Cancel</button></div>`);
+  for (const g of ui.querySelectorAll('[data-go]')) g.onclick = () => { const c = CITY_BY[g.dataset.go]; if (c.id === S.city) return; const k = cost(c);
+    if (S.cash < k) { alert(`You need ${gbp(k)} for the trip.`); return; } S.cash -= k; go(c.id); };
+  $('stay').onclick = () => go(S.city); $('x').onclick = close;
+}
+function go(city) {
+  close(); S.day++; S.city = city;
+  if (S.day > DAYS) { S.day = DAYS; return end(); }
+  arrive(); main();
+}
+
+function book() {
+  const taken = S.orders.filter(o => o.taken), free = S.orders.filter(o => !o.taken);
+  const card = (o, b) => `<div class="order">${icon(o.item)}<div><b>${o.who}</b>, ${CITY_BY[o.city].name}<div class="muted" style="font-size:13px">${o.qty} × ${ITEMS_BY[o.item].name.toLowerCase()} · ${gbp(o.pay)} · by day ${o.due}</div></div>${b}</div>`;
+  sheet(`<h3>📒 Gran's black book</h3><div class="muted">Collectors pay well, but they check everything: only <b>checked</b> items count. Let one down and your reputation suffers.</div>
+    <h4 style="margin:12px 0 6px">Promised</h4>${taken.map(o => card(o, '')).join('') || '<div class="muted">Nothing promised yet.</div>'}
+    <h4 style="margin:12px 0 6px">New requests</h4>${free.map(o => card(o, `<button class="go" data-take="${o.id}" ${taken.length >= 2 || S.rep < 1 ? 'disabled' : ''}>Promise</button>`)).join('') || '<div class="muted">No requests right now. New ones turn up as you travel.</div>'}
+    ${taken.length >= 2 ? '<div class="muted" style="margin-top:6px">You can promise two at a time.</div>' : ''}
+    <button style="width:100%;margin-top:10px" id="x">Close</button>`);
+  for (const b of ui.querySelectorAll('[data-take]')) b.onclick = () => { S.orders.find(o => o.id === b.dataset.take).taken = true; save(); close(); book(); };
+  $('x').onclick = () => { close(); main(); };
+}
+function deliver(id) {
+  const o = S.orders.find(x => x.id === id), v = S.inv[o.item];
+  if (v.checked < o.qty) { S.news = [`${o.who} only accepts checked items. You need ${o.qty} checked ${ITEMS_BY[o.item].name.toLowerCase()}${o.qty > 1 ? 's' : ''} (you have ${v.checked}).`]; return main(); }
+  v.checked -= o.qty; if (!v.checked && !v.unchecked) v.cost = 0;
+  S.cash += o.pay; if (S.rep < 5) S.rep++; S.orders = S.orders.filter(x => x !== o);
+  S.news = [`${o.who} is thrilled and pays ${gbp(o.pay)}. Your reputation goes up.`]; save(); main();
+}
+
+function checks() {
+  const list = ITEMS.filter(i => S.inv[i.id].unchecked);
+  sheet(`<h3>🔍 Get things checked</h3><div class="muted">An authenticator at the market looks over each item. Fakes are binned; genuine ones are certified, so buyers and collectors trust them.</div>
+    ${list.map(i => `<div class="order">${icon(i.id)}<div><b>${i.name}</b><div class="muted" style="font-size:13px">${S.inv[i.id].unchecked} unchecked · ${gbp(checkFee(i.id))} each</div></div><button class="go" data-chk="${i.id}" ${S.cash < checkFee(i.id) * S.inv[i.id].unchecked ? 'disabled' : ''}>${gbp(checkFee(i.id) * S.inv[i.id].unchecked)}</button></div>`).join('') || '<div class="msg">Everything you carry is already checked. ✓</div>'}
+    <button style="width:100%;margin-top:10px" id="x">Close</button>`);
+  for (const b of ui.querySelectorAll('[data-chk]')) b.onclick = () => {
+    const id = b.dataset.chk, v = S.inv[id], n = v.unchecked, f = v.fakes;
+    S.cash -= checkFee(id) * n; v.checked += n - f; v.unchecked = 0; v.fakes = 0; if (!v.checked) v.cost = 0;
+    S.news = [f ? `The authenticator found ${f} fake${f > 1 ? 's' : ''} among your ${ITEMS_BY[id].name.toLowerCase()}s. Binned. ${n - f} genuine.` : `All ${n} genuine. Certified ✓`];
+    save(); close(); checks();
+  };
+  $('x').onclick = () => { close(); main(); };
+}
+
+function van() {
+  const nx = VANS[S.van + 1];
+  sheet(`<div class="event"><div class="hero" style="height:120px">${VAN}</div><h3>${VANS[S.van].name}</h3><p class="muted">${used()} of ${vanSpace()} spaces used. Handbags, trainers and consoles take two spaces.</p>
+    ${nx ? `<div class="msg">Upgrade to a <b>${nx.name}</b>: ${nx.space} spaces, ${gbp(nx.cost)}.</div><button class="go" id="up" style="width:100%" ${S.cash < nx.cost ? 'disabled' : ''}>Upgrade for ${gbp(nx.cost)}</button>` : '<div class="msg">This is the biggest van there is.</div>'}
+    <button id="x" style="width:100%;margin-top:8px">Close</button></div>`, true);
+  if (nx) $('up').onclick = () => { S.cash -= nx.cost; S.van++; S.news = [`New wheels! Your ${nx.name.toLowerCase()} holds ${nx.space}.`]; save(); close(); main(); };
+  $('x').onclick = close;
+}
+
+function menu() {
+  sheet(`<h3>Menu</h3>${S.cash >= GOAL ? `<div class="msg">You have ${gbp(S.cash)}: enough to save the shop. Finish now, or keep trading until day ${DAYS} for a bigger total.</div><button class="go" id="fin" style="width:100%">Pay the landlord and finish</button>` : ''}
+    <div class="two" style="margin-top:8px"><button id="how">How to play</button><button id="ttl">Title screen</button></div><button id="x" style="width:100%;margin-top:8px">Close</button>`);
+  if ($('fin')) $('fin').onclick = () => { close(); end(); };
+  $('how').onclick = () => { close(); help(); }; $('ttl').onclick = () => { close(); save(); title(); }; $('x').onclick = close;
+}
+
+function help() {
+  sheet(`<div class="help"><h3>How to play</h3>
+    <p>🛒 <b>Buy low, sell high.</b> Every market loves some things and undervalues others, and prices change every day. Look for <span class="tagb lo">bargain</span> and <span class="tagb hi">hot</span>.</p>
+    <p>🗺️ <b>Travel</b> takes a day and costs fuel. Or stay put for a day and see new prices.</p>
+    <p>🔍 <b>Fakes.</b> Deals that look too good, and car boot finds, may be fakes. Get things checked before you sell. If a buyer finds a fake, you refund them and your reputation drops.</p>
+    <p>⭐ <b>Reputation</b> raises the prices buyers will pay you. Deliver to collectors and do good deeds to raise it.</p>
+    <p>📒 <b>Gran's black book</b> has collectors who pay well over the odds for checked items, delivered on time.</p>
+    <p>🤝 <b>Haggle</b> once per deal. You might get 12% off, or nothing, or the other side walks away.</p>
+    <p>🚐 A bigger <b>van</b> carries more.</p>
+    <p>🏠 Have <b>${gbp(GOAL)}</b> by day ${DAYS} to save Gran's shop. The more you make, the better your title.</p>
+    <button class="go" id="x" style="width:100%">Got it</button></div>`);
+  $('x').onclick = close;
+}
+
+const RANKS = [[0, 'Car boot beginner', 'The shop closes. Gran still says she\'s proud of you.'], [GOAL, 'Market trader', 'Gran\'s shop is saved!'],
+               [50000, 'Dealer of note', 'The shop is saved, and there\'s money for a new sign.'], [90000, 'Local legend', 'People come from all over Britain to visit the shop.'],
+               [150000, 'Grail master', 'You found every grail worth finding. Gran frames your first receipt.']];
+function end() {
+  S.over = true; save();
+  const r = [...RANKS].reverse().find(x => S.cash >= x[0]);
+  const runs = JSON.parse(localStorage.getItem(BEST) || '[]');
+  if (!S.scored) { runs.push({ cash: Math.round(S.cash), day: S.day, rank: r[1], date: new Date().toISOString().slice(0, 10) }); runs.sort((a, b) => b.cash - a.cash); localStorage.setItem(BEST, JSON.stringify(runs.slice(0, 8))); S.scored = true; save(); }
+  const left = ITEMS.reduce((a, i) => a + S.inv[i.id].checked + S.inv[i.id].unchecked, 0);
+  app.innerHTML = `<div class="title"><div class="hero">${VAN}</div><div class="tag">Day ${S.day} · final total</div><h1 style="font-size:46px">${gbp(S.cash)}</h1>
+    <div class="story" style="text-align:center"><b style="font-size:20px">${r[1]}</b><br>${r[2]}${left ? `<br><span class="muted">(${left} unsold item${left > 1 ? 's' : ''} left in the van.)</span>` : ''}</div>
+    <div class="btns"><button class="go" id="again">Play again</button><button id="best">Best runs</button></div></div>`;
+  $('again').onclick = () => { localStorage.removeItem(KEY); newGame(); main(); }; $('best').onclick = best;
+}
+function best() {
+  const runs = JSON.parse(localStorage.getItem(BEST) || '[]');
+  sheet(`<h3>Best runs</h3>${runs.length ? `<table class="sc">${runs.map((r, k) => `<tr><td>${k + 1}</td><td class="money"><b>${gbp(r.cash)}</b></td><td>${r.rank}</td><td class="muted">${r.date}</td></tr>`).join('')}</table>` : '<div class="muted">No finished runs yet.</div>'}
+    <button id="x" style="width:100%;margin-top:10px">Close</button>`);
+  $('x').onclick = close;
+}
+
+document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+addEventListener('sp-pause', save);
+if (location.hash === '#cover') { // the 600x450 picture for the games grid (game.json cover)
+  app.innerHTML = `<div class="title" style="padding:10px 22px;height:100vh;display:flex;flex-direction:column;justify-content:center"><div class="hero" style="height:150px">${VAN}</div><div class="tag">Buy rare · sell high</div><h1>Flip<span>side</span></h1>
+    <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-top:22px">${ITEMS.map(i => icon(i.id)).join('')}</div></div>`;
+} else title();
+</script>
+</body>
+</html>

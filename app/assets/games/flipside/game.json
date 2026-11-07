@@ -1,0 +1,11 @@
+{
+  "id": "flipside",
+  "title": "Flipside",
+  "description": "Buy rare, sell high: trade watches, rings, handbags, trainers and other hard-to-get things around Britain. Spot the fakes, keep Gran's collectors happy, and raise £25,000 in 40 days to save her shop.",
+  "players": "1",
+  "version": 1,
+  "license": "MIT OR Apache-2.0",
+  "author": "Bothy",
+  "cover": "cover.jpg",
+  "cover_manual": true
+}
